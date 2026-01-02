@@ -1,0 +1,448 @@
+import React, { useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Plus, 
+  TrendingUp, 
+  TrendingDown, 
+  Wallet, 
+  CreditCard, 
+  PiggyBank,
+  ArrowLeft,
+  Target,
+  AlertCircle
+} from "lucide-react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+
+import SummaryCard from "@/components/budget/SummaryCard";
+import CategoryBreakdown from "@/components/budget/CategoryBreakdown";
+import IncomeForm from "@/components/budget/IncomeForm";
+import ExpenseForm from "@/components/budget/ExpenseForm";
+import DebtForm from "@/components/budget/DebtForm";
+import AssetForm from "@/components/budget/AssetForm";
+import DataTable from "@/components/budget/DataTable";
+
+const incomeLabels = { salary: "שכר", allowance: "קצבאות", other: "הכנסות שונות" };
+const expenseLabels = {
+  food: "מזון ופארמה", leisure: "פנאי ובילוי", clothing: "ביגוד והנעלה",
+  household_items: "תכולת בית", home_maintenance: "אחזקת בית", grooming: "טיפוח",
+  education: "חינוך", events: "אירועים ותרומות", health: "בריאות",
+  transportation: "תחבורה", family: "משפחה", communication: "תקשורת",
+  housing: "דיור", obligations: "התחייבויות", assets: "נכסים", finance: "פיננסים", other: "אחר"
+};
+const assetLabels = {
+  savings1: "חיסכון 1", savings2: "חיסכון 2", residential_property: "נדל\"ן למגורים",
+  investment_property: "נדל\"ן להשקעה", vehicle: "רכב", pension: "פנסיה",
+  education_fund: "קרן השתלמות", other: "אחר"
+};
+const debtLabels = {
+  gmach: "גמ\"ח", friends: "חברים", bank_loan: "בנק הלוואה", property_tax: "ארנונה",
+  vat: "מע\"מ", mortgage_arrears: "פיגורי משכנתה", credit_card: "כרטיס אשראי",
+  salary_loan: "הלוואת משכורת", black_market: "שוק אפור", arrears: "פיגורים",
+  family: "משפחה", bank_overdraft: "משיכת יתר", execution: "הוצאה לפועל",
+  institution: "מוסד/חברה", alimony: "מזונות", national_insurance: "ביטוח לאומי",
+  income_tax: "מס הכנסה", other: "אחר"
+};
+
+export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState("overview");
+  const [mode, setMode] = useState("current"); // current = שיקוף, budget = תקציב
+  const [incomeFormOpen, setIncomeFormOpen] = useState(false);
+  const [expenseFormOpen, setExpenseFormOpen] = useState(false);
+  const [debtFormOpen, setDebtFormOpen] = useState(false);
+  const [assetFormOpen, setAssetFormOpen] = useState(false);
+  const [editItem, setEditItem] = useState(null);
+
+  const queryClient = useQueryClient();
+
+  const { data: incomes = [], isLoading: loadingIncomes } = useQuery({
+    queryKey: ['incomes'],
+    queryFn: () => base44.entities.Income.list()
+  });
+
+  const { data: expenses = [], isLoading: loadingExpenses } = useQuery({
+    queryKey: ['expenses'],
+    queryFn: () => base44.entities.Expense.list()
+  });
+
+  const { data: debts = [], isLoading: loadingDebts } = useQuery({
+    queryKey: ['debts'],
+    queryFn: () => base44.entities.Debt.list()
+  });
+
+  const { data: assets = [], isLoading: loadingAssets } = useQuery({
+    queryKey: ['assets'],
+    queryFn: () => base44.entities.Asset.list()
+  });
+
+  // Mutations
+  const createIncome = useMutation({
+    mutationFn: (data) => base44.entities.Income.create(data),
+    onSuccess: () => { queryClient.invalidateQueries(['incomes']); setIncomeFormOpen(false); setEditItem(null); }
+  });
+  const updateIncome = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Income.update(id, data),
+    onSuccess: () => { queryClient.invalidateQueries(['incomes']); setIncomeFormOpen(false); setEditItem(null); }
+  });
+  const deleteIncome = useMutation({
+    mutationFn: (id) => base44.entities.Income.delete(id),
+    onSuccess: () => queryClient.invalidateQueries(['incomes'])
+  });
+
+  const createExpense = useMutation({
+    mutationFn: (data) => base44.entities.Expense.create(data),
+    onSuccess: () => { queryClient.invalidateQueries(['expenses']); setExpenseFormOpen(false); setEditItem(null); }
+  });
+  const updateExpense = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Expense.update(id, data),
+    onSuccess: () => { queryClient.invalidateQueries(['expenses']); setExpenseFormOpen(false); setEditItem(null); }
+  });
+  const deleteExpense = useMutation({
+    mutationFn: (id) => base44.entities.Expense.delete(id),
+    onSuccess: () => queryClient.invalidateQueries(['expenses'])
+  });
+
+  const createDebt = useMutation({
+    mutationFn: (data) => base44.entities.Debt.create(data),
+    onSuccess: () => { queryClient.invalidateQueries(['debts']); setDebtFormOpen(false); setEditItem(null); }
+  });
+  const updateDebt = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Debt.update(id, data),
+    onSuccess: () => { queryClient.invalidateQueries(['debts']); setDebtFormOpen(false); setEditItem(null); }
+  });
+  const deleteDebt = useMutation({
+    mutationFn: (id) => base44.entities.Debt.delete(id),
+    onSuccess: () => queryClient.invalidateQueries(['debts'])
+  });
+
+  const createAsset = useMutation({
+    mutationFn: (data) => base44.entities.Asset.create(data),
+    onSuccess: () => { queryClient.invalidateQueries(['assets']); setAssetFormOpen(false); setEditItem(null); }
+  });
+  const updateAsset = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Asset.update(id, data),
+    onSuccess: () => { queryClient.invalidateQueries(['assets']); setAssetFormOpen(false); setEditItem(null); }
+  });
+  const deleteAsset = useMutation({
+    mutationFn: (id) => base44.entities.Asset.delete(id),
+    onSuccess: () => queryClient.invalidateQueries(['assets'])
+  });
+
+  // Filter data based on mode
+  const isCurrentMode = mode === "current";
+  const filteredIncomes = incomes.filter(i => isCurrentMode ? i.is_current : i.is_budget);
+  const filteredExpenses = expenses.filter(e => isCurrentMode ? e.is_current : e.is_budget);
+
+  // Calculations
+  const totalIncome = filteredIncomes.reduce((sum, i) => sum + (i.amount || 0), 0);
+  const totalExpenses = filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+  const monthlyBalance = totalIncome - totalExpenses;
+  const totalDebts = debts.reduce((sum, d) => sum + (d.remaining_balance || d.total_amount || 0), 0);
+  const arrangedDebts = debts.filter(d => d.is_arranged).reduce((sum, d) => sum + (d.remaining_balance || d.total_amount || 0), 0);
+  const unarrangedDebts = totalDebts - arrangedDebts;
+  const totalAssetValue = assets.reduce((sum, a) => sum + (a.current_value || 0), 0);
+
+  const handleSaveIncome = (data) => {
+    if (editItem) {
+      updateIncome.mutate({ id: editItem.id, data });
+    } else {
+      createIncome.mutate(data);
+    }
+  };
+
+  const handleSaveExpense = (data) => {
+    if (editItem) {
+      updateExpense.mutate({ id: editItem.id, data });
+    } else {
+      createExpense.mutate(data);
+    }
+  };
+
+  const handleSaveDebt = (data) => {
+    if (editItem) {
+      updateDebt.mutate({ id: editItem.id, data });
+    } else {
+      createDebt.mutate(data);
+    }
+  };
+
+  const handleSaveAsset = (data) => {
+    if (editItem) {
+      updateAsset.mutate({ id: editItem.id, data });
+    } else {
+      createAsset.mutate(data);
+    }
+  };
+
+  const incomeColumns = [
+    { key: 'category', label: 'קטגוריה', render: (val) => incomeLabels[val] || val },
+    { key: 'subcategory', label: 'תת-קטגוריה' },
+    { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` },
+    { key: 'description', label: 'תיאור' }
+  ];
+
+  const expenseColumns = [
+    { key: 'category', label: 'קטגוריה', render: (val) => expenseLabels[val] || val },
+    { key: 'subcategory', label: 'תת-קטגוריה' },
+    { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` },
+    { key: 'priority', label: 'עדיפות', render: (val) => {
+      if (!val) return '-';
+      const labels = { 1: 'קל לצמצם', 2: 'קשה אך אפשרי', 3: 'לא נוגעים' };
+      const colors = { 1: 'bg-green-100 text-green-700', 2: 'bg-yellow-100 text-yellow-700', 3: 'bg-red-100 text-red-700' };
+      return <Badge className={colors[val]}>{labels[val]}</Badge>;
+    }}
+  ];
+
+  const debtColumns = [
+    { key: 'creditor_name', label: 'נושה' },
+    { key: 'debt_type', label: 'סוג', render: (val) => debtLabels[val] || val },
+    { key: 'total_amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` },
+    { key: 'monthly_payment', label: 'החזר חודשי', render: (val) => val ? `₪${val.toLocaleString()}` : '-' },
+    { key: 'is_arranged', label: 'סטטוס', render: (val) => (
+      <Badge className={val ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>
+        {val ? 'בהסדר' : 'לא בהסדר'}
+      </Badge>
+    )}
+  ];
+
+  const assetColumns = [
+    { key: 'asset_type', label: 'סוג', render: (val) => assetLabels[val] || val },
+    { key: 'name', label: 'שם' },
+    { key: 'monthly_deposit', label: 'הפקדה חודשית', render: (val) => val ? `₪${val.toLocaleString()}` : '-' },
+    { key: 'current_value', label: 'שווי נוכחי', render: (val) => `₪${(val || 0).toLocaleString()}` }
+  ];
+
+  return (
+    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
+        {/* Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            ניהול תקציב משפחתי
+          </h1>
+          <p className="text-gray-500">
+            שיקוף מצב כלכלי ובניית תקציב מותאם אישית
+          </p>
+        </motion.div>
+
+        {/* Mode Toggle */}
+        <div className="flex gap-2 mb-6">
+          <Button
+            variant={mode === "current" ? "default" : "outline"}
+            onClick={() => setMode("current")}
+            className={mode === "current" ? "bg-blue-600" : ""}
+          >
+            <Target className="w-4 h-4 ml-2" />
+            שיקוף מצב נוכחי
+          </Button>
+          <Button
+            variant={mode === "budget" ? "default" : "outline"}
+            onClick={() => setMode("budget")}
+            className={mode === "budget" ? "bg-green-600" : ""}
+          >
+            <TrendingUp className="w-4 h-4 ml-2" />
+            בניית תקציב
+          </Button>
+        </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <SummaryCard
+            title="סה״כ הכנסות"
+            value={totalIncome}
+            icon={TrendingUp}
+            color="green"
+          />
+          <SummaryCard
+            title="סה״כ הוצאות"
+            value={totalExpenses}
+            icon={TrendingDown}
+            color="orange"
+          />
+          <SummaryCard
+            title="יתרה חודשית"
+            value={monthlyBalance}
+            icon={Wallet}
+            color={monthlyBalance >= 0 ? "blue" : "red"}
+            subtitle={`יתרה שנתית: ₪${(monthlyBalance * 12).toLocaleString()}`}
+          />
+          <SummaryCard
+            title="סה״כ נכסים"
+            value={totalAssetValue}
+            icon={PiggyBank}
+            color="purple"
+          />
+        </div>
+
+        {/* Debt Alert */}
+        {unarrangedDebts > 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-6"
+          >
+            <Card className="border-red-200 bg-red-50">
+              <CardContent className="p-4 flex items-center gap-4">
+                <AlertCircle className="w-8 h-8 text-red-500" />
+                <div>
+                  <p className="font-semibold text-red-700">חובות לא מוסדרים</p>
+                  <p className="text-sm text-red-600">
+                    סה״כ ₪{unarrangedDebts.toLocaleString()} בחובות שלא בהסדר
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="bg-white shadow-sm p-1 rounded-xl">
+            <TabsTrigger value="overview" className="rounded-lg">סקירה כללית</TabsTrigger>
+            <TabsTrigger value="income" className="rounded-lg">הכנסות</TabsTrigger>
+            <TabsTrigger value="expenses" className="rounded-lg">הוצאות</TabsTrigger>
+            <TabsTrigger value="debts" className="rounded-lg">חובות</TabsTrigger>
+            <TabsTrigger value="assets" className="rounded-lg">חסכונות ונכסים</TabsTrigger>
+          </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <CategoryBreakdown expenses={filteredExpenses} totalBudget={totalExpenses} />
+              
+              <Card className="border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-lg">סיכום חובות</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                    <span className="text-green-700">חובות בהסדר</span>
+                    <span className="font-bold text-green-700">₪{arrangedDebts.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                    <span className="text-red-700">חובות לא בהסדר</span>
+                    <span className="font-bold text-red-700">₪{unarrangedDebts.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-100 rounded-lg">
+                    <span className="font-semibold">סה״כ חובות</span>
+                    <span className="font-bold">₪{totalDebts.toLocaleString()}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Income Tab */}
+          <TabsContent value="income" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">הכנסות חודשיות</h2>
+              <Button onClick={() => { setEditItem(null); setIncomeFormOpen(true); }} className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="w-4 h-4 ml-2" />
+                הוסף הכנסה
+              </Button>
+            </div>
+            <DataTable
+              data={filteredIncomes}
+              columns={incomeColumns}
+              onEdit={(item) => { setEditItem(item); setIncomeFormOpen(true); }}
+              onDelete={(item) => deleteIncome.mutate(item.id)}
+              emptyMessage="לא הוזנו הכנסות עדיין"
+            />
+          </TabsContent>
+
+          {/* Expenses Tab */}
+          <TabsContent value="expenses" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">הוצאות חודשיות</h2>
+              <Button onClick={() => { setEditItem(null); setExpenseFormOpen(true); }} className="bg-orange-500 hover:bg-orange-600">
+                <Plus className="w-4 h-4 ml-2" />
+                הוסף הוצאה
+              </Button>
+            </div>
+            <DataTable
+              data={filteredExpenses}
+              columns={expenseColumns}
+              onEdit={(item) => { setEditItem(item); setExpenseFormOpen(true); }}
+              onDelete={(item) => deleteExpense.mutate(item.id)}
+              emptyMessage="לא הוזנו הוצאות עדיין"
+            />
+          </TabsContent>
+
+          {/* Debts Tab */}
+          <TabsContent value="debts" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">פירוט חובות</h2>
+              <Button onClick={() => { setEditItem(null); setDebtFormOpen(true); }} className="bg-red-500 hover:bg-red-600">
+                <Plus className="w-4 h-4 ml-2" />
+                הוסף חוב
+              </Button>
+            </div>
+            <DataTable
+              data={debts}
+              columns={debtColumns}
+              onEdit={(item) => { setEditItem(item); setDebtFormOpen(true); }}
+              onDelete={(item) => deleteDebt.mutate(item.id)}
+              emptyMessage="לא הוזנו חובות"
+            />
+          </TabsContent>
+
+          {/* Assets Tab */}
+          <TabsContent value="assets" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">חסכונות ונכסים</h2>
+              <Button onClick={() => { setEditItem(null); setAssetFormOpen(true); }} className="bg-green-600 hover:bg-green-700">
+                <Plus className="w-4 h-4 ml-2" />
+                הוסף נכס
+              </Button>
+            </div>
+            <DataTable
+              data={assets}
+              columns={assetColumns}
+              onEdit={(item) => { setEditItem(item); setAssetFormOpen(true); }}
+              onDelete={(item) => deleteAsset.mutate(item.id)}
+              emptyMessage="לא הוזנו נכסים או חסכונות"
+            />
+          </TabsContent>
+        </Tabs>
+
+        {/* Forms */}
+        <IncomeForm
+          open={incomeFormOpen}
+          onClose={() => { setIncomeFormOpen(false); setEditItem(null); }}
+          onSave={handleSaveIncome}
+          editItem={editItem}
+          isCurrentMode={isCurrentMode}
+        />
+        <ExpenseForm
+          open={expenseFormOpen}
+          onClose={() => { setExpenseFormOpen(false); setEditItem(null); }}
+          onSave={handleSaveExpense}
+          editItem={editItem}
+          isCurrentMode={isCurrentMode}
+        />
+        <DebtForm
+          open={debtFormOpen}
+          onClose={() => { setDebtFormOpen(false); setEditItem(null); }}
+          onSave={handleSaveDebt}
+          editItem={editItem}
+        />
+        <AssetForm
+          open={assetFormOpen}
+          onClose={() => { setAssetFormOpen(false); setEditItem(null); }}
+          onSave={handleSaveAsset}
+          editItem={editItem}
+        />
+      </div>
+    </div>
+  );
+}
