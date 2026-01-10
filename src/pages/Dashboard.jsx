@@ -27,6 +27,7 @@ import ExpenseForm from "@/components/budget/ExpenseForm";
 import DebtForm from "@/components/budget/DebtForm";
 import AssetForm from "@/components/budget/AssetForm";
 import DataTable from "@/components/budget/DataTable";
+import AlertPanel from "@/components/budget/AlertPanel";
 
 const incomeLabels = { salary: "שכר", allowance: "קצבאות", other: "הכנסות שונות" };
 const expenseLabels = {
@@ -58,6 +59,7 @@ export default function Dashboard() {
   const [debtFormOpen, setDebtFormOpen] = useState(false);
   const [assetFormOpen, setAssetFormOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
+  const [isGeneratingAlerts, setIsGeneratingAlerts] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -98,6 +100,15 @@ export default function Dashboard() {
     queryFn: async () => {
       if (!user) return [];
       return base44.entities.Asset.filter({ created_by: user.email });
+    },
+    enabled: !!user
+  });
+
+  const { data: alerts = [] } = useQuery({
+    queryKey: ['alerts'],
+    queryFn: async () => {
+      if (!user) return [];
+      return base44.entities.Alert.filter({ created_by: user.email }, '-created_date', 50);
     },
     enabled: !!user
   });
@@ -153,6 +164,11 @@ export default function Dashboard() {
   const deleteAsset = useMutation({
     mutationFn: (id) => base44.entities.Asset.delete(id),
     onSuccess: () => queryClient.invalidateQueries(['assets'])
+  });
+
+  const updateAlert = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Alert.update(id, data),
+    onSuccess: () => queryClient.invalidateQueries(['alerts'])
   });
 
   // Filter data based on mode
@@ -238,6 +254,130 @@ export default function Dashboard() {
     { key: 'monthly_deposit', label: 'הפקדה חודשית', render: (val) => val ? `₪${val.toLocaleString()}` : '-' },
     { key: 'current_value', label: 'שווי נוכחי', render: (val) => `₪${(val || 0).toLocaleString()}` }
   ];
+
+  const generateSmartAlerts = async () => {
+    if (!user || isGeneratingAlerts) return;
+    
+    setIsGeneratingAlerts(true);
+    
+    try {
+      // Prepare financial data for AI analysis
+      const financialData = {
+        incomes: filteredIncomes.map(i => ({
+          category: incomeLabels[i.category] || i.category,
+          amount: i.amount,
+          subcategory: i.subcategory
+        })),
+        expenses: filteredExpenses.map(e => ({
+          category: expenseLabels[e.category] || e.category,
+          amount: e.amount,
+          subcategory: e.subcategory,
+          priority: e.priority
+        })),
+        debts: debts.map(d => ({
+          type: debtLabels[d.debt_type] || d.debt_type,
+          total: d.total_amount,
+          monthly: d.monthly_payment,
+          arranged: d.is_arranged,
+          creditor: d.creditor_name
+        })),
+        assets: assets.map(a => ({
+          type: assetLabels[a.asset_type] || a.asset_type,
+          value: a.current_value,
+          monthly: a.monthly_deposit
+        })),
+        summary: {
+          totalIncome,
+          totalExpenses,
+          monthlyBalance,
+          totalDebts,
+          unarrangedDebts,
+          totalAssetValue
+        }
+      };
+
+      // Use AI to analyze and generate smart alerts
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `אתה יועץ פיננסי חכם. נתח את הנתונים הפיננסיים הבאים והתרע על בעיות, סיכונים והזדמנויות.
+
+נתונים פיננסיים:
+${JSON.stringify(financialData, null, 2)}
+
+צור רשימה של התראות (עד 8 התראות) לפי הקריטריונים הבאים:
+1. חריגות תקציביות - הוצאות גבוהות יחסית להכנסות
+2. הוצאות גבוהות מהרגיל בקטגוריות ספציפיות
+3. תזכורות על חובות, במיוחד לא מוסדרים
+4. הזדמנויות לחסכון - הצעות קונקרטיות
+5. דפוסים חריגים או חשודים
+
+כל התראה צריכה להיות:
+- ספציפית ומבוססת על הנתונים
+- עם המלצה ברורה לפעולה
+- מדויקת עם סכומים
+- בעברית
+
+החזר JSON בלבד עם המבנה הבא (ללא טקסט נוסף):
+{
+  "alerts": [
+    {
+      "alert_type": "budget_exceeded" | "high_expense" | "debt_reminder" | "savings_opportunity" | "unusual_pattern",
+      "severity": "low" | "medium" | "high" | "critical",
+      "category": "שם הקטגוריה הרלוונטית",
+      "title": "כותרת קצרה",
+      "message": "תיאור מפורט של הבעיה",
+      "suggestion": "המלצה קונקרטית לפעולה",
+      "amount": מספר (אם רלוונטי)
+    }
+  ]
+}`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            alerts: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  alert_type: { type: "string" },
+                  severity: { type: "string" },
+                  category: { type: "string" },
+                  title: { type: "string" },
+                  message: { type: "string" },
+                  suggestion: { type: "string" },
+                  amount: { type: "number" }
+                },
+                required: ["alert_type", "severity", "title", "message"]
+              }
+            }
+          }
+        }
+      });
+
+      // Save alerts to database
+      if (result.alerts && result.alerts.length > 0) {
+        await base44.entities.Alert.bulkCreate(
+          result.alerts.map(alert => ({
+            ...alert,
+            is_read: false,
+            is_dismissed: false
+          }))
+        );
+        queryClient.invalidateQueries(['alerts']);
+      }
+    } catch (error) {
+      console.error('Error generating alerts:', error);
+    } finally {
+      setIsGeneratingAlerts(false);
+    }
+  };
+
+  const handleDismissAlert = (id) => {
+    updateAlert.mutate({ id, data: { is_dismissed: true } });
+  };
+
+  const handleMarkAlertRead = (id) => {
+    updateAlert.mutate({ id, data: { is_read: true } });
+  };
 
   return (
     <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -338,6 +478,15 @@ export default function Dashboard() {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
+            {/* Smart Alerts */}
+            <AlertPanel
+              alerts={alerts}
+              onDismiss={handleDismissAlert}
+              onMarkRead={handleMarkAlertRead}
+              onRefresh={generateSmartAlerts}
+              isGenerating={isGeneratingAlerts}
+            />
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <CategoryBreakdown expenses={filteredExpenses} totalBudget={totalExpenses} />
               
