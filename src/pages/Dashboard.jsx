@@ -61,24 +61,45 @@ export default function Dashboard() {
 
   const queryClient = useQueryClient();
 
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => base44.auth.me()
+  });
+
   const { data: incomes = [], isLoading: loadingIncomes } = useQuery({
     queryKey: ['incomes'],
-    queryFn: () => base44.entities.Income.list()
+    queryFn: async () => {
+      if (!user) return [];
+      return base44.entities.Income.filter({ created_by: user.email });
+    },
+    enabled: !!user
   });
 
   const { data: expenses = [], isLoading: loadingExpenses } = useQuery({
     queryKey: ['expenses'],
-    queryFn: () => base44.entities.Expense.list()
+    queryFn: async () => {
+      if (!user) return [];
+      return base44.entities.Expense.filter({ created_by: user.email });
+    },
+    enabled: !!user
   });
 
   const { data: debts = [], isLoading: loadingDebts } = useQuery({
     queryKey: ['debts'],
-    queryFn: () => base44.entities.Debt.list()
+    queryFn: async () => {
+      if (!user) return [];
+      return base44.entities.Debt.filter({ created_by: user.email });
+    },
+    enabled: !!user
   });
 
   const { data: assets = [], isLoading: loadingAssets } = useQuery({
     queryKey: ['assets'],
-    queryFn: () => base44.entities.Asset.list()
+    queryFn: async () => {
+      if (!user) return [];
+      return base44.entities.Asset.filter({ created_by: user.email });
+    },
+    enabled: !!user
   });
 
   // Mutations
