@@ -28,6 +28,7 @@ import DebtForm from "@/components/budget/DebtForm";
 import AssetForm from "@/components/budget/AssetForm";
 import DataTable from "@/components/budget/DataTable";
 import AlertPanel from "@/components/budget/AlertPanel";
+import FloatingActionButton from "@/components/budget/FloatingActionButton";
 
 const incomeLabels = { salary: "שכר", allowance: "קצבאות", other: "הכנסות שונות" };
 const expenseLabels = {
@@ -379,6 +380,24 @@ ${JSON.stringify(financialData, null, 2)}
     updateAlert.mutate({ id, data: { is_read: true } });
   };
 
+  const handleFABAction = (formType) => {
+    setEditItem(null);
+    switch (formType) {
+      case 'income':
+        setIncomeFormOpen(true);
+        break;
+      case 'expense':
+        setExpenseFormOpen(true);
+        break;
+      case 'debt':
+        setDebtFormOpen(true);
+        break;
+      case 'asset':
+        setAssetFormOpen(true);
+        break;
+    }
+  };
+
   return (
     <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="max-w-7xl mx-auto p-4 md:p-8">
@@ -612,6 +631,9 @@ ${JSON.stringify(financialData, null, 2)}
           onSave={handleSaveAsset}
           editItem={editItem}
         />
+
+        {/* Floating Action Button - Mobile Only */}
+        <FloatingActionButton onOpenForm={handleFABAction} />
       </div>
     </div>
   );
