@@ -7,12 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Users, Plus, Trash2, Mail, Home, UserPlus } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 
 export default function HouseholdSettings() {
   const [newHouseholdName, setNewHouseholdName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: user } = useQuery({
     queryKey: ['user'],
@@ -44,6 +47,8 @@ export default function HouseholdSettings() {
       queryClient.invalidateQueries(['households']);
       setNewHouseholdName('');
       setShowCreateForm(false);
+      // Navigate to dashboard after first household creation
+      navigate(createPageUrl('Dashboard'));
     }
   });
 

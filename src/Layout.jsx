@@ -9,7 +9,8 @@ import {
   Menu,
   X,
   Wallet,
-  Users
+  Users,
+  BookOpen
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -17,6 +18,7 @@ const navigation = [
   { name: 'דשבורד', page: 'Dashboard', icon: LayoutDashboard },
   { name: 'הטבות וזכויות', page: 'Benefits', icon: Award },
   { name: 'משקי בית', page: 'HouseholdSettings', icon: Users },
+  { name: 'מדריך', page: 'Guide', icon: BookOpen },
 ];
 
 export default function Layout({ children, currentPageName }) {
