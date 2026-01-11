@@ -14,7 +14,8 @@ import {
   PiggyBank,
   ArrowLeft,
   Target,
-  AlertCircle
+  AlertCircle,
+  Download
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -29,6 +30,7 @@ import AssetForm from "@/components/budget/AssetForm";
 import DataTable from "@/components/budget/DataTable";
 import AlertPanel from "@/components/budget/AlertPanel";
 import FloatingActionButton from "@/components/budget/FloatingActionButton";
+import ExportButton, { convertToCSV, downloadCSV } from "@/components/budget/ExportButton";
 
 const incomeLabels = { salary: "שכר", allowance: "קצבאות", other: "הכנסות שונות" };
 const expenseLabels = {
@@ -398,6 +400,65 @@ ${JSON.stringify(financialData, null, 2)}
     }
   };
 
+  const handleExportAll = () => {
+    if (!filteredIncomes.length && !filteredExpenses.length && !debts.length && !assets.length) {
+      alert('אין נתונים לייצוא');
+      return;
+    }
+
+    // Create a combined CSV with all data
+    let allCSV = '';
+
+    // Income section
+    if (filteredIncomes.length > 0) {
+      allCSV += 'הכנסות\n';
+      allCSV += convertToCSV(filteredIncomes, incomeColumns) + '\n\n';
+    }
+
+    // Expenses section
+    if (filteredExpenses.length > 0) {
+      allCSV += 'הוצאות\n';
+      // For expenses, we need to handle the priority badge rendering
+      const expenseColumnsForCSV = expenseColumns.map(col => {
+        if (col.key === 'priority') {
+          return {
+            ...col,
+            render: (val) => {
+              if (!val) return '-';
+              const labels = { 1: 'קל לצמצם', 2: 'קשה אך אפשרי', 3: 'לא נוגעים' };
+              return labels[val];
+            }
+          };
+        }
+        return col;
+      });
+      allCSV += convertToCSV(filteredExpenses, expenseColumnsForCSV) + '\n\n';
+    }
+
+    // Debts section
+    if (debts.length > 0) {
+      allCSV += 'חובות\n';
+      const debtColumnsForCSV = debtColumns.map(col => {
+        if (col.key === 'is_arranged') {
+          return {
+            ...col,
+            render: (val) => val ? 'בהסדר' : 'לא בהסדר'
+          };
+        }
+        return col;
+      });
+      allCSV += convertToCSV(debts, debtColumnsForCSV) + '\n\n';
+    }
+
+    // Assets section
+    if (assets.length > 0) {
+      allCSV += 'חסכונות ונכסים\n';
+      allCSV += convertToCSV(assets, assetColumns) + '\n\n';
+    }
+
+    downloadCSV(allCSV, 'תקציב_משפחתי_מלא');
+  };
+
   return (
     <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="max-w-7xl mx-auto p-4 md:p-8">
@@ -407,12 +468,24 @@ ${JSON.stringify(financialData, null, 2)}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            ניהול תקציב משפחתי
-          </h1>
-          <p className="text-gray-500">
-            שיקוף מצב כלכלי ובניית תקציב מותאם אישית
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                ניהול תקציב משפחתי
+              </h1>
+              <p className="text-gray-500">
+                שיקוף מצב כלכלי ובניית תקציב מותאם אישית
+              </p>
+            </div>
+            <Button
+              onClick={handleExportAll}
+              variant="outline"
+              className="gap-2 hidden md:flex"
+            >
+              <Download className="w-4 h-4" />
+              ייצא הכל ל-CSV
+            </Button>
+          </div>
         </motion.div>
 
         {/* Mode Toggle */}
@@ -533,12 +606,19 @@ ${JSON.stringify(financialData, null, 2)}
 
           {/* Income Tab */}
           <TabsContent value="income" className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center flex-wrap gap-2">
               <h2 className="text-xl font-semibold">הכנסות חודשיות</h2>
-              <Button onClick={() => { setEditItem(null); setIncomeFormOpen(true); }} className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="w-4 h-4 ml-2" />
-                הוסף הכנסה
-              </Button>
+              <div className="flex gap-2">
+                <ExportButton
+                  data={filteredIncomes}
+                  columns={incomeColumns}
+                  filename="הכנסות"
+                />
+                <Button onClick={() => { setEditItem(null); setIncomeFormOpen(true); }} className="bg-blue-600 hover:bg-blue-700">
+                  <Plus className="w-4 h-4 ml-2" />
+                  הוסף הכנסה
+                </Button>
+              </div>
             </div>
             <DataTable
               data={filteredIncomes}
@@ -551,12 +631,31 @@ ${JSON.stringify(financialData, null, 2)}
 
           {/* Expenses Tab */}
           <TabsContent value="expenses" className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center flex-wrap gap-2">
               <h2 className="text-xl font-semibold">הוצאות חודשיות</h2>
-              <Button onClick={() => { setEditItem(null); setExpenseFormOpen(true); }} className="bg-orange-500 hover:bg-orange-600">
-                <Plus className="w-4 h-4 ml-2" />
-                הוסף הוצאה
-              </Button>
+              <div className="flex gap-2">
+                <ExportButton
+                  data={filteredExpenses}
+                  columns={expenseColumns.map(col => {
+                    if (col.key === 'priority') {
+                      return {
+                        ...col,
+                        render: (val) => {
+                          if (!val) return '-';
+                          const labels = { 1: 'קל לצמצם', 2: 'קשה אך אפשרי', 3: 'לא נוגעים' };
+                          return labels[val];
+                        }
+                      };
+                    }
+                    return col;
+                  })}
+                  filename="הוצאות"
+                />
+                <Button onClick={() => { setEditItem(null); setExpenseFormOpen(true); }} className="bg-orange-500 hover:bg-orange-600">
+                  <Plus className="w-4 h-4 ml-2" />
+                  הוסף הוצאה
+                </Button>
+              </div>
             </div>
             <DataTable
               data={filteredExpenses}
@@ -569,12 +668,27 @@ ${JSON.stringify(financialData, null, 2)}
 
           {/* Debts Tab */}
           <TabsContent value="debts" className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center flex-wrap gap-2">
               <h2 className="text-xl font-semibold">פירוט חובות</h2>
-              <Button onClick={() => { setEditItem(null); setDebtFormOpen(true); }} className="bg-red-500 hover:bg-red-600">
-                <Plus className="w-4 h-4 ml-2" />
-                הוסף חוב
-              </Button>
+              <div className="flex gap-2">
+                <ExportButton
+                  data={debts}
+                  columns={debtColumns.map(col => {
+                    if (col.key === 'is_arranged') {
+                      return {
+                        ...col,
+                        render: (val) => val ? 'בהסדר' : 'לא בהסדר'
+                      };
+                    }
+                    return col;
+                  })}
+                  filename="חובות"
+                />
+                <Button onClick={() => { setEditItem(null); setDebtFormOpen(true); }} className="bg-red-500 hover:bg-red-600">
+                  <Plus className="w-4 h-4 ml-2" />
+                  הוסף חוב
+                </Button>
+              </div>
             </div>
             <DataTable
               data={debts}
@@ -587,12 +701,19 @@ ${JSON.stringify(financialData, null, 2)}
 
           {/* Assets Tab */}
           <TabsContent value="assets" className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center flex-wrap gap-2">
               <h2 className="text-xl font-semibold">חסכונות ונכסים</h2>
-              <Button onClick={() => { setEditItem(null); setAssetFormOpen(true); }} className="bg-green-600 hover:bg-green-700">
-                <Plus className="w-4 h-4 ml-2" />
-                הוסף נכס
-              </Button>
+              <div className="flex gap-2">
+                <ExportButton
+                  data={assets}
+                  columns={assetColumns}
+                  filename="חסכונות_ונכסים"
+                />
+                <Button onClick={() => { setEditItem(null); setAssetFormOpen(true); }} className="bg-green-600 hover:bg-green-700">
+                  <Plus className="w-4 h-4 ml-2" />
+                  הוסף נכס
+                </Button>
+              </div>
             </div>
             <DataTable
               data={assets}
