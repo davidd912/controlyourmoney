@@ -115,14 +115,7 @@ export default function Layout({ children, currentPageName }) {
         {children}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t mt-12">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <p className="text-center text-sm text-gray-500">
-            אפליקציית ניהול תקציב משפחתי - מבוססת על החוברת של פעמונים
-          </p>
-        </div>
-      </footer>
+
     </div>
   );
 }
