@@ -15,10 +15,11 @@ import {
   ArrowLeft,
   Target,
   AlertCircle,
-  Download
+  Download,
+  Users
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 import SummaryCard from "@/components/budget/SummaryCard";
@@ -31,6 +32,7 @@ import DataTable from "@/components/budget/DataTable";
 import AlertPanel from "@/components/budget/AlertPanel";
 import FloatingActionButton from "@/components/budget/FloatingActionButton";
 import ExportButton, { convertToCSV, downloadCSV } from "@/components/budget/ExportButton";
+import HouseholdSelector from "@/components/budget/HouseholdSelector";
 
 const incomeLabels = { salary: "שכר", allowance: "קצבאות", other: "הכנסות שונות" };
 const expenseLabels = {
@@ -65,55 +67,78 @@ export default function Dashboard() {
   const [isGeneratingAlerts, setIsGeneratingAlerts] = useState(false);
 
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: user } = useQuery({
     queryKey: ['user'],
     queryFn: () => base44.auth.me()
   });
 
-  const { data: incomes = [], isLoading: loadingIncomes } = useQuery({
-    queryKey: ['incomes'],
+  const { data: households = [] } = useQuery({
+    queryKey: ['households'],
     queryFn: async () => {
       if (!user) return [];
-      return base44.entities.Income.filter({ created_by: user.email });
+      const all = await base44.entities.Household.list();
+      return all.filter(h => 
+        h.owner_email === user.email || 
+        (h.members && h.members.includes(user.email))
+      );
     },
     enabled: !!user
+  });
+
+  const [selectedHouseholdId, setSelectedHouseholdId] = useState(null);
+
+  // Auto-select first household or create one
+  React.useEffect(() => {
+    if (user && households.length > 0 && !selectedHouseholdId) {
+      setSelectedHouseholdId(households[0].id);
+    }
+  }, [user, households, selectedHouseholdId]);
+
+  const { data: incomes = [], isLoading: loadingIncomes } = useQuery({
+    queryKey: ['incomes', selectedHouseholdId],
+    queryFn: async () => {
+      if (!user || !selectedHouseholdId) return [];
+      return base44.entities.Income.filter({ household_id: selectedHouseholdId });
+    },
+    enabled: !!user && !!selectedHouseholdId
   });
 
   const { data: expenses = [], isLoading: loadingExpenses } = useQuery({
-    queryKey: ['expenses'],
+    queryKey: ['expenses', selectedHouseholdId],
     queryFn: async () => {
-      if (!user) return [];
-      return base44.entities.Expense.filter({ created_by: user.email });
+      if (!user || !selectedHouseholdId) return [];
+      return base44.entities.Expense.filter({ household_id: selectedHouseholdId });
     },
-    enabled: !!user
+    enabled: !!user && !!selectedHouseholdId
   });
 
   const { data: debts = [], isLoading: loadingDebts } = useQuery({
-    queryKey: ['debts'],
+    queryKey: ['debts', selectedHouseholdId],
     queryFn: async () => {
-      if (!user) return [];
-      return base44.entities.Debt.filter({ created_by: user.email });
+      if (!user || !selectedHouseholdId) return [];
+      return base44.entities.Debt.filter({ household_id: selectedHouseholdId });
     },
-    enabled: !!user
+    enabled: !!user && !!selectedHouseholdId
   });
 
   const { data: assets = [], isLoading: loadingAssets } = useQuery({
-    queryKey: ['assets'],
+    queryKey: ['assets', selectedHouseholdId],
     queryFn: async () => {
-      if (!user) return [];
-      return base44.entities.Asset.filter({ created_by: user.email });
+      if (!user || !selectedHouseholdId) return [];
+      return base44.entities.Asset.filter({ household_id: selectedHouseholdId });
     },
-    enabled: !!user
+    enabled: !!user && !!selectedHouseholdId
   });
 
   const { data: alerts = [] } = useQuery({
-    queryKey: ['alerts'],
+    queryKey: ['alerts', selectedHouseholdId],
     queryFn: async () => {
-      if (!user) return [];
-      return base44.entities.Alert.filter({ created_by: user.email }, '-created_date', 50);
+      if (!user || !selectedHouseholdId) return [];
+      return base44.entities.Alert.filter({ household_id: selectedHouseholdId }, '-created_date', 50);
     },
-    enabled: !!user
+    enabled: !!user && !!selectedHouseholdId
   });
 
   // Mutations
@@ -189,34 +214,38 @@ export default function Dashboard() {
   const totalAssetValue = assets.reduce((sum, a) => sum + (a.current_value || 0), 0);
 
   const handleSaveIncome = (data) => {
+    const dataWithHousehold = { ...data, household_id: selectedHouseholdId };
     if (editItem) {
-      updateIncome.mutate({ id: editItem.id, data });
+      updateIncome.mutate({ id: editItem.id, data: dataWithHousehold });
     } else {
-      createIncome.mutate(data);
+      createIncome.mutate(dataWithHousehold);
     }
   };
 
   const handleSaveExpense = (data) => {
+    const dataWithHousehold = { ...data, household_id: selectedHouseholdId };
     if (editItem) {
-      updateExpense.mutate({ id: editItem.id, data });
+      updateExpense.mutate({ id: editItem.id, data: dataWithHousehold });
     } else {
-      createExpense.mutate(data);
+      createExpense.mutate(dataWithHousehold);
     }
   };
 
   const handleSaveDebt = (data) => {
+    const dataWithHousehold = { ...data, household_id: selectedHouseholdId };
     if (editItem) {
-      updateDebt.mutate({ id: editItem.id, data });
+      updateDebt.mutate({ id: editItem.id, data: dataWithHousehold });
     } else {
-      createDebt.mutate(data);
+      createDebt.mutate(dataWithHousehold);
     }
   };
 
   const handleSaveAsset = (data) => {
+    const dataWithHousehold = { ...data, household_id: selectedHouseholdId };
     if (editItem) {
-      updateAsset.mutate({ id: editItem.id, data });
+      updateAsset.mutate({ id: editItem.id, data: dataWithHousehold });
     } else {
-      createAsset.mutate(data);
+      createAsset.mutate(dataWithHousehold);
     }
   };
 
@@ -361,6 +390,7 @@ ${JSON.stringify(financialData, null, 2)}
         await base44.entities.Alert.bulkCreate(
           result.alerts.map(alert => ({
             ...alert,
+            household_id: selectedHouseholdId,
             is_read: false,
             is_dismissed: false
           }))
@@ -459,6 +489,36 @@ ${JSON.stringify(financialData, null, 2)}
     downloadCSV(allCSV, 'תקציב_משפחתי_מלא');
   };
 
+  // No household selected - show setup screen
+  if (!selectedHouseholdId && households.length === 0 && user) {
+    return (
+      <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <CardTitle className="text-center flex items-center justify-center gap-2">
+              <Wallet className="w-6 h-6 text-blue-600" />
+              ברוכים הבאים!
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-center text-gray-600">
+              כדי להתחיל, צור משק בית ראשון שלך
+            </p>
+            <Button
+              onClick={() => window.location.href = createPageUrl('HouseholdSettings')}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              <Plus className="w-4 h-4 ml-2" />
+              צור משק בית
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const currentHousehold = households.find(h => h.id === selectedHouseholdId);
+
   return (
     <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="max-w-7xl mx-auto p-4 md:p-8">
@@ -476,6 +536,20 @@ ${JSON.stringify(financialData, null, 2)}
               <p className="text-gray-500">
                 שיקוף מצב כלכלי ובניית תקציב מותאם אישית
               </p>
+              {currentHousehold && (
+                <div className="mt-3 flex items-center gap-2">
+                  <Badge className="bg-blue-100 text-blue-700 flex items-center gap-1">
+                    <Wallet className="w-3 h-3" />
+                    {currentHousehold.name}
+                  </Badge>
+                  {currentHousehold.members && currentHousehold.members.length > 1 && (
+                    <Badge variant="outline" className="flex items-center gap-1">
+                      <Users className="w-3 h-3" />
+                      {currentHousehold.members.length} חברים
+                    </Badge>
+                  )}
+                </div>
+              )}
             </div>
             <Button
               onClick={handleExportAll}
@@ -487,6 +561,16 @@ ${JSON.stringify(financialData, null, 2)}
             </Button>
           </div>
         </motion.div>
+
+        {/* Household Selector */}
+        {households.length > 0 && (
+          <HouseholdSelector
+            households={households}
+            selectedId={selectedHouseholdId}
+            onSelect={setSelectedHouseholdId}
+            currentUserEmail={user?.email}
+          />
+        )}
 
         {/* Mode Toggle */}
         <div className="flex gap-2 mb-6">
