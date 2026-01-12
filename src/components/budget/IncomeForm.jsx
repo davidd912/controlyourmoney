@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { X } from "lucide-react";
 
 const incomeCategories = {
@@ -26,7 +27,8 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
     category: '',
     subcategory: '',
     amount: '',
-    description: ''
+    description: '',
+    is_recurring: false
   });
 
   React.useEffect(() => {
@@ -37,7 +39,8 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
         category: '',
         subcategory: '',
         amount: '',
-        description: ''
+        description: '',
+        is_recurring: false
       });
     }
   }, [editItem, open]);
@@ -114,6 +117,17 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="הערות נוספות..."
             />
+          </div>
+
+          <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
+            <Checkbox
+              id="recurring"
+              checked={formData.is_recurring}
+              onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked })}
+            />
+            <Label htmlFor="recurring" className="cursor-pointer font-normal">
+              הכנסה קבועה (תועתק אוטומטית לחודשים הבאים)
+            </Label>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">

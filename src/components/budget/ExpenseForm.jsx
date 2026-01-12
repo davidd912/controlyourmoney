@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const expenseCategories = {
   food: {
@@ -95,7 +96,8 @@ export default function ExpenseForm({ open, onClose, onSave, editItem }) {
     subcategory: '',
     amount: '',
     priority: null,
-    description: ''
+    description: '',
+    is_recurring: false
   });
 
   useEffect(() => {
@@ -107,7 +109,8 @@ export default function ExpenseForm({ open, onClose, onSave, editItem }) {
         subcategory: '',
         amount: '',
         priority: null,
-        description: ''
+        description: '',
+        is_recurring: false
       });
     }
   }, [editItem, open]);
@@ -212,6 +215,17 @@ export default function ExpenseForm({ open, onClose, onSave, editItem }) {
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="הערות נוספות..."
             />
+          </div>
+
+          <div className="flex items-center gap-2 p-3 bg-orange-50 rounded-lg">
+            <Checkbox
+              id="recurring"
+              checked={formData.is_recurring}
+              onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked })}
+            />
+            <Label htmlFor="recurring" className="cursor-pointer font-normal">
+              הוצאה קבועה (תועתק אוטומטית לחודשים הבאים)
+            </Label>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
