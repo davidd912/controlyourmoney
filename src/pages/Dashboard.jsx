@@ -446,19 +446,21 @@ ${JSON.stringify(financialData, null, 2)}
         prevYear -= 1;
       }
 
-      // Fetch previous month's budget items
+      // Fetch previous month's budget items (only recurring ones)
       const prevIncomes = await base44.entities.Income.filter({
         household_id: selectedHouseholdId,
         month: prevMonth,
         year: prevYear,
-        is_budget: true
+        is_budget: true,
+        is_recurring: true
       });
 
       const prevExpenses = await base44.entities.Expense.filter({
         household_id: selectedHouseholdId,
         month: prevMonth,
         year: prevYear,
-        is_budget: true
+        is_budget: true,
+        is_recurring: true
       });
 
       // Copy to current month
@@ -486,7 +488,7 @@ ${JSON.stringify(financialData, null, 2)}
       queryClient.invalidateQueries(['incomes']);
       queryClient.invalidateQueries(['expenses']);
 
-      alert(`הועתקו ${newIncomes.length} הכנסות ו-${newExpenses.length} הוצאות מהחודש הקודם`);
+      alert(`הועתקו ${newIncomes.length} הכנסות קבועות ו-${newExpenses.length} הוצאות קבועות מהחודש הקודם`);
     } catch (error) {
       console.error('Error copying budget:', error);
       alert('שגיאה בהעתקת תקציב מחודש קודם');
@@ -667,10 +669,9 @@ ${JSON.stringify(financialData, null, 2)}
             variant="outline"
             onClick={handleCopyBudgetFromPrevMonth}
             className="gap-2"
-            disabled={filteredIncomes.length > 0 || filteredExpenses.length > 0}
           >
             <Copy className="w-4 h-4" />
-            העתק תקציב מחודש קודם
+            העתק פריטים קבועים מחודש קודם
           </Button>
         </div>
 
