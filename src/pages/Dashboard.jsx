@@ -99,74 +99,7 @@ export default function Dashboard() {
     }
   }, [user, households, selectedHouseholdId]);
 
-  // Auto-copy recurring items from previous month
-  React.useEffect(() => {
-    const autoCopyRecurringItems = async () => {
-      if (!selectedHouseholdId || !user) return;
-      
-      // Check if current month already has items
-      if (filteredIncomes.length > 0 || filteredExpenses.length > 0) return;
 
-      // Calculate previous month
-      let prevMonth = selectedMonth - 1;
-      let prevYear = selectedYear;
-      if (prevMonth === 0) {
-        prevMonth = 12;
-        prevYear -= 1;
-      }
-
-      try {
-        // Fetch previous month's recurring items
-        const prevIncomes = await base44.entities.Income.filter({
-          household_id: selectedHouseholdId,
-          month: prevMonth,
-          year: prevYear,
-          is_budget: true,
-          is_recurring: true
-        });
-
-        const prevExpenses = await base44.entities.Expense.filter({
-          household_id: selectedHouseholdId,
-          month: prevMonth,
-          year: prevYear,
-          is_budget: true,
-          is_recurring: true
-        });
-
-        // Only copy if there are recurring items from previous month
-        if (prevIncomes.length === 0 && prevExpenses.length === 0) return;
-
-        // Copy to current month
-        const newIncomes = prevIncomes.map(({ id, created_date, updated_date, created_by, ...item }) => ({
-          ...item,
-          month: selectedMonth,
-          year: selectedYear,
-          household_id: selectedHouseholdId
-        }));
-
-        const newExpenses = prevExpenses.map(({ id, created_date, updated_date, created_by, ...item }) => ({
-          ...item,
-          month: selectedMonth,
-          year: selectedYear,
-          household_id: selectedHouseholdId
-        }));
-
-        if (newIncomes.length > 0) {
-          await base44.entities.Income.bulkCreate(newIncomes);
-        }
-        if (newExpenses.length > 0) {
-          await base44.entities.Expense.bulkCreate(newExpenses);
-        }
-
-        queryClient.invalidateQueries(['incomes']);
-        queryClient.invalidateQueries(['expenses']);
-      } catch (error) {
-        console.error('Error auto-copying recurring items:', error);
-      }
-    };
-
-    autoCopyRecurringItems();
-  }, [selectedHouseholdId, selectedMonth, selectedYear, user]);
 
   const { data: incomes = [], isLoading: loadingIncomes } = useQuery({
     queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear],
@@ -292,7 +225,7 @@ export default function Dashboard() {
   const unarrangedDebts = totalDebts - arrangedDebts;
   const totalAssetValue = assets.reduce((sum, a) => sum + (a.current_value || 0), 0);
 
-  const handleSaveIncome = (data) => {
+  const handleSaveIncome = async (data) => {
     const dataWithHousehold = { 
       ...data, 
       household_id: selectedHouseholdId,
@@ -301,14 +234,41 @@ export default function Dashboard() {
       is_budget: true,
       is_current: false
     };
+    
     if (editItem) {
       updateIncome.mutate({ id: editItem.id, data: dataWithHousehold });
     } else {
-      createIncome.mutate(dataWithHousehold);
+      // Create the income item
+      await createIncome.mutateAsync(dataWithHousehold);
+      
+      // If recurring, copy to next 12 months
+      if (data.is_recurring) {
+        const futureIncomes = [];
+        for (let i = 1; i <= 12; i++) {
+          let futureMonth = selectedMonth + i;
+          let futureYear = selectedYear;
+          
+          while (futureMonth > 12) {
+            futureMonth -= 12;
+            futureYear += 1;
+          }
+          
+          futureIncomes.push({
+            ...dataWithHousehold,
+            month: futureMonth,
+            year: futureYear
+          });
+        }
+        
+        if (futureIncomes.length > 0) {
+          await base44.entities.Income.bulkCreate(futureIncomes);
+          queryClient.invalidateQueries(['incomes']);
+        }
+      }
     }
   };
 
-  const handleSaveExpense = (data) => {
+  const handleSaveExpense = async (data) => {
     const dataWithHousehold = { 
       ...data, 
       household_id: selectedHouseholdId,
@@ -317,10 +277,37 @@ export default function Dashboard() {
       is_budget: true,
       is_current: false
     };
+    
     if (editItem) {
       updateExpense.mutate({ id: editItem.id, data: dataWithHousehold });
     } else {
-      createExpense.mutate(dataWithHousehold);
+      // Create the expense item
+      await createExpense.mutateAsync(dataWithHousehold);
+      
+      // If recurring, copy to next 12 months
+      if (data.is_recurring) {
+        const futureExpenses = [];
+        for (let i = 1; i <= 12; i++) {
+          let futureMonth = selectedMonth + i;
+          let futureYear = selectedYear;
+          
+          while (futureMonth > 12) {
+            futureMonth -= 12;
+            futureYear += 1;
+          }
+          
+          futureExpenses.push({
+            ...dataWithHousehold,
+            month: futureMonth,
+            year: futureYear
+          });
+        }
+        
+        if (futureExpenses.length > 0) {
+          await base44.entities.Expense.bulkCreate(futureExpenses);
+          queryClient.invalidateQueries(['expenses']);
+        }
+      }
     }
   };
 
