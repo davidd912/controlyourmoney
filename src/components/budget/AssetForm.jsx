@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const assetTypes = {
   savings1: "חיסכון 1",
@@ -23,19 +24,24 @@ export default function AssetForm({ open, onClose, onSave, editItem }) {
     name: '',
     monthly_deposit: '',
     current_value: '',
-    notes: ''
+    notes: '',
+    is_recurring: true
   });
 
   useEffect(() => {
     if (editItem) {
-      setFormData(editItem);
+      setFormData({
+        ...editItem,
+        is_recurring: editItem.is_recurring !== undefined ? editItem.is_recurring : true
+      });
     } else {
       setFormData({
         asset_type: '',
         name: '',
         monthly_deposit: '',
         current_value: '',
-        notes: ''
+        notes: '',
+        is_recurring: true
       });
     }
   }, [editItem, open]);
@@ -115,6 +121,17 @@ export default function AssetForm({ open, onClose, onSave, editItem }) {
               placeholder="הערות נוספות..."
               rows={2}
             />
+          </div>
+
+          <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
+            <Checkbox
+              id="recurring"
+              checked={formData.is_recurring}
+              onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked })}
+            />
+            <Label htmlFor="recurring" className="cursor-pointer font-normal">
+              הפקדה קבועה (רוב החסכונות קבועים)
+            </Label>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">

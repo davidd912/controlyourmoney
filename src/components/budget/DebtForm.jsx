@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const debtTypes = {
   gmach: "גמ\"ח",
@@ -39,14 +40,16 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
     monthly_payment: '',
     remaining_balance: '',
     is_arranged: false,
-    notes: ''
+    notes: '',
+    is_recurring: true
   });
 
   useEffect(() => {
     if (editItem) {
       setFormData({
         ...editItem,
-        as_of_date: editItem.as_of_date || ''
+        as_of_date: editItem.as_of_date || '',
+        is_recurring: editItem.is_recurring !== undefined ? editItem.is_recurring : true
       });
     } else {
       setFormData({
@@ -59,7 +62,8 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
         monthly_payment: '',
         remaining_balance: '',
         is_arranged: false,
-        notes: ''
+        notes: '',
+        is_recurring: true
       });
     }
   }, [editItem, open]);
@@ -198,6 +202,17 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
               placeholder="הערות נוספות..."
               rows={2}
             />
+          </div>
+
+          <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg">
+            <Checkbox
+              id="recurring"
+              checked={formData.is_recurring}
+              onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked })}
+            />
+            <Label htmlFor="recurring" className="cursor-pointer font-normal">
+              חוב קבוע (רוב החובות קבועים)
+            </Label>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
