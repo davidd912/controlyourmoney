@@ -13,7 +13,6 @@ import {
   CreditCard, 
   PiggyBank,
   ArrowLeft,
-  Target,
   AlertCircle,
   Download,
   Users,
@@ -61,7 +60,6 @@ const debtLabels = {
 export default function Dashboard() {
   const currentDate = new Date();
   const [activeTab, setActiveTab] = useState("overview");
-  const [mode, setMode] = useState("current"); // current = שיקוף, budget = תקציב
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const [incomeFormOpen, setIncomeFormOpen] = useState(false);
@@ -212,10 +210,9 @@ export default function Dashboard() {
     onSuccess: () => queryClient.invalidateQueries(['alerts'])
   });
 
-  // Filter data based on mode
-  const isCurrentMode = mode === "current";
-  const filteredIncomes = incomes.filter(i => isCurrentMode ? i.is_current : i.is_budget);
-  const filteredExpenses = expenses.filter(e => isCurrentMode ? e.is_current : e.is_budget);
+  // All data is budget data now
+  const filteredIncomes = incomes;
+  const filteredExpenses = expenses;
 
   // Calculations
   const totalIncome = filteredIncomes.reduce((sum, i) => sum + (i.amount || 0), 0);
@@ -231,7 +228,9 @@ export default function Dashboard() {
       ...data, 
       household_id: selectedHouseholdId,
       month: selectedMonth,
-      year: selectedYear
+      year: selectedYear,
+      is_budget: true,
+      is_current: false
     };
     if (editItem) {
       updateIncome.mutate({ id: editItem.id, data: dataWithHousehold });
@@ -245,7 +244,9 @@ export default function Dashboard() {
       ...data, 
       household_id: selectedHouseholdId,
       month: selectedMonth,
-      year: selectedYear
+      year: selectedYear,
+      is_budget: true,
+      is_current: false
     };
     if (editItem) {
       updateExpense.mutate({ id: editItem.id, data: dataWithHousehold });
@@ -614,7 +615,7 @@ ${JSON.stringify(financialData, null, 2)}
                 ניהול תקציב משפחתי
               </h1>
               <p className="text-gray-500">
-                שיקוף מצב כלכלי ובניית תקציב מותאם אישית
+                תכנון ובניית תקציב חודשי מותאם אישית
               </p>
               {currentHousehold && (
                 <div className="mt-3 flex items-center gap-2">
@@ -660,36 +661,17 @@ ${JSON.stringify(financialData, null, 2)}
           onYearChange={setSelectedYear}
         />
 
-        {/* Mode Toggle & Copy Budget */}
-        <div className="flex gap-2 mb-6 flex-wrap">
+        {/* Copy Budget Button */}
+        <div className="mb-6">
           <Button
-            variant={mode === "current" ? "default" : "outline"}
-            onClick={() => setMode("current")}
-            className={mode === "current" ? "bg-blue-600" : ""}
+            variant="outline"
+            onClick={handleCopyBudgetFromPrevMonth}
+            className="gap-2"
+            disabled={filteredIncomes.length > 0 || filteredExpenses.length > 0}
           >
-            <Target className="w-4 h-4 ml-2" />
-            שיקוף מצב נוכחי
+            <Copy className="w-4 h-4" />
+            העתק תקציב מחודש קודם
           </Button>
-          <Button
-            variant={mode === "budget" ? "default" : "outline"}
-            onClick={() => setMode("budget")}
-            className={mode === "budget" ? "bg-green-600" : ""}
-          >
-            <TrendingUp className="w-4 h-4 ml-2" />
-            בניית תקציב
-          </Button>
-          
-          {mode === "budget" && (
-            <Button
-              variant="outline"
-              onClick={handleCopyBudgetFromPrevMonth}
-              className="gap-2"
-              disabled={filteredIncomes.length > 0 || filteredExpenses.length > 0}
-            >
-              <Copy className="w-4 h-4" />
-              העתק תקציב מחודש קודם
-            </Button>
-          )}
         </div>
 
         {/* Summary Cards */}
@@ -915,14 +897,12 @@ ${JSON.stringify(financialData, null, 2)}
           onClose={() => { setIncomeFormOpen(false); setEditItem(null); }}
           onSave={handleSaveIncome}
           editItem={editItem}
-          isCurrentMode={isCurrentMode}
         />
         <ExpenseForm
           open={expenseFormOpen}
           onClose={() => { setExpenseFormOpen(false); setEditItem(null); }}
           onSave={handleSaveExpense}
           editItem={editItem}
-          isCurrentMode={isCurrentMode}
         />
         <DebtForm
           open={debtFormOpen}

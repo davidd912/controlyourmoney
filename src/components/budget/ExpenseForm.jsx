@@ -89,7 +89,7 @@ const expenseCategories = {
   }
 };
 
-export default function ExpenseForm({ open, onClose, onSave, editItem, isCurrentMode }) {
+export default function ExpenseForm({ open, onClose, onSave, editItem }) {
   const [formData, setFormData] = useState({
     category: '',
     subcategory: '',

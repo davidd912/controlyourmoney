@@ -21,7 +21,7 @@ const incomeCategories = {
   }
 };
 
-export default function IncomeForm({ open, onClose, onSave, editItem, isCurrentMode }) {
+export default function IncomeForm({ open, onClose, onSave, editItem }) {
   const [formData, setFormData] = useState(editItem || {
     category: '',
     subcategory: '',
