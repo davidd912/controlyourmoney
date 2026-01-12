@@ -16,7 +16,8 @@ import {
   Target,
   AlertCircle,
   Download,
-  Users
+  Users,
+  Copy
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
@@ -33,6 +34,7 @@ import AlertPanel from "@/components/budget/AlertPanel";
 import FloatingActionButton from "@/components/budget/FloatingActionButton";
 import ExportButton, { convertToCSV, downloadCSV } from "@/components/budget/ExportButton";
 import HouseholdSelector from "@/components/budget/HouseholdSelector";
+import MonthYearSelector from "@/components/budget/MonthYearSelector";
 
 const incomeLabels = { salary: "שכר", allowance: "קצבאות", other: "הכנסות שונות" };
 const expenseLabels = {
@@ -57,8 +59,11 @@ const debtLabels = {
 };
 
 export default function Dashboard() {
+  const currentDate = new Date();
   const [activeTab, setActiveTab] = useState("overview");
   const [mode, setMode] = useState("current"); // current = שיקוף, budget = תקציב
+  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const [incomeFormOpen, setIncomeFormOpen] = useState(false);
   const [expenseFormOpen, setExpenseFormOpen] = useState(false);
   const [debtFormOpen, setDebtFormOpen] = useState(false);
@@ -97,19 +102,27 @@ export default function Dashboard() {
   }, [user, households, selectedHouseholdId]);
 
   const { data: incomes = [], isLoading: loadingIncomes } = useQuery({
-    queryKey: ['incomes', selectedHouseholdId],
+    queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear],
     queryFn: async () => {
       if (!user || !selectedHouseholdId) return [];
-      return base44.entities.Income.filter({ household_id: selectedHouseholdId });
+      return base44.entities.Income.filter({ 
+        household_id: selectedHouseholdId,
+        month: selectedMonth,
+        year: selectedYear
+      });
     },
     enabled: !!user && !!selectedHouseholdId
   });
 
   const { data: expenses = [], isLoading: loadingExpenses } = useQuery({
-    queryKey: ['expenses', selectedHouseholdId],
+    queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear],
     queryFn: async () => {
       if (!user || !selectedHouseholdId) return [];
-      return base44.entities.Expense.filter({ household_id: selectedHouseholdId });
+      return base44.entities.Expense.filter({ 
+        household_id: selectedHouseholdId,
+        month: selectedMonth,
+        year: selectedYear
+      });
     },
     enabled: !!user && !!selectedHouseholdId
   });
@@ -214,7 +227,12 @@ export default function Dashboard() {
   const totalAssetValue = assets.reduce((sum, a) => sum + (a.current_value || 0), 0);
 
   const handleSaveIncome = (data) => {
-    const dataWithHousehold = { ...data, household_id: selectedHouseholdId };
+    const dataWithHousehold = { 
+      ...data, 
+      household_id: selectedHouseholdId,
+      month: selectedMonth,
+      year: selectedYear
+    };
     if (editItem) {
       updateIncome.mutate({ id: editItem.id, data: dataWithHousehold });
     } else {
@@ -223,7 +241,12 @@ export default function Dashboard() {
   };
 
   const handleSaveExpense = (data) => {
-    const dataWithHousehold = { ...data, household_id: selectedHouseholdId };
+    const dataWithHousehold = { 
+      ...data, 
+      household_id: selectedHouseholdId,
+      month: selectedMonth,
+      year: selectedYear
+    };
     if (editItem) {
       updateExpense.mutate({ id: editItem.id, data: dataWithHousehold });
     } else {
@@ -412,6 +435,63 @@ ${JSON.stringify(financialData, null, 2)}
     updateAlert.mutate({ id, data: { is_read: true } });
   };
 
+  const handleCopyBudgetFromPrevMonth = async () => {
+    try {
+      // Calculate previous month
+      let prevMonth = selectedMonth - 1;
+      let prevYear = selectedYear;
+      if (prevMonth === 0) {
+        prevMonth = 12;
+        prevYear -= 1;
+      }
+
+      // Fetch previous month's budget items
+      const prevIncomes = await base44.entities.Income.filter({
+        household_id: selectedHouseholdId,
+        month: prevMonth,
+        year: prevYear,
+        is_budget: true
+      });
+
+      const prevExpenses = await base44.entities.Expense.filter({
+        household_id: selectedHouseholdId,
+        month: prevMonth,
+        year: prevYear,
+        is_budget: true
+      });
+
+      // Copy to current month
+      const newIncomes = prevIncomes.map(({ id, created_date, updated_date, created_by, ...item }) => ({
+        ...item,
+        month: selectedMonth,
+        year: selectedYear,
+        household_id: selectedHouseholdId
+      }));
+
+      const newExpenses = prevExpenses.map(({ id, created_date, updated_date, created_by, ...item }) => ({
+        ...item,
+        month: selectedMonth,
+        year: selectedYear,
+        household_id: selectedHouseholdId
+      }));
+
+      if (newIncomes.length > 0) {
+        await base44.entities.Income.bulkCreate(newIncomes);
+      }
+      if (newExpenses.length > 0) {
+        await base44.entities.Expense.bulkCreate(newExpenses);
+      }
+
+      queryClient.invalidateQueries(['incomes']);
+      queryClient.invalidateQueries(['expenses']);
+
+      alert(`הועתקו ${newIncomes.length} הכנסות ו-${newExpenses.length} הוצאות מהחודש הקודם`);
+    } catch (error) {
+      console.error('Error copying budget:', error);
+      alert('שגיאה בהעתקת תקציב מחודש קודם');
+    }
+  };
+
   const handleFABAction = (formType) => {
     setEditItem(null);
     switch (formType) {
@@ -572,8 +652,16 @@ ${JSON.stringify(financialData, null, 2)}
           />
         )}
 
-        {/* Mode Toggle */}
-        <div className="flex gap-2 mb-6">
+        {/* Month Year Selector */}
+        <MonthYearSelector
+          month={selectedMonth}
+          year={selectedYear}
+          onMonthChange={setSelectedMonth}
+          onYearChange={setSelectedYear}
+        />
+
+        {/* Mode Toggle & Copy Budget */}
+        <div className="flex gap-2 mb-6 flex-wrap">
           <Button
             variant={mode === "current" ? "default" : "outline"}
             onClick={() => setMode("current")}
@@ -590,6 +678,18 @@ ${JSON.stringify(financialData, null, 2)}
             <TrendingUp className="w-4 h-4 ml-2" />
             בניית תקציב
           </Button>
+          
+          {mode === "budget" && (
+            <Button
+              variant="outline"
+              onClick={handleCopyBudgetFromPrevMonth}
+              className="gap-2"
+              disabled={filteredIncomes.length > 0 || filteredExpenses.length > 0}
+            >
+              <Copy className="w-4 h-4" />
+              העתק תקציב מחודש קודם
+            </Button>
+          )}
         </div>
 
         {/* Summary Cards */}
