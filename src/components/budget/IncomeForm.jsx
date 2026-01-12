@@ -26,9 +26,7 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
     category: '',
     subcategory: '',
     amount: '',
-    description: '',
-    is_current: isCurrentMode,
-    is_budget: !isCurrentMode
+    description: ''
   });
 
   React.useEffect(() => {
@@ -39,12 +37,10 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
         category: '',
         subcategory: '',
         amount: '',
-        description: '',
-        is_current: isCurrentMode,
-        is_budget: !isCurrentMode
+        description: ''
       });
     }
-  }, [editItem, isCurrentMode, open]);
+  }, [editItem, open]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

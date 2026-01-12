@@ -95,9 +95,7 @@ export default function ExpenseForm({ open, onClose, onSave, editItem }) {
     subcategory: '',
     amount: '',
     priority: null,
-    description: '',
-    is_current: isCurrentMode,
-    is_budget: !isCurrentMode
+    description: ''
   });
 
   useEffect(() => {
@@ -109,12 +107,10 @@ export default function ExpenseForm({ open, onClose, onSave, editItem }) {
         subcategory: '',
         amount: '',
         priority: null,
-        description: '',
-        is_current: isCurrentMode,
-        is_budget: !isCurrentMode
+        description: ''
       });
     }
-  }, [editItem, isCurrentMode, open]);
+  }, [editItem, open]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
