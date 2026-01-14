@@ -34,6 +34,7 @@ import FloatingActionButton from "@/components/budget/FloatingActionButton";
 import ExportButton, { convertToCSV, downloadCSV } from "@/components/budget/ExportButton";
 import HouseholdSelector from "@/components/budget/HouseholdSelector";
 import MonthYearSelector from "@/components/budget/MonthYearSelector";
+import BudgetSettingsTab from "@/components/budget/BudgetSettingsTab";
 
 const incomeLabels = { salary: "שכר", allowance: "קצבאות", other: "הכנסות שונות" };
 const expenseLabels = {
@@ -127,6 +128,21 @@ export default function Dashboard() {
     enabled: !!user && !!selectedHouseholdId
   });
 
+  const { data: budgetSettings = [] } = useQuery({
+    queryKey: ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear],
+    queryFn: async () => {
+      if (!user || !selectedHouseholdId) return [];
+      return base44.entities.Expense.filter({ 
+        household_id: selectedHouseholdId,
+        month: selectedMonth,
+        year: selectedYear,
+        is_budget: true,
+        is_current: false
+      });
+    },
+    enabled: !!user && !!selectedHouseholdId
+  });
+
   const { data: debts = [], isLoading: loadingDebts } = useQuery({
     queryKey: ['debts', selectedHouseholdId],
     queryFn: async () => {
@@ -212,9 +228,10 @@ export default function Dashboard() {
     onSuccess: () => queryClient.invalidateQueries(['alerts'])
   });
 
-  // All data is budget data now
+  // Separate actual expenses from budget settings
   const filteredIncomes = incomes;
-  const filteredExpenses = expenses;
+  const actualExpenses = expenses.filter(e => !e.is_budget || e.is_current);
+  const filteredExpenses = actualExpenses;
 
   // Calculations
   const totalIncome = filteredIncomes.reduce((sum, i) => sum + (i.amount || 0), 0);
@@ -326,6 +343,49 @@ export default function Dashboard() {
       updateAsset.mutate({ id: editItem.id, data: dataWithHousehold });
     } else {
       createAsset.mutate(dataWithHousehold);
+    }
+  };
+
+  const handleSaveBudgetSettings = async (budgets) => {
+    try {
+      // Delete existing budget settings for this month
+      const existingBudgets = await base44.entities.Expense.filter({
+        household_id: selectedHouseholdId,
+        month: selectedMonth,
+        year: selectedYear,
+        is_budget: true,
+        is_current: false
+      });
+
+      for (const budget of existingBudgets) {
+        await base44.entities.Expense.delete(budget.id);
+      }
+
+      // Create new budget settings
+      const budgetItems = Object.entries(budgets)
+        .filter(([, amount]) => amount && parseFloat(amount) > 0)
+        .map(([category, amount]) => ({
+          household_id: selectedHouseholdId,
+          month: selectedMonth,
+          year: selectedYear,
+          category,
+          amount: parseFloat(amount),
+          is_budget: true,
+          is_current: false,
+          priority: 3,
+          description: 'תקציב חודשי'
+        }));
+
+      if (budgetItems.length > 0) {
+        await base44.entities.Expense.bulkCreate(budgetItems);
+      }
+
+      queryClient.invalidateQueries(['budgetSettings']);
+      queryClient.invalidateQueries(['expenses']);
+      alert('התקציב נשמר בהצלחה!');
+    } catch (error) {
+      console.error('Error saving budget settings:', error);
+      alert('שגיאה בשמירת התקציב');
     }
   };
 
@@ -716,6 +776,7 @@ ${JSON.stringify(financialData, null, 2)}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-white shadow-sm p-1 rounded-xl">
             <TabsTrigger value="overview" className="rounded-lg">סקירה כללית</TabsTrigger>
+            <TabsTrigger value="budget" className="rounded-lg">הגדרת תקציב</TabsTrigger>
             <TabsTrigger value="income" className="rounded-lg">הכנסות</TabsTrigger>
             <TabsTrigger value="expenses" className="rounded-lg">הוצאות</TabsTrigger>
             <TabsTrigger value="debts" className="rounded-lg">חובות</TabsTrigger>
@@ -734,7 +795,7 @@ ${JSON.stringify(financialData, null, 2)}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <CategoryBreakdown expenses={filteredExpenses} totalBudget={totalExpenses} />
+              <CategoryBreakdown expenses={filteredExpenses} budgets={budgetSettings} />
               
               <Card className="border-0 shadow-lg">
                 <CardHeader>
@@ -756,6 +817,17 @@ ${JSON.stringify(financialData, null, 2)}
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Budget Settings Tab */}
+          <TabsContent value="budget" className="space-y-4">
+            <BudgetSettingsTab
+              householdId={selectedHouseholdId}
+              month={selectedMonth}
+              year={selectedYear}
+              existingBudgets={budgetSettings}
+              onSave={handleSaveBudgetSettings}
+            />
           </TabsContent>
 
           {/* Income Tab */}
