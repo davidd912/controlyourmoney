@@ -120,7 +120,32 @@ export default function Layout({ children, currentPageName }) {
         {children}
       </main>
 
+      {/* Footer */}
+      <footer className="bg-white border-t mt-12">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-gray-500">
+              © {new Date().getFullYear()} ניהול תקציב משפחתי. כל הזכויות שמורות.
+            </p>
+            <div className="flex gap-6">
+              <Link 
+                to={createPageUrl('TermsOfService')} 
+                className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                תנאי שימוש
+              </Link>
+              <Link 
+                to={createPageUrl('PrivacyPolicy')} 
+                className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                מדיניות פרטיות
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
 
-    </div>
+
+      </div>
   );
 }

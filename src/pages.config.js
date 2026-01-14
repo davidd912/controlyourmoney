@@ -2,6 +2,8 @@ import Benefits from './pages/Benefits';
 import Dashboard from './pages/Dashboard';
 import Guide from './pages/Guide';
 import HouseholdSettings from './pages/HouseholdSettings';
+import TermsOfService from './pages/TermsOfService';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import __Layout from './Layout.jsx';
 
 
@@ -10,6 +12,8 @@ export const PAGES = {
     "Dashboard": Dashboard,
     "Guide": Guide,
     "HouseholdSettings": HouseholdSettings,
+    "TermsOfService": TermsOfService,
+    "PrivacyPolicy": PrivacyPolicy,
 }
 
 export const pagesConfig = {
