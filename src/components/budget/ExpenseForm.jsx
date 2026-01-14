@@ -134,12 +134,12 @@ export default function ExpenseForm({ open, onClose, onSave, editItem }) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>קטגוריה</Label>
+            <Label htmlFor="expense-category">קטגוריה</Label>
             <Select
               value={formData.category}
               onValueChange={(value) => setFormData({ ...formData, category: value, subcategory: '' })}
             >
-              <SelectTrigger>
+              <SelectTrigger id="expense-category" aria-label="בחר קטגוריית הוצאה">
                 <SelectValue placeholder="בחר קטגוריה" />
               </SelectTrigger>
               <SelectContent>
@@ -157,12 +157,12 @@ export default function ExpenseForm({ open, onClose, onSave, editItem }) {
 
           {formData.category && (
             <div className="space-y-2">
-              <Label>תת-קטגוריה</Label>
+              <Label htmlFor="expense-subcategory">תת-קטגוריה</Label>
               <Select
                 value={formData.subcategory}
                 onValueChange={(value) => setFormData({ ...formData, subcategory: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="expense-subcategory" aria-label="בחר תת-קטגוריה">
                   <SelectValue placeholder="בחר תת-קטגוריה" />
                 </SelectTrigger>
                 <SelectContent>
@@ -175,14 +175,16 @@ export default function ExpenseForm({ open, onClose, onSave, editItem }) {
           )}
 
           <div className="space-y-2">
-            <Label>סכום חודשי (₪)</Label>
+            <Label htmlFor="expense-amount">סכום חודשי (₪)</Label>
             <Input
+              id="expense-amount"
               type="number"
               value={formData.amount}
               onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
               placeholder="0"
               className="text-left"
               dir="ltr"
+              aria-required="true"
             />
           </div>
 
@@ -209,8 +211,9 @@ export default function ExpenseForm({ open, onClose, onSave, editItem }) {
           </div>
 
           <div className="space-y-2">
-            <Label>תיאור (אופציונלי)</Label>
+            <Label htmlFor="expense-description">תיאור (אופציונלי)</Label>
             <Input
+              id="expense-description"
               value={formData.description || ''}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="הערות נוספות..."

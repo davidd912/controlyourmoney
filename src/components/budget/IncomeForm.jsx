@@ -63,12 +63,12 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>קטגוריה</Label>
+            <Label htmlFor="income-category">קטגוריה</Label>
             <Select
               value={formData.category}
               onValueChange={(value) => setFormData({ ...formData, category: value, subcategory: '' })}
             >
-              <SelectTrigger>
+              <SelectTrigger id="income-category" aria-label="בחר קטגוריית הכנסה">
                 <SelectValue placeholder="בחר קטגוריה" />
               </SelectTrigger>
               <SelectContent>
@@ -81,12 +81,12 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
 
           {formData.category && (
             <div className="space-y-2">
-              <Label>תת-קטגוריה</Label>
+              <Label htmlFor="income-subcategory">תת-קטגוריה</Label>
               <Select
                 value={formData.subcategory}
                 onValueChange={(value) => setFormData({ ...formData, subcategory: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="income-subcategory" aria-label="בחר תת-קטגוריה">
                   <SelectValue placeholder="בחר תת-קטגוריה" />
                 </SelectTrigger>
                 <SelectContent>
@@ -99,20 +99,23 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
           )}
 
           <div className="space-y-2">
-            <Label>סכום חודשי (₪)</Label>
+            <Label htmlFor="income-amount">סכום חודשי (₪)</Label>
             <Input
+              id="income-amount"
               type="number"
               value={formData.amount}
               onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
               placeholder="0"
               className="text-left"
               dir="ltr"
+              aria-required="true"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>תיאור (אופציונלי)</Label>
+            <Label htmlFor="income-description">תיאור (אופציונלי)</Label>
             <Input
+              id="income-description"
               value={formData.description || ''}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="הערות נוספות..."

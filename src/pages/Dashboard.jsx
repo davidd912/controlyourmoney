@@ -729,8 +729,9 @@ ${JSON.stringify(financialData, null, 2)}
               onClick={handleExportAll}
               variant="outline"
               className="gap-2 hidden md:flex"
+              aria-label="ייצא את כל הנתונים לקובץ CSV"
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4" aria-hidden="true" />
               ייצא הכל ל-CSV
             </Button>
           </div>
@@ -806,7 +807,7 @@ ${JSON.stringify(financialData, null, 2)}
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-white shadow-sm p-1 rounded-xl">
+          <TabsList className="bg-white shadow-sm p-1 rounded-xl" role="tablist" aria-label="ניווט בין קטגוריות">
             <TabsTrigger value="overview" className="rounded-lg">סקירה כללית</TabsTrigger>
             <TabsTrigger value="budget" className="rounded-lg">הגדרת תקציב</TabsTrigger>
             <TabsTrigger value="income" className="rounded-lg">הכנסות</TabsTrigger>

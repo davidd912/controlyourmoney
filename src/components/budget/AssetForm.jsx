@@ -65,12 +65,12 @@ export default function AssetForm({ open, onClose, onSave, editItem }) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>סוג הנכס</Label>
+            <Label htmlFor="asset-type">סוג הנכס</Label>
             <Select
               value={formData.asset_type}
               onValueChange={(value) => setFormData({ ...formData, asset_type: value })}
             >
-              <SelectTrigger>
+              <SelectTrigger id="asset-type" aria-label="בחר סוג נכס">
                 <SelectValue placeholder="בחר סוג נכס" />
               </SelectTrigger>
               <SelectContent>
@@ -82,11 +82,13 @@ export default function AssetForm({ open, onClose, onSave, editItem }) {
           </div>
 
           <div className="space-y-2">
-            <Label>שם</Label>
+            <Label htmlFor="asset-name">שם</Label>
             <Input
+              id="asset-name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="לדוגמה: חיסכון בבנק לאומי"
+              aria-required="true"
             />
           </div>
 

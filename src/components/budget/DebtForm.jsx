@@ -91,20 +91,22 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>שם הנושה</Label>
+              <Label htmlFor="creditor-name">שם הנושה</Label>
               <Input
+                id="creditor-name"
                 value={formData.creditor_name}
                 onChange={(e) => setFormData({ ...formData, creditor_name: e.target.value })}
                 placeholder="לדוגמה: בנק הפועלים"
+                aria-required="true"
               />
             </div>
             <div className="space-y-2">
-              <Label>סוג החוב</Label>
+              <Label htmlFor="debt-type">סוג החוב</Label>
               <Select
                 value={formData.debt_type}
                 onValueChange={(value) => setFormData({ ...formData, debt_type: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="debt-type" aria-label="בחר סוג חוב">
                   <SelectValue placeholder="בחר סוג" />
                 </SelectTrigger>
                 <SelectContent>
@@ -118,18 +120,21 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>סכום החוב (₪)</Label>
+              <Label htmlFor="debt-amount">סכום החוב (₪)</Label>
               <Input
+                id="debt-amount"
                 type="number"
                 value={formData.total_amount}
                 onChange={(e) => setFormData({ ...formData, total_amount: e.target.value })}
                 placeholder="0"
                 dir="ltr"
+                aria-required="true"
               />
             </div>
             <div className="space-y-2">
-              <Label>נכון ליום</Label>
+              <Label htmlFor="debt-date">נכון ליום</Label>
               <Input
+                id="debt-date"
                 type="date"
                 value={formData.as_of_date}
                 onChange={(e) => setFormData({ ...formData, as_of_date: e.target.value })}

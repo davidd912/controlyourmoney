@@ -25,12 +25,12 @@ export default function SummaryCard({ title, value, subtitle, icon: Icon, color 
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className={`border-2 ${colorClasses[color]} overflow-hidden`}>
+      <Card className={`border-2 ${colorClasses[color]} overflow-hidden`} role="article" aria-label={title}>
         <CardContent className="p-5">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-gray-500 mb-1" id={`summary-${title}`}>{title}</p>
+              <p className="text-2xl font-bold text-gray-900" aria-labelledby={`summary-${title}`}>
                 ₪{value?.toLocaleString() || 0}
               </p>
               {subtitle && (
@@ -43,7 +43,7 @@ export default function SummaryCard({ title, value, subtitle, icon: Icon, color 
               )}
             </div>
             {Icon && (
-              <div className={`p-3 rounded-xl ${iconBg[color]}`}>
+              <div className={`p-3 rounded-xl ${iconBg[color]}`} aria-hidden="true">
                 <Icon className={`w-6 h-6 ${colorClasses[color].split(' ')[1]}`} />
               </div>
             )}
