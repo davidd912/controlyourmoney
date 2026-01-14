@@ -21,6 +21,7 @@ import {
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import moment from 'moment';
 
 import SummaryCard from "@/components/budget/SummaryCard";
 import CategoryBreakdown from "@/components/budget/CategoryBreakdown";
@@ -237,8 +238,39 @@ export default function Dashboard() {
   const totalIncome = filteredIncomes.reduce((sum, i) => sum + (i.amount || 0), 0);
   const totalExpenses = filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
   const monthlyBalance = totalIncome - totalExpenses;
-  const totalDebts = debts.reduce((sum, d) => sum + (d.remaining_balance || d.total_amount || 0), 0);
-  const arrangedDebts = debts.filter(d => d.is_arranged).reduce((sum, d) => sum + (d.remaining_balance || d.total_amount || 0), 0);
+
+  // Calculate adjusted debts for the selected month/year
+  const currentActualDate = moment();
+  const selectedDate = moment([selectedYear, selectedMonth - 1]);
+
+  const adjustedDebts = debts.map(debt => {
+    if (!debt.is_recurring || !debt.monthly_payment || debt.monthly_payment <= 0) {
+      return { ...debt, adjusted_remaining_balance: debt.remaining_balance || debt.total_amount };
+    }
+
+    let referenceDate;
+    if (debt.last_deduction_month && debt.last_deduction_year) {
+      referenceDate = moment([debt.last_deduction_year, debt.last_deduction_month - 1]);
+    } else {
+      referenceDate = currentActualDate.clone().startOf('month');
+    }
+
+    let calculatedBalance = debt.remaining_balance || debt.total_amount;
+    
+    if (selectedDate.isBefore(referenceDate, 'month')) {
+      const monthsDifference = referenceDate.diff(selectedDate, 'months');
+      calculatedBalance = (debt.remaining_balance || debt.total_amount) + (monthsDifference * debt.monthly_payment);
+    } else if (selectedDate.isAfter(referenceDate, 'month')) {
+      const monthsDifference = selectedDate.diff(referenceDate, 'months');
+      calculatedBalance = (debt.remaining_balance || debt.total_amount) - (monthsDifference * debt.monthly_payment);
+    }
+
+    const adjusted_remaining_balance = Math.max(0, calculatedBalance);
+    return { ...debt, adjusted_remaining_balance };
+  });
+
+  const totalDebts = adjustedDebts.reduce((sum, d) => sum + (d.adjusted_remaining_balance || 0), 0);
+  const arrangedDebts = adjustedDebts.filter(d => d.is_arranged).reduce((sum, d) => sum + (d.adjusted_remaining_balance || 0), 0);
   const unarrangedDebts = totalDebts - arrangedDebts;
   const totalAssetValue = assets.reduce((sum, a) => sum + (a.current_value || 0), 0);
 
@@ -917,7 +949,7 @@ ${JSON.stringify(financialData, null, 2)}
               </div>
             </div>
             <DataTable
-              data={debts}
+              data={adjustedDebts.map(d => ({ ...d, total_amount: d.adjusted_remaining_balance }))}
               columns={debtColumns}
               onEdit={(item) => { setEditItem(item); setDebtFormOpen(true); }}
               onDelete={(item) => deleteDebt.mutate(item.id)}
