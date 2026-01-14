@@ -7,23 +7,22 @@ import { Save } from "lucide-react";
 import { motion } from "framer-motion";
 
 const expenseCategories = {
-  food: { label: "מזון ופארמה", icon: "🍽️" },
-  leisure: { label: "פנאי ובילוי", icon: "🎭" },
-  clothing: { label: "ביגוד והנעלה", icon: "👔" },
+  food: { label: "מזון ופארמה", icon: "🍎" },
+  leisure: { label: "פנאי, בילוי ותחביבים", icon: "🎭" },
+  clothing: { label: "ביגוד והנעלה", icon: "👕" },
   household_items: { label: "תכולת בית", icon: "🛋️" },
-  home_maintenance: { label: "אחזקת בית", icon: "🔧" },
-  grooming: { label: "טיפוח", icon: "💅" },
+  home_maintenance: { label: "אחזקת בית", icon: "🏠" },
+  grooming: { label: "טיפוח", icon: "💇" },
   education: { label: "חינוך", icon: "📚" },
-  events: { label: "אירועים ותרומות", icon: "🎉" },
-  health: { label: "בריאות", icon: "⚕️" },
+  events: { label: "אירועים, תרומות ודת", icon: "🎉" },
+  health: { label: "בריאות", icon: "❤️" },
   transportation: { label: "תחבורה", icon: "🚗" },
   family: { label: "משפחה", icon: "👨‍👩‍👧‍👦" },
   communication: { label: "תקשורת", icon: "📱" },
-  housing: { label: "דיור", icon: "🏠" },
+  housing: { label: "דיור", icon: "🏡" },
   obligations: { label: "התחייבויות", icon: "📋" },
-  assets: { label: "נכסים", icon: "💎" },
-  finance: { label: "פיננסים", icon: "💰" },
-  other: { label: "אחר", icon: "📦" }
+  assets: { label: "נכסים", icon: "💰" },
+  finance: { label: "פיננסים", icon: "🏦" }
 };
 
 export default function BudgetSettingsTab({ 

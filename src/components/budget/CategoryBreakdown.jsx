@@ -18,8 +18,7 @@ const categoryLabels = {
   housing: "דיור",
   obligations: "התחייבויות",
   assets: "נכסים",
-  finance: "פיננסים",
-  other: "אחר"
+  finance: "פיננסים"
 };
 
 const categoryColors = {
