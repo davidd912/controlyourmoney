@@ -248,8 +248,8 @@ export default function Dashboard() {
       household_id: selectedHouseholdId,
       month: selectedMonth,
       year: selectedYear,
-      is_budget: true,
-      is_current: false
+      is_budget: false,
+      is_current: true
     };
     
     if (editItem) {
@@ -291,8 +291,8 @@ export default function Dashboard() {
       household_id: selectedHouseholdId,
       month: selectedMonth,
       year: selectedYear,
-      is_budget: true,
-      is_current: false
+      is_budget: false,
+      is_current: true
     };
     
     if (editItem) {
