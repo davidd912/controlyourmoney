@@ -67,7 +67,7 @@ export default function AlertPanel({ alerts, onDismiss, onMarkRead, onRefresh, i
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Sparkles className="w-6 h-6 text-purple-600" />
-            <div>
+            <div className="text-right">
               <CardTitle className="text-lg">התראות חכמות</CardTitle>
               {unreadCount > 0 && (
                 <p className="text-sm text-gray-500 mt-1">
@@ -134,7 +134,7 @@ export default function AlertPanel({ alerts, onDismiss, onMarkRead, onRefresh, i
                 className="text-center py-8 text-gray-500"
               >
                 <Sparkles className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p>אין התראות חדשות</p>
+                <p className="text-right">אין התראות חדשות</p>
               </motion.div>
             ) : (
               filteredAlerts.map((alert) => {
@@ -151,9 +151,9 @@ export default function AlertPanel({ alerts, onDismiss, onMarkRead, onRefresh, i
                   >
                     <div className="flex items-start gap-3">
                       <Icon className={`w-5 h-5 mt-1 ${config.textColor}`} />
-                      <div className="flex-1">
+                      <div className="flex-1 text-right">
                         <div className="flex items-start justify-between gap-2">
-                          <div>
+                          <div className="text-right">
                             <div className="flex items-center gap-2 mb-1">
                               <h3 className="font-semibold text-gray-900">{alert.title}</h3>
                               {!alert.is_read && (
@@ -195,7 +195,7 @@ export default function AlertPanel({ alerts, onDismiss, onMarkRead, onRefresh, i
                         )}
 
                         {alert.suggestion && (
-                          <div className="mt-3 p-3 bg-white/60 rounded-lg border border-gray-200">
+                          <div className="mt-3 p-3 bg-white/60 rounded-lg border border-gray-200 text-right">
                             <p className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                               <Lightbulb className="w-4 h-4 text-yellow-600" />
                               המלצה:

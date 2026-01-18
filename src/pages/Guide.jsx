@@ -42,7 +42,7 @@ export default function Guide() {
               על האפליקציה
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 text-right">
             <p className="text-gray-700 leading-relaxed">
               אפליקציית ניהול התקציב המשפחתי נועדה לעזור לכם לקבל שליטה מלאה על המצב הכלכלי שלכם. 
               המערכת מאפשרת לכם לעקוב אחר הכנסות והוצאות, לנהל חובות ונכסים, ולקבל התראות חכמות 
@@ -67,7 +67,7 @@ export default function Guide() {
                 <span className="font-semibold">משקי בית - ניהול משותף</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4">
+            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
               <div>
                 <h4 className="font-semibold mb-2 flex items-center gap-2">
                   <Users className="w-4 h-4" />
@@ -121,7 +121,7 @@ export default function Guide() {
                 <span className="font-semibold">ניהול הכנסות</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4">
+            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
               <p className="text-gray-700">
                 עקבו אחר כל מקורות ההכנסה החודשיים שלכם - משכורות, קצבאות, והכנסות נוספות.
               </p>
@@ -164,7 +164,7 @@ export default function Guide() {
                 <span className="font-semibold">ניהול הוצאות</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4">
+            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
               <p className="text-gray-700">
                 תעדו את כל ההוצאות החודשיות שלכם בחלוקה לקטגוריות מפורטות.
               </p>
@@ -224,7 +224,7 @@ export default function Guide() {
                 <span className="font-semibold">ניהול חובות</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4">
+            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
               <p className="text-gray-700">
                 נהלו את כל החובות שלכם במקום אחד - בנקים, כרטיסי אשראי, הלוואות ועוד.
               </p>
@@ -276,7 +276,7 @@ export default function Guide() {
                 <span className="font-semibold">חסכונות ונכסים</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4">
+            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
               <p className="text-gray-700">
                 תעדו את כל הנכסים והחסכונות שלכם כדי לקבל תמונה מלאה על המצב הפיננסי.
               </p>
@@ -320,7 +320,7 @@ export default function Guide() {
                 <span className="font-semibold">התראות חכמות</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4">
+            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
               <p className="text-gray-700">
                 המערכת מנתחת את הנתונים שלכם באופן חכם ומתריעה על בעיות, סיכונים והזדמנויות.
               </p>
@@ -386,7 +386,7 @@ export default function Guide() {
                 <span className="font-semibold">ייצוא נתונים</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4">
+            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
               <p className="text-gray-700">
                 ייצאו את הנתונים שלכם לקובץ CSV (Excel) לצורך גיבוי או עיבוד נוסף.
               </p>
@@ -426,7 +426,7 @@ export default function Guide() {
                 <span className="font-semibold">הטבות וזכויות</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4">
+            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
               <p className="text-gray-700">
                 בדקו אילו הטבות וזכויות סוציאליות מגיעות לכם ממשרדי הממשלה השונים.
               </p>
@@ -459,7 +459,7 @@ export default function Guide() {
               💡 עצות לניהול תקציב מוצלח
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 text-right">
             <div className="flex items-start gap-2">
               <span className="text-lg">1️⃣</span>
               <p className="text-sm text-gray-700">
