@@ -420,7 +420,7 @@ ${JSON.stringify(monthlyData, null, 2)}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-right">
                   קבל המלצות חכמות לשיפור התקציב שלך על סמך ניתוח דפוסי ההוצאה וההכנסה שלך
                 </p>
                 <Button
@@ -443,7 +443,7 @@ ${JSON.stringify(monthlyData, null, 2)}
                               <CardContent className="p-4">
                                 <div className="flex items-start gap-3">
                                   <TrendingUp className="w-5 h-5 text-blue-600 mt-1" />
-                                  <div>
+                                  <div className="text-right">
                                     <p className="font-semibold text-blue-900">
                                       {expenseLabels[pattern.category] || pattern.category}
                                     </p>
@@ -467,7 +467,7 @@ ${JSON.stringify(monthlyData, null, 2)}
                             <Card key={idx} className="bg-green-50 border-green-200">
                               <CardContent className="p-4">
                                 <div className="flex items-start justify-between">
-                                  <div className="flex-1">
+                                  <div className="flex-1 text-right">
                                     <p className="font-semibold text-green-900">
                                       {expenseLabels[opp.category] || opp.category}
                                     </p>
@@ -504,7 +504,7 @@ ${JSON.stringify(monthlyData, null, 2)}
                             <Card key={idx} className="bg-red-50 border-red-200">
                               <CardContent className="p-4">
                                 <div className="flex items-start justify-between">
-                                  <div>
+                                  <div className="text-right">
                                     <p className="font-semibold text-red-900">{risk.area}</p>
                                     <p className="text-sm text-gray-700 mt-1">{risk.description}</p>
                                   </div>
@@ -529,7 +529,7 @@ ${JSON.stringify(monthlyData, null, 2)}
                         <h3 className="text-lg font-bold mb-3">טיפים לאיזון תקציבי</h3>
                         <Card className="bg-purple-50 border-purple-200">
                           <CardContent className="p-4">
-                            <ul className="space-y-2">
+                            <ul className="space-y-2 text-right">
                               {recommendations.budget_balance_tips.map((tip, idx) => (
                                 <li key={idx} className="flex items-start gap-2">
                                   <span className="text-purple-600 font-bold">•</span>
@@ -557,7 +557,7 @@ ${JSON.stringify(monthlyData, null, 2)}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-right">
                   קבל תחזית מבוססת AI להכנסות והוצאות שלך לשנה הקרובה
                 </p>
                 <Button
@@ -577,7 +577,7 @@ ${JSON.stringify(monthlyData, null, 2)}
                           <Card key={idx} className="bg-white">
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between">
-                                <div className="flex-1">
+                                <div className="flex-1 text-right">
                                   <p className="font-semibold text-gray-900">
                                     {month.month}/{month.year}
                                   </p>
@@ -645,7 +645,7 @@ ${JSON.stringify(monthlyData, null, 2)}
                             </div>
                           </div>
                           {forecast.yearly_summary.key_insights && (
-                            <div className="mt-4">
+                            <div className="mt-4 text-right">
                               <h4 className="font-semibold mb-2">תובנות מפתח</h4>
                               <ul className="space-y-2">
                                 {forecast.yearly_summary.key_insights.map((insight, idx) => (
@@ -676,7 +676,7 @@ ${JSON.stringify(monthlyData, null, 2)}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-right">
                   בדוק את ההשפעה של שינויים צפויים על התקציב שלך
                 </p>
 
@@ -811,7 +811,7 @@ ${JSON.stringify(monthlyData, null, 2)}
                           <CardTitle className="text-lg">המלצות</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <ul className="space-y-2">
+                          <ul className="space-y-2 text-right">
                             {whatIfResults.recommendations.map((rec, idx) => (
                               <li key={idx} className="flex items-start gap-2">
                                 <DollarSign className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
@@ -833,7 +833,7 @@ ${JSON.stringify(monthlyData, null, 2)}
                           <div className="space-y-3">
                             {whatIfResults.action_items.map((item, idx) => (
                               <div key={idx} className="flex items-start justify-between p-3 bg-gray-50 rounded-lg">
-                                <div className="flex-1">
+                                <div className="flex-1 text-right">
                                   <p className="font-semibold text-gray-900">{item.action}</p>
                                   <p className="text-sm text-gray-600 mt-1">זמן ביצוע: {item.timeline}</p>
                                 </div>
