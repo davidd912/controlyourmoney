@@ -221,7 +221,8 @@ export default function Benefits() {
             placeholder="חיפוש הטבות..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pr-10 bg-white"
+            className="pr-10 bg-white text-right"
+            dir="rtl"
           />
         </div>
 
@@ -252,7 +253,8 @@ export default function Benefits() {
                           <div key={index} className="overflow-hidden">
                             <button
                               onClick={() => toggleExpand(category.id, index)}
-                              className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                              className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-right"
+                              dir="rtl"
                             >
                               <span className="font-medium text-gray-800">{item.title}</span>
                               <div className="flex items-center gap-2">
@@ -276,11 +278,11 @@ export default function Benefits() {
                                   transition={{ duration: 0.2 }}
                                   className="overflow-hidden"
                                 >
-                                  <ul className="px-4 pb-4 space-y-2">
+                                  <ul className="px-4 pb-4 space-y-2" dir="rtl">
                                     {item.benefits.map((benefit, bIndex) => (
                                       <li
                                         key={bIndex}
-                                        className="flex items-start gap-2 text-sm text-gray-600"
+                                        className="flex items-start gap-2 text-sm text-gray-600 text-right"
                                       >
                                         <span className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
                                           category.color === 'blue' ? 'bg-blue-400' : 'bg-green-400'
