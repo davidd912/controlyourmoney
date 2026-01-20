@@ -489,7 +489,7 @@ ${JSON.stringify(monthlyData, null, 2)}
 
   if (!selectedHouseholdId) {
     return (
-      <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+      <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4" lang="he">
         <Card className="max-w-md w-full">
           <CardHeader>
             <CardTitle className="text-center">נדרש משק בית</CardTitle>
@@ -505,7 +505,7 @@ ${JSON.stringify(monthlyData, null, 2)}
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50" lang="he">
       <div className="max-w-7xl mx-auto p-4 md:p-8">
         {/* Security Banner */}
         <motion.div

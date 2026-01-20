@@ -68,7 +68,7 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
               value={formData.category}
               onValueChange={(value) => setFormData({ ...formData, category: value, subcategory: '' })}
             >
-              <SelectTrigger id="income-category" aria-label="בחר קטגוריית הכנסה">
+              <SelectTrigger id="income-category">
                 <SelectValue placeholder="בחר קטגוריה" />
               </SelectTrigger>
               <SelectContent>
@@ -86,7 +86,7 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
                 value={formData.subcategory}
                 onValueChange={(value) => setFormData({ ...formData, subcategory: value })}
               >
-                <SelectTrigger id="income-subcategory" aria-label="בחר תת-קטגוריה">
+                <SelectTrigger id="income-subcategory">
                   <SelectValue placeholder="בחר תת-קטגוריה" />
                 </SelectTrigger>
                 <SelectContent>

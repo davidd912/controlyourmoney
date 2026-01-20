@@ -199,7 +199,7 @@ export default function Benefits() {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50" lang="he">
       <div className="max-w-4xl mx-auto p-4 md:p-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -216,13 +216,14 @@ export default function Benefits() {
 
         {/* Search */}
         <div className="relative mb-8">
-          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" aria-hidden="true" />
           <Input
             placeholder="חיפוש הטבות..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pr-10 bg-white text-right"
             dir="rtl"
+            aria-label="חיפוש הטבות וזכויות"
           />
         </div>
 
@@ -239,7 +240,7 @@ export default function Benefits() {
                 <Card className="border-0 shadow-lg overflow-hidden">
                   <CardHeader className={`${colorClasses[category.color]} border-b`}>
                     <CardTitle className="flex items-center gap-3">
-                      <Icon className={`w-6 h-6 ${iconColors[category.color]}`} />
+                      <Icon className={`w-6 h-6 ${iconColors[category.color]}`} aria-hidden="true" />
                       <span>{category.category}</span>
                     </CardTitle>
                   </CardHeader>
@@ -255,6 +256,8 @@ export default function Benefits() {
                               onClick={() => toggleExpand(category.id, index)}
                               className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-right"
                               dir="rtl"
+                              aria-expanded={isExpanded}
+                              aria-controls={`benefits-${key}`}
                             >
                               <span className="font-medium text-gray-800">{item.title}</span>
                               <div className="flex items-center gap-2">
@@ -262,9 +265,9 @@ export default function Benefits() {
                                   {item.benefits.length} הטבות
                                 </Badge>
                                 {isExpanded ? (
-                                  <ChevronUp className="w-5 h-5 text-gray-400" />
+                                  <ChevronUp className="w-5 h-5 text-gray-400" aria-hidden="true" />
                                 ) : (
-                                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                                  <ChevronDown className="w-5 h-5 text-gray-400" aria-hidden="true" />
                                 )}
                               </div>
                             </button>
@@ -277,6 +280,7 @@ export default function Benefits() {
                                   exit={{ height: 0, opacity: 0 }}
                                   transition={{ duration: 0.2 }}
                                   className="overflow-hidden"
+                                  id={`benefits-${key}`}
                                 >
                                   <ul className="px-4 pb-4 space-y-2" dir="rtl">
                                     {item.benefits.map((benefit, bIndex) => (
@@ -306,8 +310,8 @@ export default function Benefits() {
         </div>
 
         {filteredData.length === 0 && (
-          <div className="text-center py-12">
-            <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <div className="text-center py-12" role="status">
+            <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" aria-hidden="true" />
             <p className="text-gray-500">לא נמצאו תוצאות</p>
           </div>
         )}

@@ -70,7 +70,7 @@ export default function AssetForm({ open, onClose, onSave, editItem }) {
               value={formData.asset_type}
               onValueChange={(value) => setFormData({ ...formData, asset_type: value })}
             >
-              <SelectTrigger id="asset-type" aria-label="בחר סוג נכס">
+              <SelectTrigger id="asset-type">
                 <SelectValue placeholder="בחר סוג נכס" />
               </SelectTrigger>
               <SelectContent>

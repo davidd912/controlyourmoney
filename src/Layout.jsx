@@ -27,9 +27,17 @@ export default function Layout({ children, currentPageName }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-50">
+    <div dir="rtl" className="min-h-screen bg-gray-50" lang="he">
+      {/* Skip to main content link for keyboard users */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:right-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg"
+      >
+        דלג לתוכן הראשי
+      </a>
+
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
+      <header className="bg-white shadow-sm sticky top-0 z-50" role="banner">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -52,7 +60,7 @@ export default function Layout({ children, currentPageName }) {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden md:flex items-center gap-1" role="navigation" aria-label="תפריט ראשי">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPageName === item.page;
@@ -67,8 +75,9 @@ export default function Layout({ children, currentPageName }) {
                         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                       }
                     `}
+                    aria-current={isActive ? 'page' : undefined}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-4 h-4" aria-hidden="true" />
                     {item.name}
                   </Link>
                 );
@@ -98,7 +107,7 @@ export default function Layout({ children, currentPageName }) {
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden border-t bg-white"
             >
-              <nav className="px-4 py-3 space-y-1">
+              <nav className="px-4 py-3 space-y-1" role="navigation" aria-label="תפריט ניווט נייד">
                 {navigation.map((item) => {
                   const Icon = item.icon;
                   const isActive = currentPageName === item.page;
@@ -114,8 +123,9 @@ export default function Layout({ children, currentPageName }) {
                           : 'text-gray-600 hover:bg-gray-100'
                         }
                       `}
+                      aria-current={isActive ? 'page' : undefined}
                     >
-                      <Icon className="w-5 h-5" />
+                      <Icon className="w-5 h-5" aria-hidden="true" />
                       {item.name}
                     </Link>
                   );
@@ -127,12 +137,12 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Main Content */}
-      <main role="main" aria-label="תוכן ראשי">
+      <main id="main-content" role="main" aria-label="תוכן ראשי">
         {children}
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t mt-12">
+      <footer className="bg-white border-t mt-12" role="contentinfo">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-col items-center md:items-start gap-2">

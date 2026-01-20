@@ -139,7 +139,7 @@ export default function ExpenseForm({ open, onClose, onSave, editItem }) {
               value={formData.category}
               onValueChange={(value) => setFormData({ ...formData, category: value, subcategory: '' })}
             >
-              <SelectTrigger id="expense-category" aria-label="בחר קטגוריית הוצאה">
+              <SelectTrigger id="expense-category">
                 <SelectValue placeholder="בחר קטגוריה" />
               </SelectTrigger>
               <SelectContent>
@@ -162,7 +162,7 @@ export default function ExpenseForm({ open, onClose, onSave, editItem }) {
                 value={formData.subcategory}
                 onValueChange={(value) => setFormData({ ...formData, subcategory: value })}
               >
-                <SelectTrigger id="expense-subcategory" aria-label="בחר תת-קטגוריה">
+                <SelectTrigger id="expense-subcategory">
                   <SelectValue placeholder="בחר תת-קטגוריה" />
                 </SelectTrigger>
                 <SelectContent>

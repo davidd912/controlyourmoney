@@ -106,7 +106,7 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
                 value={formData.debt_type}
                 onValueChange={(value) => setFormData({ ...formData, debt_type: value })}
               >
-                <SelectTrigger id="debt-type" aria-label="בחר סוג חוב">
+                <SelectTrigger id="debt-type">
                   <SelectValue placeholder="בחר סוג" />
                 </SelectTrigger>
                 <SelectContent>
