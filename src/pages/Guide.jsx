@@ -312,6 +312,87 @@ export default function Guide() {
             </AccordionContent>
           </AccordionItem>
 
+          {/* תכנון AI */}
+          <AccordionItem value="ai-planning" className="bg-white rounded-lg border shadow-sm">
+            <AccordionTrigger className="px-6 hover:no-underline">
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 text-purple-600">✨</div>
+                <span className="font-semibold">תכנון AI חכם</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
+              <p className="text-gray-700">
+                כלי התכנון החכם משתמש בבינה מלאכותית כדי לספק לכם המלצות פיננסיות מותאמות אישית, 
+                תחזיות עתידיות וניתוח תרחישים.
+              </p>
+
+              <div>
+                <h4 className="font-semibold mb-2">3 כלים עוצמתיים:</h4>
+                <div className="space-y-3">
+                  <div className="p-3 bg-purple-50 rounded-lg">
+                    <p className="font-semibold text-sm mb-1">💡 המלצות פיננסיות</p>
+                    <p className="text-xs text-gray-600">המערכת מנתחת את התקציב שלכם ומציעה המלצות קונקרטיות לשיפור</p>
+                  </div>
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <p className="font-semibold text-sm mb-1">📈 תחזית פיננסית</p>
+                    <p className="text-xs text-gray-600">תחזית חכמה להכנסות והוצאות ל-12 החודשים הקרובים</p>
+                  </div>
+                  <div className="p-3 bg-green-50 rounded-lg">
+                    <p className="font-semibold text-sm mb-1">🔮 ניתוח תרחישים</p>
+                    <p className="text-xs text-gray-600">בדקו מראש מה יקרה אם תשנו הכנסות או הוצאות</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-2">איך להשתמש בהמלצות פיננסיות?</h4>
+                <ol className="list-decimal list-inside space-y-2 text-gray-700 mr-4">
+                  <li>עברו לעמוד "תכנון AI" דרך התפריט</li>
+                  <li>וודאו שיש לכם נתונים עדכניים של הכנסות והוצאות</li>
+                  <li>לחצו על "צור המלצות חכמות"</li>
+                  <li>המערכת תנתח את המצב ותציע המלצות מותאמות אישית</li>
+                  <li>כל המלצה כוללת הסבר ופעולות מומלצות</li>
+                </ol>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-2">איך להשתמש בתחזית פיננסית?</h4>
+                <ol className="list-decimal list-inside space-y-2 text-gray-700 mr-4">
+                  <li>בעמוד "תכנון AI", עברו ללשונית "תחזית עתידית"</li>
+                  <li>לחצו על "צור תחזית"</li>
+                  <li>המערכת תנתח את ההכנסות וההוצאות ההיסטוריות שלכם</li>
+                  <li>תקבלו תחזית חודשית ל-12 חודשים קדימה</li>
+                  <li>התחזית כוללת הכנסות צפויות, הוצאות צפויות ויתרה חודשית</li>
+                </ol>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-2">איך להשתמש בניתוח תרחישים?</h4>
+                <ol className="list-decimal list-inside space-y-2 text-gray-700 mr-4">
+                  <li>בעמוד "תכנון AI", עברו ללשונית "ניתוח תרחישים"</li>
+                  <li>הזינו שינוי צפוי (למשל: "העלאת שכר של 2000 ש״ח")</li>
+                  <li>לחצו על "נתח תרחיש"</li>
+                  <li>המערכת תראה לכם את ההשפעה על התקציב החודשי והשנתי</li>
+                  <li>השתמשו בכך לקבלת החלטות מושכלות לפני שינויים גדולים</li>
+                </ol>
+              </div>
+
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <p className="text-sm text-purple-800">
+                  <strong>💡 טיפ:</strong> ככל שיש יותר נתונים היסטוריים במערכת (לפחות 2-3 חודשים), 
+                  כך התחזיות וההמלצות יהיו מדויקות ורלוונטיות יותר. עדכנו באופן קבוע!
+                </p>
+              </div>
+
+              <div className="bg-yellow-50 p-4 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>⚠️ חשוב לזכור:</strong> המלצות ה-AI הן כלי עזר בלבד. השתמשו בשיקול דעת אישי 
+                  ובהתייעצות עם יועץ פיננסי מוסמך לפני קבלת החלטות פיננסיות משמעותיות.
+                </p>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
           {/* התראות חכמות */}
           <AccordionItem value="alerts" className="bg-white rounded-lg border shadow-sm">
             <AccordionTrigger className="px-6 hover:no-underline">
