@@ -135,9 +135,14 @@ export default function Layout({ children, currentPageName }) {
       <footer className="bg-white border-t mt-12">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-500">
-              © {new Date().getFullYear()} ניהול תקציב משפחתי. כל הזכויות שמורות.
-            </p>
+            <div className="flex flex-col items-center md:items-start gap-2">
+              <p className="text-sm text-gray-500">
+                © {new Date().getFullYear()} ניהול תקציב משפחתי. כל הזכויות שמורות.
+              </p>
+              <p className="text-xs text-gray-400 flex items-center gap-1">
+                🔒 הנתונים שלך מאובטחים ומוצפנים בטכנולוגיית SSL/TLS מתקדמת
+              </p>
+            </div>
             <div className="flex gap-6">
               <Link 
                 to={createPageUrl('TermsOfService')} 
