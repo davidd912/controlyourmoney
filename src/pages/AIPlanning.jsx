@@ -17,10 +17,15 @@ import {
   AlertTriangle,
   Sparkles,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Target,
+  Plus
 } from "lucide-react";
 import { motion } from "framer-motion";
 import moment from 'moment';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import GoalForm from "@/components/planning/GoalForm";
+import GoalCard from "@/components/planning/GoalCard";
 
 const expenseLabels = {
   food: "מזון ופארמה", leisure: "פנאי ובילוי", clothing: "ביגוד והנעלה",
@@ -28,6 +33,22 @@ const expenseLabels = {
   education: "חינוך", events: "אירועים ותרומות", health: "בריאות",
   transportation: "תחבורה", family: "משפחה", communication: "תקשורת",
   housing: "דיור", obligations: "התחייבויות", assets: "נכסים", finance: "פיננסים", other: "אחר"
+};
+
+const COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#14b8a6', '#f97316'];
+
+const translateCategory = (category) => {
+  return expenseLabels[category] || category;
+};
+
+const translateSeverity = (severity) => {
+  const translations = {
+    'high': 'גבוה',
+    'medium': 'בינוני',
+    'low': 'נמוך',
+    'critical': 'קריטי'
+  };
+  return translations[severity?.toLowerCase()] || severity;
 };
 
 export default function AIPlanning() {
@@ -41,6 +62,10 @@ export default function AIPlanning() {
   const [incomeChange, setIncomeChange] = useState('');
   const [expenseChange, setExpenseChange] = useState('');
   const [changeCategory, setChangeCategory] = useState('');
+
+  // Goals state
+  const [goalFormOpen, setGoalFormOpen] = useState(false);
+  const [editGoal, setEditGoal] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['user'],
@@ -76,6 +101,15 @@ export default function AIPlanning() {
     queryFn: async () => {
       if (!selectedHouseholdId) return [];
       return base44.entities.Expense.filter({ household_id: selectedHouseholdId }, '-created_date', 500);
+    },
+    enabled: !!selectedHouseholdId
+  });
+
+  const { data: goals = [] } = useQuery({
+    queryKey: ['goals', selectedHouseholdId],
+    queryFn: async () => {
+      if (!selectedHouseholdId) return [];
+      return base44.entities.Goal.filter({ household_id: selectedHouseholdId }, '-created_date', 100);
     },
     enabled: !!selectedHouseholdId
   });
@@ -408,6 +442,10 @@ ${JSON.stringify(monthlyData, null, 2)}
               <Calculator className="w-4 h-4 ml-2" />
               תרחישי "מה אם"
             </TabsTrigger>
+            <TabsTrigger value="goals" className="rounded-lg">
+              <Target className="w-4 h-4 ml-2" />
+              מטרות פיננסיות
+            </TabsTrigger>
           </TabsList>
 
           {/* Recommendations Tab */}
@@ -443,9 +481,9 @@ ${JSON.stringify(monthlyData, null, 2)}
                               <CardContent className="p-4">
                                 <div className="flex items-start gap-3">
                                   <TrendingUp className="w-5 h-5 text-blue-600 mt-1" />
-                                  <div className="text-right">
+                                  <div className="text-right flex-1">
                                     <p className="font-semibold text-blue-900">
-                                      {expenseLabels[pattern.category] || pattern.category}
+                                      {translateCategory(pattern.category)}
                                     </p>
                                     <p className="text-sm text-blue-700">{pattern.trend}</p>
                                     <p className="text-sm text-gray-700 mt-1">{pattern.description}</p>
@@ -466,13 +504,13 @@ ${JSON.stringify(monthlyData, null, 2)}
                           {recommendations.savings_opportunities.map((opp, idx) => (
                             <Card key={idx} className="bg-green-50 border-green-200">
                               <CardContent className="p-4">
-                                <div className="flex items-start justify-between">
+                                <div className="flex items-start justify-between gap-3">
                                   <div className="flex-1 text-right">
                                     <p className="font-semibold text-green-900">
-                                      {expenseLabels[opp.category] || opp.category}
+                                      {translateCategory(opp.category)}
                                     </p>
                                     <p className="text-sm text-gray-700 mt-1">{opp.explanation}</p>
-                                    <div className="flex gap-4 mt-2 text-sm">
+                                    <div className="flex gap-4 mt-2 text-sm flex-wrap">
                                       <span className="text-gray-600">
                                         ממוצע נוכחי: ₪{opp.current_avg?.toLocaleString()}
                                       </span>
@@ -481,7 +519,7 @@ ${JSON.stringify(monthlyData, null, 2)}
                                       </span>
                                     </div>
                                   </div>
-                                  <Badge className="bg-green-600 text-white">
+                                  <Badge className="bg-green-600 text-white shrink-0">
                                     חסכון: ₪{opp.potential_savings?.toLocaleString()}
                                   </Badge>
                                 </div>
@@ -503,8 +541,8 @@ ${JSON.stringify(monthlyData, null, 2)}
                           {recommendations.risk_areas.map((risk, idx) => (
                             <Card key={idx} className="bg-red-50 border-red-200">
                               <CardContent className="p-4">
-                                <div className="flex items-start justify-between">
-                                  <div className="text-right">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="text-right flex-1">
                                     <p className="font-semibold text-red-900">{risk.area}</p>
                                     <p className="text-sm text-gray-700 mt-1">{risk.description}</p>
                                   </div>
@@ -512,8 +550,8 @@ ${JSON.stringify(monthlyData, null, 2)}
                                     risk.severity === 'high' || risk.severity === 'גבוה' 
                                       ? 'bg-red-600 text-white' 
                                       : 'bg-yellow-600 text-white'
-                                  }>
-                                    {risk.severity}
+                                  } dir="rtl">
+                                    {translateSeverity(risk.severity)}
                                   </Badge>
                                 </div>
                               </CardContent>
@@ -541,13 +579,46 @@ ${JSON.stringify(monthlyData, null, 2)}
                         </Card>
                       </div>
                     )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
 
-          {/* Forecast Tab */}
+                    {/* Expense by Category Chart */}
+                    {recommendations.savings_opportunities && recommendations.savings_opportunities.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-bold mb-3">התפלגות הוצאות לפי קטגוריה</h3>
+                        <Card>
+                          <CardContent className="p-6">
+                            <ResponsiveContainer width="100%" height={300}>
+                              <PieChart>
+                                <Pie
+                                  data={recommendations.savings_opportunities.map(opp => ({
+                                    name: translateCategory(opp.category),
+                                    value: opp.current_avg
+                                  }))}
+                                  cx="50%"
+                                  cy="50%"
+                                  labelLine={false}
+                                  label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                  outerRadius={100}
+                                  fill="#8884d8"
+                                  dataKey="value"
+                                >
+                                  {recommendations.savings_opportunities.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                  ))}
+                                </Pie>
+                                <Tooltip formatter={(value) => `₪${value.toLocaleString()}`} />
+                              </PieChart>
+                            </ResponsiveContainer>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    )}
+                    </div>
+                    )}
+                    </CardContent>
+                    </Card>
+                    </TabsContent>
+
+                    {/* Forecast Tab */}
           <TabsContent value="forecast" className="space-y-6">
             <Card>
               <CardHeader>
@@ -660,13 +731,63 @@ ${JSON.stringify(monthlyData, null, 2)}
                         </CardContent>
                       </Card>
                     )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
 
-          {/* What-If Tab */}
+                    {/* Forecast Line Chart */}
+                    <div>
+                      <h3 className="text-lg font-bold mb-3">גרף תחזית - הכנסות מול הוצאות</h3>
+                      <Card>
+                        <CardContent className="p-6">
+                          <ResponsiveContainer width="100%" height={300}>
+                            <LineChart data={forecast.monthly_forecast}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis 
+                                dataKey="month" 
+                                tickFormatter={(value, index) => `${value}/${forecast.monthly_forecast[index]?.year}`}
+                              />
+                              <YAxis tickFormatter={(value) => `₪${(value / 1000).toFixed(0)}K`} />
+                              <Tooltip 
+                                formatter={(value) => `₪${value.toLocaleString()}`}
+                                labelFormatter={(label, payload) => {
+                                  if (payload && payload[0]) {
+                                    return `${payload[0].payload.month}/${payload[0].payload.year}`;
+                                  }
+                                  return label;
+                                }}
+                              />
+                              <Legend />
+                              <Line 
+                                type="monotone" 
+                                dataKey="predicted_income" 
+                                stroke="#10b981" 
+                                strokeWidth={2}
+                                name="הכנסות צפויות"
+                              />
+                              <Line 
+                                type="monotone" 
+                                dataKey="predicted_expenses" 
+                                stroke="#f59e0b" 
+                                strokeWidth={2}
+                                name="הוצאות צפויות"
+                              />
+                              <Line 
+                                type="monotone" 
+                                dataKey="predicted_balance" 
+                                stroke="#3b82f6" 
+                                strokeWidth={2}
+                                name="יתרה צפויה"
+                              />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    </div>
+                    )}
+                    </CardContent>
+                    </Card>
+                    </TabsContent>
+
+                    {/* What-If Tab */}
           <TabsContent value="whatif" className="space-y-6">
             <Card>
               <CardHeader>
@@ -857,7 +978,63 @@ ${JSON.stringify(monthlyData, null, 2)}
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Goals Tab */}
+          <TabsContent value="goals" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="w-5 h-5 text-purple-600" />
+                    המטרות הפיננסיות שלי
+                  </CardTitle>
+                  <Button
+                    onClick={() => { setEditGoal(null); setGoalFormOpen(true); }}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    <Plus className="w-4 h-4 ml-2" />
+                    הוסף מטרה
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {goals.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 mb-4">טרם הגדרת מטרות פיננסיות</p>
+                    <Button
+                      onClick={() => setGoalFormOpen(true)}
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      <Plus className="w-4 h-4 ml-2" />
+                      הוסף מטרה ראשונה
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid gap-6 md:grid-cols-2">
+                    {goals.map((goal) => (
+                      <GoalCard
+                        key={goal.id}
+                        goal={goal}
+                        onEdit={(g) => { setEditGoal(g); setGoalFormOpen(true); }}
+                        onDelete={(id) => deleteGoal.mutate(id)}
+                        onGetRecommendations={getGoalRecommendations}
+                        isGenerating={isGenerating}
+                      />
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
+
+        <GoalForm
+          open={goalFormOpen}
+          onClose={() => { setGoalFormOpen(false); setEditGoal(null); }}
+          onSave={handleSaveGoal}
+          editItem={editGoal}
+        />
       </div>
     </div>
   );
