@@ -65,6 +65,7 @@ export default function HouseholdSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries(['households']);
       setInviteEmail('');
+      alert('ההזמנה נשלחה בהצלחה! נא לבקש מהמוזמן לבדוק גם בתיקיית הספאם/דואר זבל.');
     }
   });
 

@@ -42,6 +42,16 @@ export default function Layout({ children, currentPageName }) {
               </span>
             </Link>
 
+            {/* Home button for mobile - centered */}
+            <Link 
+              to={createPageUrl('Dashboard')} 
+              className="md:hidden absolute left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all"
+              aria-label="דף הבית"
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              <span>בית</span>
+            </Link>
+
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-1">
               {navigation.map((item) => {
