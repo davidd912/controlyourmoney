@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -113,6 +113,106 @@ export default function AIPlanning() {
     },
     enabled: !!selectedHouseholdId
   });
+
+  const queryClient = useQueryClient();
+
+  // Goal mutations
+  const createGoal = useMutation({
+    mutationFn: (data) => base44.entities.Goal.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['goals']);
+      setGoalFormOpen(false);
+      setEditGoal(null);
+    }
+  });
+
+  const updateGoal = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Goal.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['goals']);
+      setGoalFormOpen(false);
+      setEditGoal(null);
+    }
+  });
+
+  const deleteGoal = useMutation({
+    mutationFn: (id) => base44.entities.Goal.delete(id),
+    onSuccess: () => queryClient.invalidateQueries(['goals'])
+  });
+
+  const handleSaveGoal = (data) => {
+    const goalData = { ...data, household_id: selectedHouseholdId };
+    if (editGoal) {
+      updateGoal.mutate({ id: editGoal.id, data: goalData });
+    } else {
+      createGoal.mutate(goalData);
+    }
+  };
+
+  const getGoalRecommendations = async (goal) => {
+    if (isGenerating) return;
+    
+    setIsGenerating(true);
+    try {
+      const remaining = goal.target_amount - goal.current_amount;
+      const daysUntilTarget = goal.target_date 
+        ? moment(goal.target_date).diff(moment(), 'days')
+        : null;
+
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+      
+      const currentMonthIncomes = allIncomes.filter(i => i.month === currentMonth && i.year === currentYear);
+      const currentMonthExpenses = allExpenses.filter(e => e.month === currentMonth && e.year === currentYear);
+      
+      const totalIncome = currentMonthIncomes.reduce((sum, i) => sum + (i.amount || 0), 0);
+      const totalExpenses = currentMonthExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+      const monthlyBalance = totalIncome - totalExpenses;
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `אתה יועץ פיננסי מומחה. עזור למשתמש להשיג את המטרה הפיננסית שלו.
+
+מידע על המטרה:
+- שם: ${goal.title}
+- סכום יעד: ₪${goal.target_amount.toLocaleString()}
+- סכום נוכחי: ₪${goal.current_amount.toLocaleString()}
+- נותר לחסוך: ₪${remaining.toLocaleString()}
+- תאריך יעד: ${goal.target_date || 'לא הוגדר'}
+- ימים עד היעד: ${daysUntilTarget || 'לא רלוונטי'}
+- תרומה חודשית מתוכננת: ${goal.monthly_contribution ? `₪${goal.monthly_contribution.toLocaleString()}` : 'לא הוגדרה'}
+
+מצב פיננסי נוכחי:
+- הכנסות חודשיות: ₪${totalIncome.toLocaleString()}
+- הוצאות חודשיות: ₪${totalExpenses.toLocaleString()}
+- יתרה חודשית: ₪${monthlyBalance.toLocaleString()}
+
+ספק המלצות מפורטות ומעשיות:
+1. כמה צריך לחסוך כל חודש כדי להשיג את המטרה בזמן?
+2. אילו הוצאות אפשר לצמצם כדי לפנות תקציב למטרה?
+3. האם יש דרכים להגדיל הכנסות?
+4. האם התאריך היעד ריאלי? אם לא, מה מומלץ?
+5. טיפים ספציפיים להשגת המטרה
+
+תן תשובה מפורטת ומעשית בעברית, עד 500 מילים.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            recommendations: { type: "string" }
+          }
+        }
+      });
+
+      await updateGoal.mutateAsync({
+        id: goal.id,
+        data: { ...goal, ai_recommendations: result.recommendations }
+      });
+    } catch (error) {
+      console.error('Error generating goal recommendations:', error);
+      alert('שגיאה ביצירת המלצות למטרה');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const generateRecommendations = async () => {
     if (!selectedHouseholdId || isGenerating) return;
