@@ -70,6 +70,7 @@ export default function Dashboard() {
   const [assetFormOpen, setAssetFormOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [isGeneratingAlerts, setIsGeneratingAlerts] = useState(false);
+  const [fabMenuOpen, setFabMenuOpen] = useState(false);
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -100,6 +101,13 @@ export default function Dashboard() {
       setSelectedHouseholdId(households[0].id);
     }
   }, [user, households, selectedHouseholdId]);
+
+  // Listen for FAB menu open event
+  React.useEffect(() => {
+    const handleFABMenu = () => setFabMenuOpen(true);
+    window.addEventListener('openFABMenu', handleFABMenu);
+    return () => window.removeEventListener('openFABMenu', handleFABMenu);
+  }, []);
 
 
 
@@ -1120,10 +1128,78 @@ ${JSON.stringify(financialData, null, 2)}
           onClose={() => { setAssetFormOpen(false); setEditItem(null); }}
           onSave={handleSaveAsset}
           editItem={editItem}
-        />
+          />
 
+          {/* FAB Quick Actions Menu */}
+          {fabMenuOpen && (
+          <div 
+            className="md:hidden fixed inset-0 bg-black/50 z-40 flex items-end justify-center pb-32"
+            onClick={() => setFabMenuOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              className="bg-white rounded-t-3xl p-6 w-full max-w-md shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6" />
+              <h3 className="text-xl font-bold text-center mb-6">הוסף פריט חדש</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  onClick={() => {
+                    setEditItem(null);
+                    setIncomeFormOpen(true);
+                    setFabMenuOpen(false);
+                  }}
+                  className="flex flex-col items-center gap-3 h-24 bg-green-50 text-green-700 hover:bg-green-100 border-2 border-green-200"
+                  variant="outline"
+                >
+                  <TrendingUp className="w-8 h-8" />
+                  <span className="font-semibold">הכנסה</span>
+                </Button>
+                <Button
+                  onClick={() => {
+                    setEditItem(null);
+                    setExpenseFormOpen(true);
+                    setFabMenuOpen(false);
+                  }}
+                  className="flex flex-col items-center gap-3 h-24 bg-orange-50 text-orange-700 hover:bg-orange-100 border-2 border-orange-200"
+                  variant="outline"
+                >
+                  <TrendingDown className="w-8 h-8" />
+                  <span className="font-semibold">הוצאה</span>
+                </Button>
+                <Button
+                  onClick={() => {
+                    setEditItem(null);
+                    setDebtFormOpen(true);
+                    setFabMenuOpen(false);
+                  }}
+                  className="flex flex-col items-center gap-3 h-24 bg-red-50 text-red-700 hover:bg-red-100 border-2 border-red-200"
+                  variant="outline"
+                >
+                  <CreditCard className="w-8 h-8" />
+                  <span className="font-semibold">חוב</span>
+                </Button>
+                <Button
+                  onClick={() => {
+                    setEditItem(null);
+                    setAssetFormOpen(true);
+                    setFabMenuOpen(false);
+                  }}
+                  className="flex flex-col items-center gap-3 h-24 bg-purple-50 text-purple-700 hover:bg-purple-100 border-2 border-purple-200"
+                  variant="outline"
+                >
+                  <PiggyBank className="w-8 h-8" />
+                  <span className="font-semibold">נכס</span>
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+          )}
 
-      </div>
+          </div>
     </div>
   );
 }
