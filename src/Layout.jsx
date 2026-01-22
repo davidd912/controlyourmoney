@@ -11,7 +11,8 @@ import {
   Wallet,
   Users,
   BookOpen,
-  Sparkles
+  Sparkles,
+  Plus
 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
@@ -32,6 +33,10 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
+
+  // Split navigation for bottom nav (2 items on each side of FAB)
+  const leftNavItems = navigation.slice(0, 2);
+  const rightNavItems = navigation.slice(2, 4);
 
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50" lang="he">
@@ -157,7 +162,7 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Main Content */}
-      <main id="main-content" role="main" aria-label="תוכן ראשי" className="pb-[88px] md:pb-0">
+      <main id="main-content" role="main" aria-label="תוכן ראשי" className="pb-[100px] md:pb-0">
         {children}
       </main>
 
@@ -191,15 +196,16 @@ export default function Layout({ children, currentPageName }) {
         </div>
       </footer>
 
-      {/* Bottom Navigation for Mobile */}
+      {/* Bottom Navigation for Mobile with FAB */}
       <nav 
         className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t shadow-lg" 
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         role="navigation" 
         aria-label="תפריט ניווט תחתון"
       >
-        <div className="flex justify-around h-[72px] items-center">
-          {navigation.map((item) => {
+        <div className="relative flex justify-around h-[72px] items-center">
+          {/* Right Side Items (2 items) */}
+          {leftNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPageName === item.page;
             return (
@@ -213,7 +219,7 @@ export default function Layout({ children, currentPageName }) {
                 <Link
                   to={createPageUrl(item.page)}
                   className={`
-                    flex flex-col items-center justify-center p-2 text-[11px] font-medium transition-colors leading-tight
+                    flex flex-col items-center justify-center p-2 text-[10px] font-medium transition-colors leading-tight
                     ${isActive 
                       ? 'text-blue-600' 
                       : 'text-gray-500 hover:text-blue-500'
@@ -221,8 +227,56 @@ export default function Layout({ children, currentPageName }) {
                   `}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <Icon className="w-6 h-6 mb-1" aria-hidden="true" />
-                  <span className="max-w-[60px] truncate">{item.name}</span>
+                  <Icon className="w-5 h-5 mb-0.5" aria-hidden="true" />
+                  <span className="line-clamp-2 max-w-[70px] text-center">{item.name}</span>
+                </Link>
+              </motion.div>
+            );
+          })}
+
+          {/* FAB Button in Center */}
+          <div className="flex-1 flex items-center justify-center">
+            <motion.div
+              whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+              whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
+              className="absolute -top-6"
+            >
+              <Link
+                to={createPageUrl('Dashboard')}
+                className="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg ring-4 ring-white hover:shadow-xl transition-shadow"
+                aria-label="הוסף"
+              >
+                <Plus className="w-7 h-7" aria-hidden="true" />
+              </Link>
+            </motion.div>
+          </div>
+
+          {/* Left Side Items (2 items) */}
+          {rightNavItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentPageName === item.page;
+            return (
+              <motion.div
+                key={item.page}
+                whileHover={prefersReducedMotion ? {} : { y: -2 }}
+                whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+                transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
+                className="flex-1 text-center"
+              >
+                <Link
+                  to={createPageUrl(item.page)}
+                  className={`
+                    flex flex-col items-center justify-center p-2 text-[10px] font-medium transition-colors leading-tight
+                    ${isActive 
+                      ? 'text-blue-600' 
+                      : 'text-gray-500 hover:text-blue-500'
+                    }
+                  `}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  <Icon className="w-5 h-5 mb-0.5" aria-hidden="true" />
+                  <span className="line-clamp-2 max-w-[70px] text-center">{item.name}</span>
                 </Link>
               </motion.div>
             );
