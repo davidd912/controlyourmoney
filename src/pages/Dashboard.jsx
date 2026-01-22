@@ -807,14 +807,126 @@ ${JSON.stringify(financialData, null, 2)}
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-white shadow-sm p-1 rounded-xl" role="tablist" aria-label="ניווט בין קטגוריות">
-            <TabsTrigger value="overview" className="rounded-lg">סקירה כללית</TabsTrigger>
-            <TabsTrigger value="budget" className="rounded-lg">הגדרת תקציב</TabsTrigger>
-            <TabsTrigger value="income" className="rounded-lg">הכנסות</TabsTrigger>
-            <TabsTrigger value="expenses" className="rounded-lg">הוצאות</TabsTrigger>
-            <TabsTrigger value="debts" className="rounded-lg">חובות</TabsTrigger>
-            <TabsTrigger value="assets" className="rounded-lg">חסכונות ונכסים</TabsTrigger>
-          </TabsList>
+          <div className="bg-white shadow-sm p-1.5 rounded-xl overflow-x-auto">
+            <TabsList className="inline-flex min-w-full sm:min-w-0 gap-1 bg-transparent p-0" role="tablist" aria-label="ניווט בין קטגוריות">
+              <TabsTrigger 
+                value="overview" 
+                className="animated-tab whitespace-nowrap"
+              >
+                סקירה כללית
+              </TabsTrigger>
+              <TabsTrigger 
+                value="budget" 
+                className="animated-tab whitespace-nowrap"
+              >
+                הגדרת תקציב
+              </TabsTrigger>
+              <TabsTrigger 
+                value="income" 
+                className="animated-tab whitespace-nowrap"
+              >
+                הכנסות
+              </TabsTrigger>
+              <TabsTrigger 
+                value="expenses" 
+                className="animated-tab whitespace-nowrap"
+              >
+                הוצאות
+              </TabsTrigger>
+              <TabsTrigger 
+                value="debts" 
+                className="animated-tab whitespace-nowrap"
+              >
+                חובות
+              </TabsTrigger>
+              <TabsTrigger 
+                value="assets" 
+                className="animated-tab whitespace-nowrap"
+              >
+                חסכונות ונכסים
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          
+          <style jsx>{`
+            .animated-tab {
+              position: relative;
+              padding: 0.625rem 1.25rem;
+              border-radius: 0.5rem;
+              font-weight: 500;
+              font-size: 0.875rem;
+              color: #6b7280;
+              background: transparent;
+              transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+              cursor: pointer;
+              border: none;
+              outline: none;
+            }
+            
+            .animated-tab::before {
+              content: '';
+              position: absolute;
+              bottom: 0;
+              right: 50%;
+              left: 50%;
+              height: 2px;
+              background: linear-gradient(90deg, #3b82f6, #2563eb);
+              border-radius: 2px;
+              opacity: 0;
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            
+            .animated-tab:hover:not([data-state="active"]) {
+              color: #1f2937;
+              background: #f3f4f6;
+              transform: translateY(-1px);
+            }
+            
+            .animated-tab:hover:not([data-state="active"])::before {
+              right: 0.75rem;
+              left: 0.75rem;
+              opacity: 0.5;
+            }
+            
+            .animated-tab:active:not([data-state="active"]) {
+              transform: translateY(0) scale(0.98);
+            }
+            
+            .animated-tab[data-state="active"] {
+              color: #2563eb;
+              background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+              font-weight: 600;
+              box-shadow: 0 1px 3px rgba(59, 130, 246, 0.12);
+            }
+            
+            .animated-tab[data-state="active"]::before {
+              right: 0.75rem;
+              left: 0.75rem;
+              opacity: 1;
+            }
+            
+            .animated-tab:focus-visible {
+              outline: 2px solid #3b82f6;
+              outline-offset: 2px;
+            }
+            
+            @media (prefers-reduced-motion: reduce) {
+              .animated-tab,
+              .animated-tab::before {
+                transition: none;
+              }
+              .animated-tab:hover:not([data-state="active"]) {
+                transform: none;
+              }
+            }
+            
+            @media (max-width: 640px) {
+              .animated-tab {
+                padding: 0.5rem 1rem;
+                font-size: 0.813rem;
+              }
+            }
+          `}</style>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
