@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { 
@@ -13,7 +13,7 @@ import {
   BookOpen,
   Sparkles
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
 const navigation = [
   { name: 'דשבורד', page: 'Dashboard', icon: LayoutDashboard },
@@ -25,6 +25,13 @@ const navigation = [
 
 export default function Layout({ children, currentPageName }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const prefersReducedMotion = useReducedMotion();
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50" lang="he">
@@ -65,21 +72,27 @@ export default function Layout({ children, currentPageName }) {
                 const Icon = item.icon;
                 const isActive = currentPageName === item.page;
                 return (
-                  <Link
+                  <motion.div
                     key={item.page}
-                    to={createPageUrl(item.page)}
-                    className={`
-                      flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
-                      ${isActive 
-                        ? 'bg-blue-100 text-blue-700' 
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                      }
-                    `}
-                    aria-current={isActive ? 'page' : undefined}
+                    whileHover={prefersReducedMotion ? {} : { y: -2 }}
+                    whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+                    transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
                   >
-                    <Icon className="w-4 h-4" aria-hidden="true" />
-                    {item.name}
-                  </Link>
+                    <Link
+                      to={createPageUrl(item.page)}
+                      className={`
+                        flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
+                        ${isActive 
+                          ? 'bg-blue-100 text-blue-700' 
+                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        }
+                      `}
+                      aria-current={isActive ? 'page' : undefined}
+                    >
+                      <Icon className="w-4 h-4" aria-hidden="true" />
+                      {item.name}
+                    </Link>
+                  </motion.div>
                 );
               })}
             </nav>
@@ -102,9 +115,10 @@ export default function Layout({ children, currentPageName }) {
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
+              initial={prefersReducedMotion ? { opacity: 0, height: 'auto' } : { opacity: 0, height: 0 }}
+              animate={prefersReducedMotion ? { opacity: 1, height: 'auto' } : { opacity: 1, height: 'auto' }}
+              exit={prefersReducedMotion ? { opacity: 0, height: 'auto' } : { opacity: 0, height: 0 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { type: "tween", duration: 0.3 }}
               className="md:hidden border-t bg-white"
             >
               <nav className="px-4 py-3 space-y-1" role="navigation" aria-label="תפריט ניווט נייד">
@@ -112,22 +126,28 @@ export default function Layout({ children, currentPageName }) {
                   const Icon = item.icon;
                   const isActive = currentPageName === item.page;
                   return (
-                    <Link
+                    <motion.div
                       key={item.page}
-                      to={createPageUrl(item.page)}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`
-                        flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all
-                        ${isActive 
-                          ? 'bg-blue-100 text-blue-700' 
-                          : 'text-gray-600 hover:bg-gray-100'
-                        }
-                      `}
-                      aria-current={isActive ? 'page' : undefined}
+                      whileHover={prefersReducedMotion ? {} : { y: -2 }}
+                      whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+                      transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
                     >
-                      <Icon className="w-5 h-5" aria-hidden="true" />
-                      {item.name}
-                    </Link>
+                      <Link
+                        to={createPageUrl(item.page)}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`
+                          flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all
+                          ${isActive 
+                            ? 'bg-blue-100 text-blue-700' 
+                            : 'text-gray-600 hover:bg-gray-100'
+                          }
+                        `}
+                        aria-current={isActive ? 'page' : undefined}
+                      >
+                        <Icon className="w-5 h-5" aria-hidden="true" />
+                        {item.name}
+                      </Link>
+                    </motion.div>
                   );
                 })}
               </nav>
@@ -137,12 +157,12 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Main Content */}
-      <main id="main-content" role="main" aria-label="תוכן ראשי">
+      <main id="main-content" role="main" aria-label="תוכן ראשי" className="pb-20 md:pb-0">
         {children}
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t mt-12" role="contentinfo">
+      <footer className="bg-white border-t mt-12 hidden md:block" role="contentinfo">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-col items-center md:items-start gap-2">
@@ -171,7 +191,39 @@ export default function Layout({ children, currentPageName }) {
         </div>
       </footer>
 
-
-      </div>
+      {/* Bottom Navigation for Mobile */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t shadow-lg" role="navigation" aria-label="תפריט ניווט תחתון">
+        <div className="flex justify-around h-16 items-center">
+          {navigation.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentPageName === item.page;
+            return (
+              <motion.div
+                key={item.page}
+                whileHover={prefersReducedMotion ? {} : { y: -2 }}
+                whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+                transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
+                className="flex-1 text-center"
+              >
+                <Link
+                  to={createPageUrl(item.page)}
+                  className={`
+                    flex flex-col items-center justify-center p-2 text-xs font-medium transition-colors
+                    ${isActive 
+                      ? 'text-blue-600' 
+                      : 'text-gray-500 hover:text-blue-500'
+                    }
+                  `}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  <Icon className="w-5 h-5 mb-1" aria-hidden="true" />
+                  {item.name}
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
   );
 }
