@@ -282,6 +282,8 @@ export default function Layout({ children, currentPageName }) {
               </motion.div>
             );
           })}
+        </div>
+      </nav>
     </div>
   );
 }
