@@ -234,23 +234,21 @@ export default function Layout({ children, currentPageName }) {
             );
           })}
 
-          {/* FAB Button in Center - Only on Dashboard */}
+          {/* FAB Button in Center */}
           <div className="flex-1 flex items-center justify-center">
-            {currentPageName === 'Dashboard' && (
-              <motion.button
-                whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
-                whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
-                transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
-                onClick={() => {
-                  const event = new CustomEvent('openFABMenu');
-                  window.dispatchEvent(event);
-                }}
-                className="absolute -top-6 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg ring-4 ring-white hover:shadow-xl transition-shadow"
-                aria-label="הוסף פריט"
-              >
-                <Plus className="w-7 h-7" aria-hidden="true" />
-              </motion.button>
-            )}
+            <motion.button
+              whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+              whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
+              onClick={() => {
+                const event = new CustomEvent('openFABMenu');
+                window.dispatchEvent(event);
+              }}
+              className="absolute -top-6 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg ring-4 ring-white hover:shadow-xl transition-shadow"
+              aria-label="הוסף פריט"
+            >
+              <Plus className="w-7 h-7" aria-hidden="true" />
+            </motion.button>
           </div>
 
           {/* Left Side Items (2 items) */}
