@@ -255,36 +255,3 @@ export default function Layout({ children, currentPageName }) {
     </div>
   );
 }
-
-            const Icon = item.icon;
-            const isActive = currentPageName === item.page;
-            return (
-              <motion.div
-                key={item.page}
-                whileHover={prefersReducedMotion ? {} : { y: -2 }}
-                whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
-                transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
-                className="flex-1 text-center"
-              >
-                <Link
-                  to={createPageUrl(item.page)}
-                  className={`
-                    flex flex-col items-center justify-center p-2 text-[10px] font-medium transition-colors leading-tight
-                    ${isActive 
-                      ? 'text-blue-600' 
-                      : 'text-gray-500 hover:text-blue-500'
-                    }
-                  `}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  <Icon className="w-5 h-5 mb-0.5" aria-hidden="true" />
-                  <span className="line-clamp-2 max-w-[70px] text-center">{item.name}</span>
-                </Link>
-              </motion.div>
-            );
-          })}
-        </div>
-      </nav>
-    </div>
-  );
-}
