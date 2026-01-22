@@ -157,7 +157,7 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Main Content */}
-      <main id="main-content" role="main" aria-label="תוכן ראשי" className="pb-20 md:pb-0">
+      <main id="main-content" role="main" aria-label="תוכן ראשי" className="pb-[88px] md:pb-0">
         {children}
       </main>
 
@@ -192,8 +192,13 @@ export default function Layout({ children, currentPageName }) {
       </footer>
 
       {/* Bottom Navigation for Mobile */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t shadow-lg" role="navigation" aria-label="תפריט ניווט תחתון">
-        <div className="flex justify-around h-16 items-center">
+      <nav 
+        className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t shadow-lg" 
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        role="navigation" 
+        aria-label="תפריט ניווט תחתון"
+      >
+        <div className="flex justify-around h-[72px] items-center">
           {navigation.map((item) => {
             const Icon = item.icon;
             const isActive = currentPageName === item.page;
@@ -208,7 +213,7 @@ export default function Layout({ children, currentPageName }) {
                 <Link
                   to={createPageUrl(item.page)}
                   className={`
-                    flex flex-col items-center justify-center p-2 text-xs font-medium transition-colors
+                    flex flex-col items-center justify-center p-2 text-[11px] font-medium transition-colors leading-tight
                     ${isActive 
                       ? 'text-blue-600' 
                       : 'text-gray-500 hover:text-blue-500'
@@ -216,8 +221,8 @@ export default function Layout({ children, currentPageName }) {
                   `}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <Icon className="w-5 h-5 mb-1" aria-hidden="true" />
-                  {item.name}
+                  <Icon className="w-6 h-6 mb-1" aria-hidden="true" />
+                  <span className="max-w-[60px] truncate">{item.name}</span>
                 </Link>
               </motion.div>
             );
