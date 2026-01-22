@@ -34,7 +34,9 @@ export default function Layout({ children, currentPageName }) {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
-
+  // Split navigation for bottom nav (2 items on each side of FAB)
+  const leftNavItems = navigation.slice(0, 2);
+  const rightNavItems = navigation.slice(2, 4);
 
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50" lang="he">
@@ -202,8 +204,8 @@ export default function Layout({ children, currentPageName }) {
         aria-label="תפריט ניווט תחתון"
       >
         <div className="relative flex justify-around h-[72px] items-center">
-          {/* Navigation Items */}
-          {navigation.slice(0, 4).map((item) => {
+          {/* Right Side Items (2 items) */}
+          {leftNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPageName === item.page;
             return (
@@ -231,27 +233,55 @@ export default function Layout({ children, currentPageName }) {
               </motion.div>
             );
           })}
-        </div>
-      </nav>
 
-      {/* Floating Action Button for Dashboard - Mobile Only */}
-      {currentPageName === 'Dashboard' && (
-        <div className="md:hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-50">
-          <motion.button
-            whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
-            whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
-            transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
-            onClick={() => {
-              const event = new CustomEvent('openFABMenu');
-              window.dispatchEvent(event);
-            }}
-            className="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg ring-4 ring-white hover:shadow-xl transition-shadow"
-            aria-label="הוסף פריט"
-          >
-            <Plus className="w-7 h-7" aria-hidden="true" />
-          </motion.button>
-        </div>
-      )}
+          {/* FAB Button in Center - Only on Dashboard */}
+          <div className="flex-1 flex items-center justify-center">
+            {currentPageName === 'Dashboard' && (
+              <motion.button
+                whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+                whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
+                transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
+                onClick={() => {
+                  const event = new CustomEvent('openFABMenu');
+                  window.dispatchEvent(event);
+                }}
+                className="absolute -top-6 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg ring-4 ring-white hover:shadow-xl transition-shadow"
+                aria-label="הוסף פריט"
+              >
+                <Plus className="w-7 h-7" aria-hidden="true" />
+              </motion.button>
+            )}
+          </div>
+
+          {/* Left Side Items (2 items) */}
+          {rightNavItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentPageName === item.page;
+            return (
+              <motion.div
+                key={item.page}
+                whileHover={prefersReducedMotion ? {} : { y: -2 }}
+                whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+                transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
+                className="flex-1 text-center"
+              >
+                <Link
+                  to={createPageUrl(item.page)}
+                  className={`
+                    flex flex-col items-center justify-center p-2 text-[10px] font-medium transition-colors leading-tight
+                    ${isActive 
+                      ? 'text-blue-600' 
+                      : 'text-gray-500 hover:text-blue-500'
+                    }
+                  `}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  <Icon className="w-5 h-5 mb-0.5" aria-hidden="true" />
+                  <span className="line-clamp-2 max-w-[70px] text-center">{item.name}</span>
+                </Link>
+              </motion.div>
+            );
+          })}
     </div>
   );
 }
