@@ -31,7 +31,7 @@ import DebtForm from "@/components/budget/DebtForm";
 import AssetForm from "@/components/budget/AssetForm";
 import DataTable from "@/components/budget/DataTable";
 import AlertPanel from "@/components/budget/AlertPanel";
-import FloatingActionButton from "@/components/budget/FloatingActionButton";
+
 import ExportButton, { convertToCSV, downloadCSV } from "@/components/budget/ExportButton";
 import HouseholdSelector from "@/components/budget/HouseholdSelector";
 import MonthYearSelector from "@/components/budget/MonthYearSelector";
@@ -1122,8 +1122,7 @@ ${JSON.stringify(financialData, null, 2)}
           editItem={editItem}
         />
 
-        {/* Floating Action Button - Mobile Only */}
-        <FloatingActionButton onOpenForm={handleFABAction} />
+
       </div>
     </div>
   );
