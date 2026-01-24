@@ -5,15 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, Trash2, Mail, Home, UserPlus } from "lucide-react";
+import { Users, Plus, Trash2, Mail, Home, UserPlus, User, LogOut, Edit } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
-export default function HouseholdSettings() {
+export default function UserSettings() {
   const [newHouseholdName, setNewHouseholdName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newFullName, setNewFullName] = useState('');
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -35,6 +37,17 @@ export default function HouseholdSettings() {
     enabled: !!user
   });
 
+  const updateUserName = useMutation({
+    mutationFn: async (fullName) => {
+      return base44.auth.updateMe({ full_name: fullName });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['user']);
+      setIsEditingName(false);
+      setNewFullName('');
+    }
+  });
+
   const createHousehold = useMutation({
     mutationFn: async (name) => {
       return base44.entities.Household.create({
@@ -47,7 +60,6 @@ export default function HouseholdSettings() {
       queryClient.invalidateQueries(['households']);
       setNewHouseholdName('');
       setShowCreateForm(false);
-      // Navigate to dashboard after first household creation
       navigate(createPageUrl('Dashboard'));
     }
   });
@@ -59,7 +71,6 @@ export default function HouseholdSettings() {
       await base44.entities.Household.update(householdId, {
         members: updatedMembers
       });
-      // Send invitation email
       await base44.users.inviteUser(email, 'user');
     },
     onSuccess: () => {
@@ -102,6 +113,17 @@ export default function HouseholdSettings() {
     }
   };
 
+  const handleUpdateName = (e) => {
+    e.preventDefault();
+    if (newFullName.trim()) {
+      updateUserName.mutate(newFullName);
+    }
+  };
+
+  const handleLogout = () => {
+    base44.auth.logout();
+  };
+
   return (
     <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
@@ -111,13 +133,101 @@ export default function HouseholdSettings() {
           className="mb-8"
         >
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-            <Home className="w-8 h-8 text-blue-600" />
-            ניהול משקי בית
+            <User className="w-8 h-8 text-blue-600" />
+            הגדרות משתמש
           </h1>
           <p className="text-gray-500">
-            צור משק בית משותף והזמן בן/בת זוג או שותפים לנהל את התקציב ביחד
+            נהל את הפרופיל שלך ואת משקי הבית המשותפים
           </p>
         </motion.div>
+
+        {/* User Profile Card */}
+        <Card className="mb-6 border-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="w-5 h-5 text-blue-600" />
+              פרופיל אישי
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Display Name */}
+            <div>
+              <label className="block text-sm font-medium mb-2">שם מלא</label>
+              {!isEditingName ? (
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <span className="text-lg font-semibold">{user?.full_name}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setIsEditingName(true);
+                      setNewFullName(user?.full_name || '');
+                    }}
+                    className="text-blue-600 hover:text-blue-700"
+                  >
+                    <Edit className="w-4 h-4 ml-1" />
+                    ערוך
+                  </Button>
+                </div>
+              ) : (
+                <form onSubmit={handleUpdateName} className="space-y-3">
+                  <Input
+                    placeholder="הכנס שם מלא"
+                    value={newFullName}
+                    onChange={(e) => setNewFullName(e.target.value)}
+                  />
+                  <div className="flex gap-2">
+                    <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                      שמור
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditingName(false);
+                        setNewFullName('');
+                      }}
+                    >
+                      ביטול
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </div>
+
+            {/* Email (read-only) */}
+            <div>
+              <label className="block text-sm font-medium mb-2">אימייל</label>
+              <div className="p-3 bg-gray-50 rounded-lg flex items-center gap-2">
+                <Mail className="w-4 h-4 text-gray-400" />
+                <span>{user?.email}</span>
+              </div>
+            </div>
+
+            {/* Logout Button */}
+            <div className="pt-4 border-t">
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              >
+                <LogOut className="w-4 h-4 ml-2" />
+                התנתק מהמערכת
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Household Management Section */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Home className="w-6 h-6 text-blue-600" />
+            משקי בית משותפים
+          </h2>
+          <p className="text-gray-500 mb-4">
+            צור משק בית משותף והזמן בן/בת זוג או שותפים לנהל את התקציב ביחד
+          </p>
+        </div>
 
         {/* Create New Household */}
         {!showCreateForm ? (
