@@ -20,7 +20,7 @@ const navigation = [
   { name: 'דשבורד', page: 'Dashboard', icon: LayoutDashboard },
   { name: 'תכנון AI', page: 'AIPlanning', icon: Sparkles },
   { name: 'הטבות וזכויות', page: 'Benefits', icon: Award },
-  { name: 'משקי בית', page: 'HouseholdSettings', icon: Users },
+  { name: 'משתמשים', page: 'UserSettings', icon: Users },
   { name: 'מדריך', page: 'Guide', icon: BookOpen },
 ];
 
