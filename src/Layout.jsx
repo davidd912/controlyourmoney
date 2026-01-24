@@ -203,23 +203,18 @@ export default function Layout({ children, currentPageName }) {
         role="navigation" 
         aria-label="תפריט ניווט תחתון"
       >
-        <div className="relative flex justify-around h-[72px] items-center">
+        <div className="relative flex justify-between items-center h-[72px] px-2">
           {/* Right Side Items (2 items) */}
-          {leftNavItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentPageName === item.page;
-            return (
-              <motion.div
-                key={item.page}
-                whileHover={prefersReducedMotion ? {} : { y: -2 }}
-                whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
-                transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
-                className="flex-1 text-center"
-              >
+          <div className="flex flex-1 justify-around">
+            {leftNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentPageName === item.page;
+              return (
                 <Link
+                  key={item.page}
                   to={createPageUrl(item.page)}
                   className={`
-                    flex flex-col items-center justify-center p-2 text-[10px] font-medium transition-colors leading-tight
+                    flex flex-col items-center justify-center p-2 text-[10px] font-medium transition-colors leading-tight min-w-[60px]
                     ${isActive 
                       ? 'text-blue-600' 
                       : 'text-gray-500 hover:text-blue-500'
@@ -230,12 +225,12 @@ export default function Layout({ children, currentPageName }) {
                   <Icon className="w-5 h-5 mb-0.5" aria-hidden="true" />
                   <span className="line-clamp-2 max-w-[70px] text-center">{item.name}</span>
                 </Link>
-              </motion.div>
-            );
-          })}
+              );
+            })}
+          </div>
 
           {/* FAB Button in Center */}
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex items-center justify-center px-4">
             <motion.button
               whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
               whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
@@ -244,7 +239,7 @@ export default function Layout({ children, currentPageName }) {
                 const event = new CustomEvent('openFABMenu');
                 window.dispatchEvent(event);
               }}
-              className="absolute -top-6 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg ring-4 ring-white hover:shadow-xl transition-shadow"
+              className="absolute -top-6 left-1/2 -translate-x-1/2 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg ring-4 ring-white hover:shadow-xl transition-shadow"
               aria-label="הוסף פריט"
             >
               <Plus className="w-7 h-7" aria-hidden="true" />
@@ -252,21 +247,16 @@ export default function Layout({ children, currentPageName }) {
           </div>
 
           {/* Left Side Items (2 items) */}
-          {rightNavItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentPageName === item.page;
-            return (
-              <motion.div
-                key={item.page}
-                whileHover={prefersReducedMotion ? {} : { y: -2 }}
-                whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
-                transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
-                className="flex-1 text-center"
-              >
+          <div className="flex flex-1 justify-around">
+            {rightNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentPageName === item.page;
+              return (
                 <Link
+                  key={item.page}
                   to={createPageUrl(item.page)}
                   className={`
-                    flex flex-col items-center justify-center p-2 text-[10px] font-medium transition-colors leading-tight
+                    flex flex-col items-center justify-center p-2 text-[10px] font-medium transition-colors leading-tight min-w-[60px]
                     ${isActive 
                       ? 'text-blue-600' 
                       : 'text-gray-500 hover:text-blue-500'
@@ -277,9 +267,9 @@ export default function Layout({ children, currentPageName }) {
                   <Icon className="w-5 h-5 mb-0.5" aria-hidden="true" />
                   <span className="line-clamp-2 max-w-[70px] text-center">{item.name}</span>
                 </Link>
-              </motion.div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </nav>
     </div>
