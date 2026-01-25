@@ -242,6 +242,15 @@ export default function Dashboard() {
   const actualExpenses = expenses.filter(e => !e.is_budget || e.is_current);
   const filteredExpenses = actualExpenses;
 
+  // Calculate remaining budget per category
+  const remainingBudgetByCategory = {};
+  budgetSettings.forEach(budget => {
+    const categoryExpenses = filteredExpenses
+      .filter(e => e.category === budget.category)
+      .reduce((sum, e) => sum + (e.amount || 0), 0);
+    remainingBudgetByCategory[budget.category] = budget.amount - categoryExpenses;
+  });
+
   // Calculations
   const totalIncome = filteredIncomes.reduce((sum, i) => sum + (i.amount || 0), 0);
   const totalExpenses = filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
@@ -1116,6 +1125,7 @@ ${JSON.stringify(financialData, null, 2)}
           onClose={() => { setExpenseFormOpen(false); setEditItem(null); }}
           onSave={handleSaveExpense}
           editItem={editItem}
+          remainingBudgetByCategory={remainingBudgetByCategory}
         />
         <DebtForm
           open={debtFormOpen}

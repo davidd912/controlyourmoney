@@ -90,7 +90,7 @@ const expenseCategories = {
   }
 };
 
-export default function ExpenseForm({ open, onClose, onSave, editItem }) {
+export default function ExpenseForm({ open, onClose, onSave, editItem, remainingBudgetByCategory = {} }) {
   const [formData, setFormData] = useState({
     category: '',
     subcategory: '',
@@ -156,22 +156,42 @@ export default function ExpenseForm({ open, onClose, onSave, editItem }) {
           </div>
 
           {formData.category && (
-            <div className="space-y-2">
-              <Label htmlFor="expense-subcategory">תת-קטגוריה</Label>
-              <Select
-                value={formData.subcategory}
-                onValueChange={(value) => setFormData({ ...formData, subcategory: value })}
-              >
-                <SelectTrigger id="expense-subcategory">
-                  <SelectValue placeholder="בחר תת-קטגוריה" />
-                </SelectTrigger>
-                <SelectContent>
-                  {expenseCategories[formData.category]?.subcategories.map((sub) => (
-                    <SelectItem key={sub} value={sub}>{sub}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <>
+              {remainingBudgetByCategory[formData.category] !== undefined && (
+                <div className={`p-3 rounded-lg ${
+                  remainingBudgetByCategory[formData.category] >= 0 
+                    ? 'bg-green-50 border border-green-200' 
+                    : 'bg-red-50 border border-red-200'
+                }`}>
+                  <p className={`text-sm font-medium ${
+                    remainingBudgetByCategory[formData.category] >= 0 
+                      ? 'text-green-700' 
+                      : 'text-red-700'
+                  }`}>
+                    {remainingBudgetByCategory[formData.category] >= 0 
+                      ? `💰 נותר בתקציב: ₪${remainingBudgetByCategory[formData.category].toLocaleString()}`
+                      : `⚠️ חריגה מהתקציב: ₪${Math.abs(remainingBudgetByCategory[formData.category]).toLocaleString()}`
+                    }
+                  </p>
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="expense-subcategory">תת-קטגוריה</Label>
+                <Select
+                  value={formData.subcategory}
+                  onValueChange={(value) => setFormData({ ...formData, subcategory: value })}
+                >
+                  <SelectTrigger id="expense-subcategory">
+                    <SelectValue placeholder="בחר תת-קטגוריה" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {expenseCategories[formData.category]?.subcategories.map((sub) => (
+                      <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
           )}
 
           <div className="space-y-2">
