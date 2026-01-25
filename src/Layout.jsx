@@ -39,7 +39,7 @@ export default function Layout({ children, currentPageName }) {
   const rightNavItems = navigation.slice(2, 4);
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-50" lang="he">
+    <div dir="rtl" className="flex flex-col min-h-screen bg-gray-50" lang="he">
       {/* Skip to main content link for keyboard users */}
       <a
         href="#main-content"
@@ -162,12 +162,12 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Main Content */}
-      <main id="main-content" role="main" aria-label="תוכן ראשי" className="pb-[100px] md:pb-0">
+      <main id="main-content" role="main" aria-label="תוכן ראשי" className="flex-1 pb-[120px] md:pb-0">
         {children}
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t mt-12 hidden md:block" role="contentinfo">
+      <footer className="bg-white border-t mt-auto hidden md:block" role="contentinfo">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-col items-center md:items-start gap-2">
@@ -198,8 +198,8 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Bottom Navigation for Mobile with FAB */}
       <nav 
-        className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t shadow-lg" 
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white border-t shadow-lg" 
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)' }}
         role="navigation" 
         aria-label="תפריט ניווט תחתון"
       >
