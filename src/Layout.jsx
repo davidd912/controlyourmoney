@@ -162,7 +162,7 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Main Content */}
-      <main id="main-content" role="main" aria-label="תוכן ראשי" className="flex-1 pb-[120px] md:pb-0">
+      <main id="main-content" role="main" aria-label="תוכן ראשי" className="flex-1 pb-[132px] md:pb-0">
         {children}
       </main>
 
@@ -239,7 +239,7 @@ export default function Layout({ children, currentPageName }) {
                 const event = new CustomEvent('openFABMenu');
                 window.dispatchEvent(event);
               }}
-              className="absolute -top-6 left-1/2 -translate-x-1/2 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg ring-4 ring-white hover:shadow-xl transition-shadow"
+              className="absolute -top-7 left-1/2 -translate-x-1/2 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg ring-4 ring-white hover:shadow-xl transition-shadow"
               aria-label="הוסף פריט"
             >
               <Plus className="w-7 h-7" aria-hidden="true" />
