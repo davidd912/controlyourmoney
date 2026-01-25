@@ -674,7 +674,7 @@ ${JSON.stringify(financialData, null, 2)}
   // No household selected - show setup screen
   if (!selectedHouseholdId && households.length === 0 && user) {
     return (
-      <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+      <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4 min-h-[60vh]">
         <Card className="max-w-md w-full">
           <CardHeader>
             <CardTitle className="text-center flex items-center justify-center gap-2">
@@ -702,8 +702,8 @@ ${JSON.stringify(financialData, null, 2)}
   const currentHousehold = households.find(h => h.id === selectedHouseholdId);
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <div className="max-w-7xl mx-auto p-4 md:p-8">
+    <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="max-w-7xl mx-auto p-4 md:p-6 pb-8">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
