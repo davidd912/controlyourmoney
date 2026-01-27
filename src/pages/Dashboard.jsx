@@ -43,7 +43,15 @@ const expenseLabels = {
   household_items: "תכולת בית", home_maintenance: "אחזקת בית", grooming: "טיפוח",
   education: "חינוך", events: "אירועים ותרומות", health: "בריאות",
   transportation: "תחבורה", family: "משפחה", communication: "תקשורת",
-  housing: "דיור", obligations: "התחייבויות", assets: "נכסים", finance: "פיננסים", other: "אחר"
+  housing: "דיור", obligations: "התחייבויות", assets: "נכסים", finance: "פיננסים", 
+  custom: "קטגוריה מותאמת אישית", other: "אחר"
+};
+
+const getExpenseLabel = (expense) => {
+  if (expense.category === 'custom' && expense.custom_category_name) {
+    return expense.custom_category_name;
+  }
+  return expenseLabels[expense.category] || expense.category;
 };
 const assetLabels = {
   savings1: "חיסכון 1", savings2: "חיסכון 2", residential_property: "נדל\"ן למגורים",
@@ -245,10 +253,23 @@ export default function Dashboard() {
   // Calculate remaining budget per category
   const remainingBudgetByCategory = {};
   budgetSettings.forEach(budget => {
-    const categoryExpenses = filteredExpenses
-      .filter(e => e.category === budget.category)
-      .reduce((sum, e) => sum + (e.amount || 0), 0);
-    remainingBudgetByCategory[budget.category] = budget.amount - categoryExpenses;
+    let categoryKey = budget.category;
+    let categoryExpenses;
+    
+    if (budget.category === 'custom' && budget.custom_category_name) {
+      // For custom categories, match by both category and custom_category_name
+      categoryExpenses = filteredExpenses
+        .filter(e => e.category === 'custom' && e.custom_category_name === budget.custom_category_name)
+        .reduce((sum, e) => sum + (e.amount || 0), 0);
+      categoryKey = `custom_${budget.custom_category_name}`;
+    } else {
+      // For regular categories
+      categoryExpenses = filteredExpenses
+        .filter(e => e.category === budget.category)
+        .reduce((sum, e) => sum + (e.amount || 0), 0);
+    }
+    
+    remainingBudgetByCategory[categoryKey] = budget.amount - categoryExpenses;
   });
 
   // Calculations
@@ -412,18 +433,40 @@ export default function Dashboard() {
 
       // Create new budget settings
       const budgetItems = Object.entries(budgets)
-        .filter(([, amount]) => amount && parseFloat(amount) > 0)
-        .map(([category, amount]) => ({
-          household_id: selectedHouseholdId,
-          month: selectedMonth,
-          year: selectedYear,
-          category,
-          amount: parseFloat(amount),
-          is_budget: true,
-          is_current: false,
-          priority: 3,
-          description: 'תקציב חודשי'
-        }));
+        .filter(([, value]) => {
+          // Handle both simple values and custom category objects
+          const amount = typeof value === 'object' ? value.amount : value;
+          return amount && parseFloat(amount) > 0;
+        })
+        .map(([key, value]) => {
+          // Handle custom categories
+          if (typeof value === 'object' && value.category === 'custom') {
+            return {
+              household_id: selectedHouseholdId,
+              month: selectedMonth,
+              year: selectedYear,
+              category: 'custom',
+              custom_category_name: value.custom_category_name,
+              amount: parseFloat(value.amount),
+              is_budget: true,
+              is_current: false,
+              priority: 3,
+              description: 'תקציב חודשי'
+            };
+          }
+          // Handle regular categories
+          return {
+            household_id: selectedHouseholdId,
+            month: selectedMonth,
+            year: selectedYear,
+            category: key,
+            amount: parseFloat(value),
+            is_budget: true,
+            is_current: false,
+            priority: 3,
+            description: 'תקציב חודשי'
+          };
+        });
 
       if (budgetItems.length > 0) {
         await base44.entities.Expense.bulkCreate(budgetItems);
@@ -446,7 +489,7 @@ export default function Dashboard() {
   ];
 
   const expenseColumns = [
-    { key: 'category', label: 'קטגוריה', render: (val) => expenseLabels[val] || val },
+    { key: 'category', label: 'קטגוריה', render: (val, item) => getExpenseLabel(item) },
     { key: 'subcategory', label: 'תת-קטגוריה' },
     { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` },
     { key: 'priority', label: 'עדיפות', render: (val) => {
@@ -490,7 +533,7 @@ export default function Dashboard() {
           subcategory: i.subcategory
         })),
         expenses: filteredExpenses.map(e => ({
-          category: expenseLabels[e.category] || e.category,
+          category: getExpenseLabel(e),
           amount: e.amount,
           subcategory: e.subcategory,
           priority: e.priority

@@ -44,14 +44,23 @@ const categoryColors = {
 export default function CategoryBreakdown({ expenses, budgets = [] }) {
   // Calculate actual expenses per category
   const categoryTotals = expenses.reduce((acc, expense) => {
-    const cat = expense.category || 'other';
+    let cat = expense.category || 'other';
+    // For custom categories, use the custom name as the key
+    if (cat === 'custom' && expense.custom_category_name) {
+      cat = expense.custom_category_name;
+    }
     acc[cat] = (acc[cat] || 0) + (expense.amount || 0);
     return acc;
   }, {});
 
   // Map budgets by category
   const categoryBudgets = budgets.reduce((acc, budget) => {
-    acc[budget.category] = budget.amount || 0;
+    let cat = budget.category;
+    // For custom categories, use the custom name as the key
+    if (cat === 'custom' && budget.custom_category_name) {
+      cat = budget.custom_category_name;
+    }
+    acc[cat] = (acc[cat] || 0) + (budget.amount || 0);
     return acc;
   }, {});
 

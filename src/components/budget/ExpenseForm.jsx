@@ -8,6 +8,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const expenseCategories = {
+  custom: {
+    label: "קטגוריה מותאמת אישית",
+    icon: "✏️",
+    subcategories: []
+  },
   food: {
     label: "מזון ופארמה",
     icon: "🍎",
@@ -93,6 +98,7 @@ const expenseCategories = {
 export default function ExpenseForm({ open, onClose, onSave, editItem, remainingBudgetByCategory = {} }) {
   const [formData, setFormData] = useState({
     category: '',
+    custom_category_name: '',
     subcategory: '',
     amount: '',
     priority: null,
@@ -106,6 +112,7 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
     } else {
       setFormData({
         category: '',
+        custom_category_name: '',
         subcategory: '',
         amount: '',
         priority: null,
@@ -155,7 +162,20 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
             </Select>
           </div>
 
-          {formData.category && (
+          {formData.category === 'custom' && (
+            <div className="space-y-2">
+              <Label htmlFor="custom-category-name">שם הקטגוריה המותאמת אישית</Label>
+              <Input
+                id="custom-category-name"
+                value={formData.custom_category_name || ''}
+                onChange={(e) => setFormData({ ...formData, custom_category_name: e.target.value })}
+                placeholder="למשל: מתנות, תחביבים מיוחדים..."
+                required
+              />
+            </div>
+          )}
+
+          {formData.category && formData.category !== 'custom' && (
             <>
               {remainingBudgetByCategory[formData.category] !== undefined && (
                 <div className={`p-3 rounded-lg ${
@@ -175,22 +195,24 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
                   </p>
                 </div>
               )}
-              <div className="space-y-2">
-                <Label htmlFor="expense-subcategory">תת-קטגוריה</Label>
-                <Select
-                  value={formData.subcategory}
-                  onValueChange={(value) => setFormData({ ...formData, subcategory: value })}
-                >
-                  <SelectTrigger id="expense-subcategory">
-                    <SelectValue placeholder="בחר תת-קטגוריה" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {expenseCategories[formData.category]?.subcategories.map((sub) => (
-                      <SelectItem key={sub} value={sub}>{sub}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {expenseCategories[formData.category]?.subcategories?.length > 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="expense-subcategory">תת-קטגוריה</Label>
+                  <Select
+                    value={formData.subcategory}
+                    onValueChange={(value) => setFormData({ ...formData, subcategory: value })}
+                  >
+                    <SelectTrigger id="expense-subcategory">
+                      <SelectValue placeholder="בחר תת-קטגוריה" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {expenseCategories[formData.category].subcategories.map((sub) => (
+                        <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </>
           )}
 
