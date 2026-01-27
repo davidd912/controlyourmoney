@@ -431,6 +431,19 @@ export default function Dashboard() {
 
   const handleSaveBudgetSettings = async (budgets, customCategories) => {
     try {
+      // Extract custom categories from budgets before saving
+      const newCustomCategories = Object.keys(budgets)
+        .filter(key => key.startsWith('custom_'))
+        .map(key => key.replace('custom_', ''));
+      
+      // Update cache immediately with the new custom categories
+      if (newCustomCategories.length > 0) {
+        setCustomCategoriesCache(prev => {
+          const combined = [...new Set([...prev, ...newCustomCategories])];
+          return combined;
+        });
+      }
+
       // Delete existing budget settings for this month
       const existingBudgets = await base44.entities.Expense.filter({
         household_id: selectedHouseholdId,
