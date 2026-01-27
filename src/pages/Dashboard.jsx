@@ -416,7 +416,7 @@ export default function Dashboard() {
     }
   };
 
-  const handleSaveBudgetSettings = async (budgets) => {
+  const handleSaveBudgetSettings = async (budgets, customCategories) => {
     try {
       // Delete existing budget settings for this month
       const existingBudgets = await base44.entities.Expense.filter({
@@ -432,48 +432,49 @@ export default function Dashboard() {
       }
 
       // Create new budget settings
-      const budgetItems = Object.entries(budgets)
-        .filter(([, value]) => {
-          // Handle both simple values and custom category objects
-          const amount = typeof value === 'object' ? value.amount : value;
-          return amount && parseFloat(amount) > 0;
-        })
-        .map(([key, value]) => {
-          // Handle custom categories
-          if (typeof value === 'object' && value.category === 'custom') {
-            return {
+      const budgetItems = [];
+      
+      Object.entries(budgets).forEach(([key, value]) => {
+        const amount = value ? parseFloat(value) : 0;
+        if (amount > 0) {
+          if (key.startsWith('custom_')) {
+            // Custom category
+            const categoryName = key.replace('custom_', '');
+            budgetItems.push({
               household_id: selectedHouseholdId,
               month: selectedMonth,
               year: selectedYear,
               category: 'custom',
-              custom_category_name: value.custom_category_name,
-              amount: parseFloat(value.amount),
+              custom_category_name: categoryName,
+              amount: amount,
               is_budget: true,
               is_current: false,
               priority: 3,
               description: 'תקציב חודשי'
-            };
+            });
+          } else {
+            // Regular category
+            budgetItems.push({
+              household_id: selectedHouseholdId,
+              month: selectedMonth,
+              year: selectedYear,
+              category: key,
+              amount: amount,
+              is_budget: true,
+              is_current: false,
+              priority: 3,
+              description: 'תקציב חודשי'
+            });
           }
-          // Handle regular categories
-          return {
-            household_id: selectedHouseholdId,
-            month: selectedMonth,
-            year: selectedYear,
-            category: key,
-            amount: parseFloat(value),
-            is_budget: true,
-            is_current: false,
-            priority: 3,
-            description: 'תקציב חודשי'
-          };
-        });
+        }
+      });
 
       if (budgetItems.length > 0) {
         await base44.entities.Expense.bulkCreate(budgetItems);
       }
 
-      queryClient.invalidateQueries(['budgetSettings']);
-      queryClient.invalidateQueries(['expenses']);
+      queryClient.invalidateQueries(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
+      queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
       alert('התקציב נשמר בהצלחה!');
     } catch (error) {
       console.error('Error saving budget settings:', error);

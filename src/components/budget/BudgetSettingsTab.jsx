@@ -79,21 +79,7 @@ export default function BudgetSettingsTab({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // Transform custom categories back to the original format
-      const transformedBudgets = {};
-      Object.entries(budgets).forEach(([key, value]) => {
-        if (key.startsWith('custom_')) {
-          const categoryName = key.replace('custom_', '');
-          transformedBudgets[key] = {
-            amount: value,
-            category: 'custom',
-            custom_category_name: categoryName
-          };
-        } else {
-          transformedBudgets[key] = value;
-        }
-      });
-      await onSave(transformedBudgets);
+      await onSave(budgets, customCategories);
     } finally {
       setIsSaving(false);
     }
