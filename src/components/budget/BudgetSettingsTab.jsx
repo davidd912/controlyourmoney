@@ -50,8 +50,17 @@ export default function BudgetSettingsTab({
         budgetMap[budget.category] = budget.amount;
       }
     });
-    setBudgets(budgetMap);
-    setCustomCategories([...new Set(customCats)]); // Remove duplicates
+    
+    // Merge with existing custom categories to preserve newly added ones
+    setCustomCategories(prev => {
+      const allCustom = [...new Set([...prev, ...customCats])];
+      return allCustom;
+    });
+    
+    setBudgets(prev => ({
+      ...prev,
+      ...budgetMap
+    }));
   }, [existingBudgets]);
 
   const handleBudgetChange = (category, value) => {
