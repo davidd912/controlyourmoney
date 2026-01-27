@@ -79,6 +79,7 @@ export default function Dashboard() {
   const [editItem, setEditItem] = useState(null);
   const [isGeneratingAlerts, setIsGeneratingAlerts] = useState(false);
   const [fabMenuOpen, setFabMenuOpen] = useState(false);
+  const [customCategoriesCache, setCustomCategoriesCache] = useState([]);
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -159,6 +160,18 @@ export default function Dashboard() {
     },
     enabled: !!user && !!selectedHouseholdId
   });
+
+  // Update custom categories cache when budgetSettings change
+  React.useEffect(() => {
+    const customCats = budgetSettings
+      .filter(b => b.category === 'custom' && b.custom_category_name)
+      .map(b => b.custom_category_name)
+      .filter((name, index, self) => self.indexOf(name) === index);
+    
+    if (customCats.length > 0) {
+      setCustomCategoriesCache(customCats);
+    }
+  }, [budgetSettings]);
 
   const { data: debts = [], isLoading: loadingDebts } = useQuery({
     queryKey: ['debts', selectedHouseholdId],
@@ -473,14 +486,11 @@ export default function Dashboard() {
         await base44.entities.Expense.bulkCreate(budgetItems);
       }
 
-      // Invalidate and wait for refetch
+      // Invalidate queries
       await queryClient.invalidateQueries(['budgetSettings']);
       await queryClient.invalidateQueries(['expenses']);
-      
-      alert('התקציב נשמר בהצלחה!');
     } catch (error) {
       console.error('Error saving budget settings:', error);
-      alert('שגיאה בשמירת התקציב');
     }
   };
 
@@ -1172,11 +1182,7 @@ ${JSON.stringify(financialData, null, 2)}
           onSave={handleSaveExpense}
           editItem={editItem}
           remainingBudgetByCategory={remainingBudgetByCategory}
-          customCategories={budgetSettings
-            .filter(b => b.category === 'custom' && b.custom_category_name)
-            .map(b => b.custom_category_name)
-            .filter((name, index, self) => self.indexOf(name) === index)
-          }
+          customCategories={customCategoriesCache}
         />
         <DebtForm
           open={debtFormOpen}
