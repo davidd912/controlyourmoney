@@ -473,8 +473,10 @@ export default function Dashboard() {
         await base44.entities.Expense.bulkCreate(budgetItems);
       }
 
-      queryClient.invalidateQueries(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
-      queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
+      // Invalidate and wait for refetch
+      await queryClient.invalidateQueries(['budgetSettings']);
+      await queryClient.invalidateQueries(['expenses']);
+      
       alert('התקציב נשמר בהצלחה!');
     } catch (error) {
       console.error('Error saving budget settings:', error);
