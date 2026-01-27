@@ -8,11 +8,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const expenseCategories = {
-  custom: {
-    label: "קטגוריה מותאמת אישית",
-    icon: "✏️",
-    subcategories: []
-  },
   food: {
     label: "מזון ופארמה",
     icon: "🍎",
@@ -95,7 +90,7 @@ const expenseCategories = {
   }
 };
 
-export default function ExpenseForm({ open, onClose, onSave, editItem, remainingBudgetByCategory = {} }) {
+export default function ExpenseForm({ open, onClose, onSave, editItem, remainingBudgetByCategory = {}, customCategories = [] }) {
   const [formData, setFormData] = useState({
     category: '',
     custom_category_name: '',
@@ -143,8 +138,16 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
           <div className="space-y-2">
             <Label htmlFor="expense-category">קטגוריה</Label>
             <Select
-              value={formData.category}
-              onValueChange={(value) => setFormData({ ...formData, category: value, subcategory: '' })}
+              value={formData.category === 'custom' && formData.custom_category_name ? formData.custom_category_name : formData.category}
+              onValueChange={(value) => {
+                // Check if it's a custom category
+                const isCustom = customCategories.includes(value);
+                if (isCustom) {
+                  setFormData({ ...formData, category: 'custom', custom_category_name: value, subcategory: '' });
+                } else {
+                  setFormData({ ...formData, category: value, custom_category_name: '', subcategory: '' });
+                }
+              }}
             >
               <SelectTrigger id="expense-category">
                 <SelectValue placeholder="בחר קטגוריה" />
@@ -158,21 +161,51 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
                     </span>
                   </SelectItem>
                 ))}
+                {customCategories.length > 0 && (
+                  <>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 bg-gray-100">
+                      קטגוריות מותאמות אישית
+                    </div>
+                    {customCategories.map((categoryName) => (
+                      <SelectItem key={`custom_${categoryName}`} value={categoryName}>
+                        <span className="flex items-center gap-2">
+                          <span>✏️</span>
+                          <span>{categoryName}</span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </>
+                )}
               </SelectContent>
             </Select>
           </div>
 
-          {formData.category === 'custom' && (
-            <div className="space-y-2">
-              <Label htmlFor="custom-category-name">שם הקטגוריה המותאמת אישית</Label>
-              <Input
-                id="custom-category-name"
-                value={formData.custom_category_name || ''}
-                onChange={(e) => setFormData({ ...formData, custom_category_name: e.target.value })}
-                placeholder="למשל: מתנות, תחביבים מיוחדים..."
-                required
-              />
-            </div>
+          {formData.category && formData.category !== 'custom' && customCategories.includes(formData.custom_category_name || formData.category) && (
+            <>
+              {(() => {
+                const categoryKey = formData.category === 'custom' && formData.custom_category_name 
+                  ? `custom_${formData.custom_category_name}` 
+                  : formData.category;
+                return remainingBudgetByCategory[categoryKey] !== undefined && (
+                  <div className={`p-3 rounded-lg ${
+                    remainingBudgetByCategory[categoryKey] >= 0 
+                      ? 'bg-green-50 border border-green-200' 
+                      : 'bg-red-50 border border-red-200'
+                  }`}>
+                    <p className={`text-sm font-medium ${
+                      remainingBudgetByCategory[categoryKey] >= 0 
+                        ? 'text-green-700' 
+                        : 'text-red-700'
+                    }`}>
+                      {remainingBudgetByCategory[categoryKey] >= 0 
+                        ? `💰 נותר בתקציב: ₪${remainingBudgetByCategory[categoryKey].toLocaleString()}`
+                        : `⚠️ חריגה מהתקציב: ₪${Math.abs(remainingBudgetByCategory[categoryKey]).toLocaleString()}`
+                      }
+                    </p>
+                  </div>
+                );
+              })()}
+            </>
           )}
 
           {formData.category && formData.category !== 'custom' && (

@@ -1172,6 +1172,11 @@ ${JSON.stringify(financialData, null, 2)}
           onSave={handleSaveExpense}
           editItem={editItem}
           remainingBudgetByCategory={remainingBudgetByCategory}
+          customCategories={budgetSettings
+            .filter(b => b.category === 'custom' && b.custom_category_name)
+            .map(b => b.custom_category_name)
+            .filter((name, index, self) => self.indexOf(name) === index)
+          }
         />
         <DebtForm
           open={debtFormOpen}
