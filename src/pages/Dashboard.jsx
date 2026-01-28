@@ -161,19 +161,29 @@ export default function Dashboard() {
     enabled: !!user && !!selectedHouseholdId
   });
 
-  // Update custom categories cache when budgetSettings change
+  // Query for all unique custom categories ever created for the household
+  const { data: allCustomBudgetItems = [] } = useQuery({
+    queryKey: ['allCustomBudgetItems', selectedHouseholdId],
+    queryFn: async () => {
+      if (!user || !selectedHouseholdId) return [];
+      return base44.entities.Expense.filter({ 
+        household_id: selectedHouseholdId,
+        category: 'custom',
+        is_budget: true
+      });
+    },
+    enabled: !!user && !!selectedHouseholdId
+  });
+
+  // Update custom categories cache based on allCustomBudgetItems
   React.useEffect(() => {
-    const customCats = budgetSettings
-      .filter(b => b.category === 'custom' && b.custom_category_name)
+    const customCats = allCustomBudgetItems
+      .filter(b => b.custom_category_name)
       .map(b => b.custom_category_name)
       .filter((name, index, self) => self.indexOf(name) === index);
     
-    // Always merge with existing cache, never replace completely
-    setCustomCategoriesCache(prev => {
-      const combined = [...new Set([...prev, ...customCats])];
-      return combined;
-    });
-  }, [budgetSettings]);
+    setCustomCategoriesCache(customCats); 
+  }, [allCustomBudgetItems]);
 
   const { data: debts = [], isLoading: loadingDebts } = useQuery({
     queryKey: ['debts', selectedHouseholdId],
@@ -1054,6 +1064,7 @@ ${JSON.stringify(financialData, null, 2)}
               month={selectedMonth}
               year={selectedYear}
               existingBudgets={budgetSettings}
+              allCustomCategories={customCategoriesCache}
               onSave={handleSaveBudgetSettings}
             />
           </TabsContent>

@@ -30,6 +30,7 @@ export default function BudgetSettingsTab({
   month, 
   year, 
   existingBudgets = [],
+  allCustomCategories = [],
   onSave 
 }) {
   const [budgets, setBudgets] = useState({});
@@ -51,11 +52,10 @@ export default function BudgetSettingsTab({
       }
     });
     
-    // ALWAYS merge with existing - never replace completely
-    // This prevents categories from disappearing during data refresh
+    // Merge existing budgets' custom categories with all known custom categories
     setCustomCategories(prev => {
-      const allCustom = [...new Set([...prev, ...customCats])];
-      return allCustom;
+      const allUniqueCustoms = [...new Set([...prev, ...customCats, ...allCustomCategories])];
+      return allUniqueCustoms;
     });
     
     // Merge budgets, don't replace
