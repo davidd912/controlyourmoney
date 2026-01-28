@@ -51,12 +51,14 @@ export default function BudgetSettingsTab({
       }
     });
     
-    // Merge with existing custom categories to preserve newly added ones
+    // ALWAYS merge with existing - never replace completely
+    // This prevents categories from disappearing during data refresh
     setCustomCategories(prev => {
       const allCustom = [...new Set([...prev, ...customCats])];
       return allCustom;
     });
     
+    // Merge budgets, don't replace
     setBudgets(prev => ({
       ...prev,
       ...budgetMap
