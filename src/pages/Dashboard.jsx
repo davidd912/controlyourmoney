@@ -441,18 +441,12 @@ export default function Dashboard() {
     }
   };
 
-  const handleSaveBudgetSettings = async (budgets, customCategories) => {
-    try {
-      // Update cache FIRST with all custom categories from BudgetSettingsTab
-      if (customCategories && customCategories.length > 0) {
-        setCustomCategoriesCache(prev => {
-          const combined = [...new Set([...prev, ...customCategories])];
-          return combined;
-        });
-      }
+  const handleSaveBudgetSettings = async (payload) => {
+    const { budgets, customCategories } = payload;
 
+    try {
       // Delete existing budget settings for this month
-      const existingBudgets = await base44.entities.Expense.filter({
+      const existingBudgetsForMonth = await base44.entities.Expense.filter({
         household_id: selectedHouseholdId,
         month: selectedMonth,
         year: selectedYear,
@@ -460,20 +454,19 @@ export default function Dashboard() {
         is_current: false
       });
 
-      for (const budget of existingBudgets) {
+      for (const budget of existingBudgetsForMonth) {
         await base44.entities.Expense.delete(budget.id);
       }
 
-      // Create new budget settings
-      const budgetItems = [];
+      const itemsToBulkCreate = [];
       
+      // 1. Create budget records for this month (amount > 0)
       Object.entries(budgets).forEach(([key, value]) => {
         const amount = value ? parseFloat(value) : 0;
         if (amount > 0) {
           if (key.startsWith('custom_')) {
-            // Custom category
             const categoryName = key.replace('custom_', '');
-            budgetItems.push({
+            itemsToBulkCreate.push({
               household_id: selectedHouseholdId,
               month: selectedMonth,
               year: selectedYear,
@@ -486,8 +479,7 @@ export default function Dashboard() {
               description: 'תקציב חודשי'
             });
           } else {
-            // Regular category
-            budgetItems.push({
+            itemsToBulkCreate.push({
               household_id: selectedHouseholdId,
               month: selectedMonth,
               year: selectedYear,
@@ -502,13 +494,39 @@ export default function Dashboard() {
         }
       });
 
-      if (budgetItems.length > 0) {
-        await base44.entities.Expense.bulkCreate(budgetItems);
+      // 2. Create registration records for new custom categories (amount: 0)
+      const existingCustomCategoryNamesInDb = new Set(
+        allCustomBudgetItems
+          .filter(item => item.custom_category_name)
+          .map(item => item.custom_category_name)
+      );
+
+      customCategories.forEach(categoryName => {
+        if (!existingCustomCategoryNamesInDb.has(categoryName)) {
+          itemsToBulkCreate.push({
+            household_id: selectedHouseholdId,
+            month: selectedMonth,
+            year: selectedYear,
+            category: 'custom',
+            custom_category_name: categoryName,
+            amount: 0,
+            is_budget: true,
+            is_current: false,
+            priority: 3,
+            description: 'רישום קטגוריה מותאמת אישית'
+          });
+          existingCustomCategoryNamesInDb.add(categoryName);
+        }
+      });
+
+      if (itemsToBulkCreate.length > 0) {
+        await base44.entities.Expense.bulkCreate(itemsToBulkCreate);
       }
 
       // Invalidate queries
-      await queryClient.invalidateQueries(['budgetSettings']);
-      await queryClient.invalidateQueries(['expenses']);
+      await queryClient.invalidateQueries(['allCustomBudgetItems', selectedHouseholdId]);
+      await queryClient.invalidateQueries(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
+      await queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
     } catch (error) {
       console.error('Error saving budget settings:', error);
     }

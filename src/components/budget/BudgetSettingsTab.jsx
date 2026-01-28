@@ -90,7 +90,7 @@ export default function BudgetSettingsTab({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await onSave(budgets, customCategories);
+      await onSave({ budgets, customCategories });
     } finally {
       setIsSaving(false);
     }
