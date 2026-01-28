@@ -168,9 +168,11 @@ export default function Dashboard() {
       .map(b => b.custom_category_name)
       .filter((name, index, self) => self.indexOf(name) === index);
     
-    if (customCats.length > 0) {
-      setCustomCategoriesCache(customCats);
-    }
+    // Always merge with existing cache, never replace completely
+    setCustomCategoriesCache(prev => {
+      const combined = [...new Set([...prev, ...customCats])];
+      return combined;
+    });
   }, [budgetSettings]);
 
   const { data: debts = [], isLoading: loadingDebts } = useQuery({
