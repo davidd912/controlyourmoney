@@ -87,13 +87,6 @@ export default function Dashboard() {
   const [newHouseholdName, setNewHouseholdName] = useState('');
 
   const queryClient = useQueryClient();
-
-  // Auto-open create household dialog if user has no households
-  React.useEffect(() => {
-    if (user && households.length === 0) {
-      setCreateHouseholdOpen(true);
-    }
-  }, [user, households]);
   const navigate = useNavigate();
 
   const { data: user } = useQuery({
@@ -120,6 +113,13 @@ export default function Dashboard() {
   React.useEffect(() => {
     if (user && households.length > 0 && !selectedHouseholdId) {
       setSelectedHouseholdId(households[0].id);
+    }
+  }, [user, households]);
+
+  // Auto-open create household dialog if user has no households
+  React.useEffect(() => {
+    if (user && households.length === 0) {
+      setCreateHouseholdOpen(true);
     }
   }, [user, households]);
 
