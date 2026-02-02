@@ -34,6 +34,7 @@ import AlertPanel from "@/components/budget/AlertPanel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import CreateHouseholdDialog from "@/components/budget/CreateHouseholdDialog";
 
 import ExportButton, { convertToCSV, downloadCSV } from "@/components/budget/ExportButton";
 import HouseholdSelector from "@/components/budget/HouseholdSelector";
@@ -114,7 +115,7 @@ export default function Dashboard() {
     if (user && households.length > 0 && !selectedHouseholdId) {
       setSelectedHouseholdId(households[0].id);
     }
-  }, [user, households]);
+  }, [user, households, selectedHouseholdId]);
 
   // Auto-open create household dialog if user has no households
   React.useEffect(() => {
@@ -1267,45 +1268,6 @@ ${JSON.stringify(financialData, null, 2)}
           editItem={editItem}
         />
 
-        {/* Create Household Dialog */}
-        <Dialog open={createHouseholdOpen} onOpenChange={setCreateHouseholdOpen}>
-          <DialogContent className="sm:max-w-md" dir="rtl">
-            <DialogHeader>
-              <DialogTitle>צור משק בית חדש</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="household-name">שם משק הבית</Label>
-                <Input
-                  id="household-name"
-                  value={newHouseholdName}
-                  onChange={(e) => setNewHouseholdName(e.target.value)}
-                  placeholder="לדוגמה: משפחת כהן"
-                  onKeyPress={(e) => e.key === 'Enter' && handleCreateHousehold()}
-                />
-              </div>
-              <div className="flex gap-2 justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setCreateHouseholdOpen(false);
-                    setNewHouseholdName('');
-                  }}
-                >
-                  ביטול
-                </Button>
-                <Button
-                  onClick={handleCreateHousehold}
-                  disabled={!newHouseholdName.trim() || createHousehold.isPending}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  {createHousehold.isPending ? 'יוצר...' : 'צור משק בית'}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
           {/* FAB Quick Actions Menu */}
           {fabMenuOpen && (
           <div 
@@ -1377,5 +1339,14 @@ ${JSON.stringify(financialData, null, 2)}
 
           </div>
     </div>
+
+    <CreateHouseholdDialog
+      open={createHouseholdOpen}
+      onOpenChange={setCreateHouseholdOpen}
+      newHouseholdName={newHouseholdName}
+      onNewHouseholdNameChange={setNewHouseholdName}
+      onCreateHousehold={handleCreateHousehold}
+      isCreating={createHousehold.isPending}
+    />
   );
 }
