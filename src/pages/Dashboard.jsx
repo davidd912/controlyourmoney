@@ -31,6 +31,9 @@ import DebtForm from "@/components/budget/DebtForm";
 import AssetForm from "@/components/budget/AssetForm";
 import DataTable from "@/components/budget/DataTable";
 import AlertPanel from "@/components/budget/AlertPanel";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 import ExportButton, { convertToCSV, downloadCSV } from "@/components/budget/ExportButton";
 import HouseholdSelector from "@/components/budget/HouseholdSelector";
@@ -80,6 +83,8 @@ export default function Dashboard() {
   const [isGeneratingAlerts, setIsGeneratingAlerts] = useState(false);
   const [fabMenuOpen, setFabMenuOpen] = useState(false);
   const [customCategoriesCache, setCustomCategoriesCache] = useState([]);
+  const [createHouseholdOpen, setCreateHouseholdOpen] = useState(false);
+  const [newHouseholdName, setNewHouseholdName] = useState('');
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -263,6 +268,16 @@ export default function Dashboard() {
   const deleteAsset = useMutation({
     mutationFn: (id) => base44.entities.Asset.delete(id),
     onSuccess: () => queryClient.invalidateQueries(['assets'])
+  });
+
+  const createHousehold = useMutation({
+    mutationFn: (data) => base44.entities.Household.create(data),
+    onSuccess: (newHousehold) => {
+      queryClient.invalidateQueries(['households']);
+      setSelectedHouseholdId(newHousehold.id);
+      setCreateHouseholdOpen(false);
+      setNewHouseholdName('');
+    }
   });
 
   const updateAlert = useMutation({
@@ -715,6 +730,15 @@ ${JSON.stringify(financialData, null, 2)}
     }
   };
 
+  const handleCreateHousehold = () => {
+    if (!newHouseholdName.trim()) return;
+    createHousehold.mutate({
+      name: newHouseholdName.trim(),
+      owner_email: user.email,
+      members: []
+    });
+  };
+
   const handleExportAll = () => {
     if (!filteredIncomes.length && !filteredExpenses.length && !debts.length && !assets.length) {
       alert('אין נתונים לייצוא');
@@ -790,7 +814,7 @@ ${JSON.stringify(financialData, null, 2)}
               כדי להתחיל, צור משק בית ראשון שלך
             </p>
             <Button
-              onClick={() => window.location.href = createPageUrl('HouseholdSettings')}
+              onClick={() => setCreateHouseholdOpen(true)}
               className="w-full bg-blue-600 hover:bg-blue-700"
             >
               <Plus className="w-4 h-4 ml-2" />
@@ -1234,7 +1258,46 @@ ${JSON.stringify(financialData, null, 2)}
           onClose={() => { setAssetFormOpen(false); setEditItem(null); }}
           onSave={handleSaveAsset}
           editItem={editItem}
-          />
+        />
+
+        {/* Create Household Dialog */}
+        <Dialog open={createHouseholdOpen} onOpenChange={setCreateHouseholdOpen}>
+          <DialogContent className="sm:max-w-md" dir="rtl">
+            <DialogHeader>
+              <DialogTitle>צור משק בית חדש</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="household-name">שם משק הבית</Label>
+                <Input
+                  id="household-name"
+                  value={newHouseholdName}
+                  onChange={(e) => setNewHouseholdName(e.target.value)}
+                  placeholder="לדוגמה: משפחת כהן"
+                  onKeyPress={(e) => e.key === 'Enter' && handleCreateHousehold()}
+                />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setCreateHouseholdOpen(false);
+                    setNewHouseholdName('');
+                  }}
+                >
+                  ביטול
+                </Button>
+                <Button
+                  onClick={handleCreateHousehold}
+                  disabled={!newHouseholdName.trim() || createHousehold.isPending}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  צור משק בית
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
           {/* FAB Quick Actions Menu */}
           {fabMenuOpen && (
