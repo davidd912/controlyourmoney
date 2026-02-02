@@ -109,12 +109,12 @@ export default function Dashboard() {
 
   const [selectedHouseholdId, setSelectedHouseholdId] = useState(null);
 
-  // Auto-select first household or create one
+  // Auto-select first household
   React.useEffect(() => {
     if (user && households.length > 0 && !selectedHouseholdId) {
       setSelectedHouseholdId(households[0].id);
     }
-  }, [user, households, selectedHouseholdId]);
+  }, [user, households]);
 
   // Listen for FAB menu open event
   React.useEffect(() => {
