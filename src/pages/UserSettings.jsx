@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, Trash2, Mail, Home, UserPlus, User, LogOut, Edit } from "lucide-react";
+import { Users, Plus, Trash2, Mail, Home, UserPlus, User, LogOut, Edit, BarChart3, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -22,6 +22,16 @@ export default function UserSettings() {
   const { data: user } = useQuery({
     queryKey: ['user'],
     queryFn: () => base44.auth.me()
+  });
+
+  const { data: stats } = useQuery({
+    queryKey: ['todayStats'],
+    queryFn: async () => {
+      if (!user || user.role !== 'admin') return null;
+      const result = await base44.functions.invoke('getTodayStats');
+      return result.data;
+    },
+    enabled: !!user && user.role === 'admin'
   });
 
   const { data: households = [] } = useQuery({
@@ -217,6 +227,98 @@ export default function UserSettings() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Admin Stats Section */}
+        {user?.role === 'admin' && stats && (
+          <div className="mb-6">
+            <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-purple-900">
+                  <BarChart3 className="w-5 h-5 text-purple-600" />
+                  סטטיסטיקות מערכת - Admin
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Today's Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-white rounded-lg border-2 border-blue-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <UserPlus className="w-5 h-5 text-blue-600" />
+                      <h3 className="font-semibold text-blue-900">משתמשים חדשים היום</h3>
+                    </div>
+                    <p className="text-3xl font-bold text-blue-600 mb-2">{stats.newUsersToday?.length || 0}</p>
+                    <p className="text-sm text-gray-500">סה״כ במערכת: {stats.totalUsers}</p>
+                  </div>
+                  <div className="p-4 bg-white rounded-lg border-2 border-green-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Home className="w-5 h-5 text-green-600" />
+                      <h3 className="font-semibold text-green-900">משקי בית חדשים היום</h3>
+                    </div>
+                    <p className="text-3xl font-bold text-green-600 mb-2">{stats.newHouseholdsToday?.length || 0}</p>
+                    <p className="text-sm text-gray-500">סה״כ במערכת: {stats.totalHouseholds}</p>
+                  </div>
+                </div>
+
+                {/* Users by Date */}
+                <div>
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-purple-600" />
+                    משתמשים לפי תאריך
+                  </h3>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {Object.entries(stats.usersByDate || {})
+                      .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
+                      .map(([date, users]) => (
+                        <div key={date} className="bg-white p-3 rounded-lg border">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-semibold text-purple-900">{new Date(date).toLocaleDateString('he-IL')}</span>
+                            <Badge className="bg-purple-100 text-purple-700">{users.length} משתמשים</Badge>
+                          </div>
+                          <div className="space-y-1">
+                            {users.map(u => (
+                              <div key={u.id} className="text-sm text-gray-600 flex items-center gap-2">
+                                <Mail className="w-3 h-3" />
+                                {u.full_name} ({u.email})
+                                {u.role === 'admin' && <Badge variant="outline" className="text-xs">אדמין</Badge>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+
+                {/* Households by Date */}
+                <div>
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-green-600" />
+                    משקי בית לפי תאריך
+                  </h3>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {Object.entries(stats.householdsByDate || {})
+                      .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
+                      .map(([date, households]) => (
+                        <div key={date} className="bg-white p-3 rounded-lg border">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-semibold text-green-900">{new Date(date).toLocaleDateString('he-IL')}</span>
+                            <Badge className="bg-green-100 text-green-700">{households.length} משקי בית</Badge>
+                          </div>
+                          <div className="space-y-1">
+                            {households.map(h => (
+                              <div key={h.id} className="text-sm text-gray-600 flex items-center gap-2">
+                                <Home className="w-3 h-3" />
+                                {h.name} - {h.owner_email} ({h.members_count} חברים)
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Household Management Section */}
         <div className="mb-6">
