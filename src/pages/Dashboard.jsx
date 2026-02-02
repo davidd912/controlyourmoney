@@ -809,28 +809,39 @@ ${JSON.stringify(financialData, null, 2)}
   // No household selected - show setup screen
   if (!selectedHouseholdId && households.length === 0 && user) {
     return (
-      <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4 min-h-[60vh]">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle className="text-center flex items-center justify-center gap-2">
-              <Wallet className="w-6 h-6 text-blue-600" />
-              ברוכים הבאים!
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-center text-gray-600">
-              כדי להתחיל, צור משק בית ראשון שלך
-            </p>
-            <Button
-              onClick={() => setCreateHouseholdOpen(true)}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-            >
-              <Plus className="w-4 h-4 ml-2" />
-              צור משק בית
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <>
+        <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4 min-h-[60vh]">
+          <Card className="max-w-md w-full">
+            <CardHeader>
+              <CardTitle className="text-center flex items-center justify-center gap-2">
+                <Wallet className="w-6 h-6 text-blue-600" />
+                ברוכים הבאים!
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-center text-gray-600">
+                כדי להתחיל, צור משק בית ראשון שלך
+              </p>
+              <Button
+                onClick={() => setCreateHouseholdOpen(true)}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="w-4 h-4 ml-2" />
+                צור משק בית
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <CreateHouseholdDialog
+          open={createHouseholdOpen}
+          onOpenChange={setCreateHouseholdOpen}
+          newHouseholdName={newHouseholdName}
+          onNewHouseholdNameChange={setNewHouseholdName}
+          onCreateHousehold={handleCreateHousehold}
+          isCreating={createHousehold.isPending}
+        />
+      </>
     );
   }
 
