@@ -19,22 +19,68 @@ Deno.serve(async (req) => {
         const allUsers = await base44.asServiceRole.entities.User.list();
         const allHouseholds = await base44.asServiceRole.entities.Household.list();
 
-        // Count users created today
+        // Get users created today with details
         const newUsersToday = allUsers.filter(u => {
             const createdDate = new Date(u.created_date);
             return createdDate >= startOfDay && createdDate <= endOfDay;
-        }).length;
+        }).map(u => ({
+            id: u.id,
+            email: u.email,
+            full_name: u.full_name,
+            role: u.role,
+            created_date: u.created_date
+        }));
 
-        // Count households created today
+        // Get households created today with details
         const newHouseholdsToday = allHouseholds.filter(h => {
             const createdDate = new Date(h.created_date);
             return createdDate >= startOfDay && createdDate <= endOfDay;
-        }).length;
+        }).map(h => ({
+            id: h.id,
+            name: h.name,
+            owner_email: h.owner_email,
+            members_count: h.members ? h.members.length : 0,
+            created_date: h.created_date
+        }));
+
+        // Group all users by date
+        const usersByDate = {};
+        allUsers.forEach(u => {
+            const date = new Date(u.created_date).toISOString().split('T')[0];
+            if (!usersByDate[date]) {
+                usersByDate[date] = [];
+            }
+            usersByDate[date].push({
+                id: u.id,
+                email: u.email,
+                full_name: u.full_name,
+                role: u.role,
+                created_date: u.created_date
+            });
+        });
+
+        // Group all households by date
+        const householdsByDate = {};
+        allHouseholds.forEach(h => {
+            const date = new Date(h.created_date).toISOString().split('T')[0];
+            if (!householdsByDate[date]) {
+                householdsByDate[date] = [];
+            }
+            householdsByDate[date].push({
+                id: h.id,
+                name: h.name,
+                owner_email: h.owner_email,
+                members_count: h.members ? h.members.length : 0,
+                created_date: h.created_date
+            });
+        });
 
         return Response.json({
             date: startOfDay.toISOString().split('T')[0],
             newUsersToday,
             newHouseholdsToday,
+            usersByDate,
+            householdsByDate,
             totalUsers: allUsers.length,
             totalHouseholds: allHouseholds.length
         });
