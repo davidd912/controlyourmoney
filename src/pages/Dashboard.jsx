@@ -1337,16 +1337,15 @@ ${JSON.stringify(financialData, null, 2)}
           </div>
           )}
 
-          </div>
+        <CreateHouseholdDialog
+          open={createHouseholdOpen}
+          onOpenChange={setCreateHouseholdOpen}
+          newHouseholdName={newHouseholdName}
+          onNewHouseholdNameChange={setNewHouseholdName}
+          onCreateHousehold={handleCreateHousehold}
+          isCreating={createHousehold.isPending}
+        />
+      </div>
     </div>
-
-    <CreateHouseholdDialog
-      open={createHouseholdOpen}
-      onOpenChange={setCreateHouseholdOpen}
-      newHouseholdName={newHouseholdName}
-      onNewHouseholdNameChange={setNewHouseholdName}
-      onCreateHousehold={handleCreateHousehold}
-      isCreating={createHousehold.isPending}
-    />
   );
 }
