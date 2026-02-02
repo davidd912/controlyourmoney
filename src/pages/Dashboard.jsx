@@ -95,7 +95,7 @@ export default function Dashboard() {
     queryFn: () => base44.auth.me()
   });
 
-  const { data: households = [] } = useQuery({
+  const { data: households = [], isLoading: loadingHouseholds } = useQuery({
     queryKey: ['households'],
     queryFn: async () => {
       if (!user) return [];
@@ -119,10 +119,10 @@ export default function Dashboard() {
 
   // Auto-open create household dialog if user has no households
   React.useEffect(() => {
-    if (user && households.length === 0) {
+    if (user && !loadingHouseholds && households.length === 0) {
       setCreateHouseholdOpen(true);
     }
-  }, [user, households]);
+  }, [user, households, loadingHouseholds]);
 
   // Listen for FAB menu open event
   React.useEffect(() => {
