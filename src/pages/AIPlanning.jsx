@@ -553,24 +553,30 @@ ${JSON.stringify(monthlyData, null, 2)}
         </motion.div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-white shadow-sm p-1 rounded-xl">
-            <TabsTrigger value="recommendations" className="rounded-lg">
-              <Lightbulb className="w-4 h-4 ml-2" />
-              המלצות אדפטיביות
-            </TabsTrigger>
-            <TabsTrigger value="forecast" className="rounded-lg">
-              <TrendingUp className="w-4 h-4 ml-2" />
-              תחזית עתידית
-            </TabsTrigger>
-            <TabsTrigger value="whatif" className="rounded-lg">
-              <Calculator className="w-4 h-4 ml-2" />
-              תרחישי "מה אם"
-            </TabsTrigger>
-            <TabsTrigger value="goals" className="rounded-lg">
-              <Target className="w-4 h-4 ml-2" />
-              מטרות פיננסיות
-            </TabsTrigger>
-          </TabsList>
+          <div className="bg-white shadow-sm p-1.5 rounded-xl overflow-x-auto">
+            <TabsList className="inline-flex min-w-full sm:min-w-0 gap-1 bg-transparent p-0">
+              <TabsTrigger value="recommendations" className="rounded-lg whitespace-nowrap text-xs sm:text-sm">
+                <Lightbulb className="w-4 h-4 ml-1 sm:ml-2" />
+                <span className="hidden sm:inline">המלצות אדפטיביות</span>
+                <span className="sm:hidden">המלצות</span>
+              </TabsTrigger>
+              <TabsTrigger value="forecast" className="rounded-lg whitespace-nowrap text-xs sm:text-sm">
+                <TrendingUp className="w-4 h-4 ml-1 sm:ml-2" />
+                <span className="hidden sm:inline">תחזית עתידית</span>
+                <span className="sm:hidden">תחזית</span>
+              </TabsTrigger>
+              <TabsTrigger value="whatif" className="rounded-lg whitespace-nowrap text-xs sm:text-sm">
+                <Calculator className="w-4 h-4 ml-1 sm:ml-2" />
+                <span className="hidden sm:inline">תרחישי "מה אם"</span>
+                <span className="sm:hidden">מה אם</span>
+              </TabsTrigger>
+              <TabsTrigger value="goals" className="rounded-lg whitespace-nowrap text-xs sm:text-sm">
+                <Target className="w-4 h-4 ml-1 sm:ml-2" />
+                <span className="hidden sm:inline">מטרות פיננסיות</span>
+                <span className="sm:hidden">מטרות</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Recommendations Tab */}
           <TabsContent value="recommendations" className="space-y-6">
@@ -777,25 +783,25 @@ ${JSON.stringify(monthlyData, null, 2)}
                                     {month.month}/{month.year}
                                   </p>
                                   <p className="text-sm text-gray-600 mt-1">{month.notes}</p>
-                                  <div className="grid grid-cols-3 gap-4 mt-3 text-sm">
-                                    <div>
-                                      <span className="text-gray-500">הכנסות</span>
-                                      <p className="font-semibold text-green-700">
-                                        ₪{month.predicted_income?.toLocaleString()}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <span className="text-gray-500">הוצאות</span>
-                                      <p className="font-semibold text-orange-700">
-                                        ₪{month.predicted_expenses?.toLocaleString()}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <span className="text-gray-500">יתרה</span>
-                                      <p className={`font-semibold ${isPositive ? 'text-blue-700' : 'text-red-700'}`}>
-                                        ₪{month.predicted_balance?.toLocaleString()}
-                                      </p>
-                                    </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-3 text-sm">
+                                   <div>
+                                     <span className="text-gray-500">הכנסות</span>
+                                     <p className="font-semibold text-green-700">
+                                       ₪{month.predicted_income?.toLocaleString()}
+                                     </p>
+                                   </div>
+                                   <div>
+                                     <span className="text-gray-500">הוצאות</span>
+                                     <p className="font-semibold text-orange-700">
+                                       ₪{month.predicted_expenses?.toLocaleString()}
+                                     </p>
+                                   </div>
+                                   <div>
+                                     <span className="text-gray-500">יתרה</span>
+                                     <p className={`font-semibold ${isPositive ? 'text-blue-700' : 'text-red-700'}`}>
+                                       ₪{month.predicted_balance?.toLocaleString()}
+                                     </p>
+                                   </div>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -819,7 +825,7 @@ ${JSON.stringify(monthlyData, null, 2)}
                           <CardTitle>סיכום שנתי</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                          <div className="grid grid-cols-3 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             <div>
                               <span className="text-sm text-gray-600">סה״כ הכנסות</span>
                               <p className="text-2xl font-bold text-green-700">
@@ -925,7 +931,7 @@ ${JSON.stringify(monthlyData, null, 2)}
                   בדוק את ההשפעה של שינויים צפויים על התקציב שלך
                 </p>
 
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="income-change">שינוי בהכנסות (₪)</Label>
                     <Input
@@ -982,7 +988,7 @@ ${JSON.stringify(monthlyData, null, 2)}
                           <CardTitle className="text-lg">מצב צפוי</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             <div>
                               <span className="text-sm text-gray-600">הכנסות חדשות</span>
                               <p className="text-xl font-bold text-green-700">
@@ -1135,7 +1141,7 @@ ${JSON.stringify(monthlyData, null, 2)}
                     </Button>
                   </div>
                 ) : (
-                  <div className="grid gap-6 md:grid-cols-2">
+                  <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                     {goals.map((goal) => (
                       <GoalCard
                         key={goal.id}
