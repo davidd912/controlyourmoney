@@ -196,6 +196,19 @@ export default function Layout({ children, currentPageName }) {
         </div>
       </footer>
 
+      {/* Floating QuickChat Button */}
+      <Link to={createPageUrl('QuickChat')}>
+        <motion.button
+          whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+          whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
+          className="fixed left-6 bottom-24 md:bottom-8 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-2xl hover:shadow-purple-500/50 transition-all"
+          aria-label="צ'אט חכם"
+        >
+          <Sparkles className="w-6 h-6" aria-hidden="true" />
+        </motion.button>
+      </Link>
+
       {/* Bottom Navigation for Mobile with FAB */}
       <nav 
         className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white border-t shadow-lg" 
@@ -231,17 +244,19 @@ export default function Layout({ children, currentPageName }) {
 
           {/* FAB Button in Center */}
           <div className="flex items-center justify-center px-4">
-            <Link to={createPageUrl('QuickChat')}>
-              <motion.button
-                whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
-                whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
-                transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
-                className="absolute -top-7 left-1/2 -translate-x-1/2 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg ring-4 ring-white hover:shadow-xl transition-shadow"
-                aria-label="צ'אט חכם"
-              >
-                <Sparkles className="w-7 h-7" aria-hidden="true" />
-              </motion.button>
-            </Link>
+            <motion.button
+              whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+              whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
+              onClick={() => {
+                const event = new CustomEvent('openFABMenu');
+                window.dispatchEvent(event);
+              }}
+              className="absolute -top-7 left-1/2 -translate-x-1/2 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg ring-4 ring-white hover:shadow-xl transition-shadow"
+              aria-label="הוסף פריט"
+            >
+              <Plus className="w-7 h-7" aria-hidden="true" />
+            </motion.button>
           </div>
 
           {/* Left Side Items (2 items) */}
