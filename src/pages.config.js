@@ -54,6 +54,7 @@ import Guide from './pages/Guide';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import UserSettings from './pages/UserSettings';
+import QuickChat from './pages/QuickChat';
 import __Layout from './Layout.jsx';
 
 
@@ -65,6 +66,7 @@ export const PAGES = {
     "PrivacyPolicy": PrivacyPolicy,
     "TermsOfService": TermsOfService,
     "UserSettings": UserSettings,
+    "QuickChat": QuickChat,
 }
 
 export const pagesConfig = {
