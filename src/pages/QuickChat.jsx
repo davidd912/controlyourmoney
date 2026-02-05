@@ -7,10 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Send, CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function QuickChat() {
     const [inputText, setInputText] = useState('');
     const [parsedData, setParsedData] = useState(null);
+    const [editedData, setEditedData] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState(null);
@@ -52,6 +54,7 @@ export default function QuickChat() {
             });
 
             setParsedData(response.data);
+            setEditedData({}); // Reset edited data
         } catch (err) {
             setError(err.message || 'שגיאה בניתוח הטקסט');
         } finally {
@@ -67,19 +70,22 @@ export default function QuickChat() {
 
         try {
             const now = new Date();
-            await base44.functions.invoke('confirmAndCreateTransaction', {
+            const finalData = {
                 household_id: currentHousehold.id,
-                type: parsedData.type,
-                amount: parsedData.amount,
-                merchant: parsedData.merchant,
-                category_id: parsedData.category_id,
-                description: parsedData.merchant || parsedData.raw_text,
+                type: editedData.type || parsedData.type,
+                amount: editedData.amount || parsedData.amount,
+                merchant: editedData.merchant || parsedData.merchant,
+                category_id: editedData.category_id || parsedData.category_id,
+                description: editedData.merchant || parsedData.merchant || parsedData.raw_text,
                 month: now.getMonth() + 1,
                 year: now.getFullYear()
-            });
+            };
+
+            await base44.functions.invoke('confirmAndCreateTransaction', finalData);
 
             setSuccess(true);
             setParsedData(null);
+            setEditedData({});
             setInputText('');
 
             // Reset success message after 3 seconds
@@ -89,6 +95,32 @@ export default function QuickChat() {
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const updateField = (field, value) => {
+        setEditedData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const getCurrentValue = (field) => {
+        return editedData[field] !== undefined ? editedData[field] : parsedData[field];
+    };
+
+    const isFieldMissing = (field) => {
+        return parsedData?.missing_fields?.includes(field);
+    };
+
+    const isFormValid = () => {
+        if (!parsedData) return false;
+        
+        const amount = getCurrentValue('amount');
+        const merchant = getCurrentValue('merchant');
+        const type = getCurrentValue('type');
+        const category_id = getCurrentValue('category_id');
+
+        return amount && amount > 0 && 
+               merchant && merchant.trim() !== '' && 
+               type && type !== 'unknown' &&
+               category_id && category_id !== 'null';
     };
 
     const getCategoryLabel = (categoryId) => {
@@ -227,38 +259,103 @@ export default function QuickChat() {
                                 </CardHeader>
                                 <CardContent className="pt-6 space-y-4">
                                     {/* Amount */}
-                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                        <span className="text-gray-600">סכום:</span>
-                                        <span className="text-2xl font-bold text-gray-900">
-                                            {parsedData.amount ? `₪${parsedData.amount.toLocaleString('he-IL')}` : 'לא זוהה'}
-                                        </span>
+                                    <div className="p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-gray-600">סכום:</span>
+                                            {isFieldMissing('amount') && (
+                                                <Badge variant="secondary" className="bg-amber-100 text-amber-800 text-xs">חסר</Badge>
+                                            )}
+                                        </div>
+                                        {isFieldMissing('amount') ? (
+                                            <Input
+                                                type="number"
+                                                placeholder="הזן סכום..."
+                                                value={getCurrentValue('amount') || ''}
+                                                onChange={(e) => updateField('amount', parseFloat(e.target.value))}
+                                                className="text-lg font-bold"
+                                            />
+                                        ) : (
+                                            <span className="text-2xl font-bold text-gray-900">
+                                                {getCurrentValue('amount') ? `₪${getCurrentValue('amount').toLocaleString('he-IL')}` : 'לא זוהה'}
+                                            </span>
+                                        )}
                                     </div>
 
                                     {/* Merchant */}
-                                    {parsedData.merchant && (
-                                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                    <div className="p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex justify-between items-center mb-2">
                                             <span className="text-gray-600">עסק:</span>
-                                            <span className="font-medium text-gray-900">{parsedData.merchant}</span>
+                                            {isFieldMissing('merchant') && (
+                                                <Badge variant="secondary" className="bg-amber-100 text-amber-800 text-xs">חסר</Badge>
+                                            )}
                                         </div>
-                                    )}
+                                        {isFieldMissing('merchant') || !getCurrentValue('merchant') ? (
+                                            <Input
+                                                placeholder="הזן שם עסק..."
+                                                value={getCurrentValue('merchant') || ''}
+                                                onChange={(e) => updateField('merchant', e.target.value)}
+                                                className="font-medium"
+                                            />
+                                        ) : (
+                                            <span className="font-medium text-gray-900">{getCurrentValue('merchant')}</span>
+                                        )}
+                                    </div>
 
                                     {/* Type */}
-                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                        <span className="text-gray-600">סוג:</span>
-                                        <Badge variant={parsedData.type === 'expense' ? 'destructive' : 'default'}>
-                                            {parsedData.type === 'expense' ? 'הוצאה' : parsedData.type === 'income' ? 'הכנסה' : 'לא ידוע'}
-                                        </Badge>
+                                    <div className="p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-gray-600">סוג:</span>
+                                            {isFieldMissing('type') && (
+                                                <Badge variant="secondary" className="bg-amber-100 text-amber-800 text-xs">חסר</Badge>
+                                            )}
+                                        </div>
+                                        {isFieldMissing('type') || getCurrentValue('type') === 'unknown' ? (
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    variant={getCurrentValue('type') === 'expense' ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={() => updateField('type', 'expense')}
+                                                    className="flex-1"
+                                                >
+                                                    הוצאה
+                                                </Button>
+                                                <Button
+                                                    variant={getCurrentValue('type') === 'income' ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    onClick={() => updateField('type', 'income')}
+                                                    className="flex-1"
+                                                >
+                                                    הכנסה
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <Badge variant={getCurrentValue('type') === 'expense' ? 'destructive' : 'default'}>
+                                                {getCurrentValue('type') === 'expense' ? 'הוצאה' : 'הכנסה'}
+                                            </Badge>
+                                        )}
                                     </div>
 
                                     {/* Category */}
-                                    {parsedData.category_id && (
-                                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                    <div className="p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex justify-between items-center mb-2">
                                             <span className="text-gray-600">קטגוריה:</span>
-                                            <span className="font-medium text-gray-900">
-                                                {getCategoryLabel(parsedData.category_id)}
-                                            </span>
+                                            {isFieldMissing('category_id') && (
+                                                <Badge variant="secondary" className="bg-amber-100 text-amber-800 text-xs">חסר</Badge>
+                                            )}
                                         </div>
-                                    )}
+                                        {isFieldMissing('category_id') || !getCurrentValue('category_id') ? (
+                                            <Input
+                                                placeholder="לדוגמה: food, leisure, salary..."
+                                                value={getCurrentValue('category_id') || ''}
+                                                onChange={(e) => updateField('category_id', e.target.value)}
+                                                className="font-medium"
+                                            />
+                                        ) : (
+                                            <span className="font-medium text-gray-900">
+                                                {getCategoryLabel(getCurrentValue('category_id'))}
+                                            </span>
+                                        )}
+                                    </div>
 
                                     {/* Matched Rule */}
                                     {parsedData.matched_rule && (
@@ -285,7 +382,7 @@ export default function QuickChat() {
                                     <div className="flex gap-3 pt-4">
                                         <Button
                                             onClick={handleConfirm}
-                                            disabled={isSaving || parsedData.missing_fields?.length > 0}
+                                            disabled={isSaving || !isFormValid()}
                                             className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                                         >
                                             {isSaving ? (
@@ -301,7 +398,10 @@ export default function QuickChat() {
                                             )}
                                         </Button>
                                         <Button
-                                            onClick={() => setParsedData(null)}
+                                            onClick={() => {
+                                                setParsedData(null);
+                                                setEditedData({});
+                                            }}
                                             variant="outline"
                                             disabled={isSaving}
                                         >
