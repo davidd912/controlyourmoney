@@ -231,19 +231,17 @@ export default function Layout({ children, currentPageName }) {
 
           {/* FAB Button in Center */}
           <div className="flex items-center justify-center px-4">
-            <motion.button
-              whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
-              whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
-              transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
-              onClick={() => {
-                const event = new CustomEvent('openFABMenu');
-                window.dispatchEvent(event);
-              }}
-              className="absolute -top-7 left-1/2 -translate-x-1/2 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg ring-4 ring-white hover:shadow-xl transition-shadow"
-              aria-label="הוסף פריט"
-            >
-              <Plus className="w-7 h-7" aria-hidden="true" />
-            </motion.button>
+            <Link to={createPageUrl('QuickChat')}>
+              <motion.button
+                whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+                whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
+                transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
+                className="absolute -top-7 left-1/2 -translate-x-1/2 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg ring-4 ring-white hover:shadow-xl transition-shadow"
+                aria-label="צ'אט חכם"
+              >
+                <Sparkles className="w-7 h-7" aria-hidden="true" />
+              </motion.button>
+            </Link>
           </div>
 
           {/* Left Side Items (2 items) */}
