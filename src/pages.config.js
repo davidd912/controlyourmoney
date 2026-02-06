@@ -52,9 +52,9 @@ import Benefits from './pages/Benefits';
 import Dashboard from './pages/Dashboard';
 import Guide from './pages/Guide';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import QuickChat from './pages/QuickChat';
 import TermsOfService from './pages/TermsOfService';
 import UserSettings from './pages/UserSettings';
-import QuickChat from './pages/QuickChat';
 import __Layout from './Layout.jsx';
 
 
@@ -64,9 +64,9 @@ export const PAGES = {
     "Dashboard": Dashboard,
     "Guide": Guide,
     "PrivacyPolicy": PrivacyPolicy,
+    "QuickChat": QuickChat,
     "TermsOfService": TermsOfService,
     "UserSettings": UserSettings,
-    "QuickChat": QuickChat,
 }
 
 export const pagesConfig = {

@@ -12,7 +12,11 @@ import {
   Users,
   BookOpen,
   Sparkles,
-  Plus
+  Plus,
+  TrendingUp,
+  TrendingDown,
+  CreditCard,
+  PiggyBank
 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
@@ -26,6 +30,7 @@ const navigation = [
 
 export default function Layout({ children, currentPageName }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [fabMenuOpen, setFabMenuOpen] = useState(false);
   const location = useLocation();
   const prefersReducedMotion = useReducedMotion();
 
@@ -33,6 +38,13 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
+
+  // Listen for FAB menu open event
+  useEffect(() => {
+    const handleFABMenu = () => setFabMenuOpen(true);
+    window.addEventListener('openFABMenu', handleFABMenu);
+    return () => window.removeEventListener('openFABMenu', handleFABMenu);
+  }, []);
 
   // Split navigation for bottom nav (2 items on each side of FAB)
   const leftNavItems = navigation.slice(0, 2);
@@ -285,6 +297,78 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </div>
       </nav>
+
+      {/* FAB Quick Actions Menu */}
+      <AnimatePresence>
+        {fabMenuOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-[60] flex items-end justify-center pb-32"
+            onClick={() => setFabMenuOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-white rounded-t-3xl p-6 w-full max-w-md shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6" />
+              <h3 className="text-xl font-bold text-center mb-6">הוסף פריט חדש</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  onClick={() => {
+                    const event = new CustomEvent('fabAction', { detail: { type: 'income' } });
+                    window.dispatchEvent(event);
+                    setFabMenuOpen(false);
+                  }}
+                  className="flex flex-col items-center gap-3 h-24 bg-green-50 text-green-700 hover:bg-green-100 border-2 border-green-200"
+                  variant="outline"
+                >
+                  <TrendingUp className="w-8 h-8" />
+                  <span className="font-semibold">הכנסה</span>
+                </Button>
+                <Button
+                  onClick={() => {
+                    const event = new CustomEvent('fabAction', { detail: { type: 'expense' } });
+                    window.dispatchEvent(event);
+                    setFabMenuOpen(false);
+                  }}
+                  className="flex flex-col items-center gap-3 h-24 bg-orange-50 text-orange-700 hover:bg-orange-100 border-2 border-orange-200"
+                  variant="outline"
+                >
+                  <TrendingDown className="w-8 h-8" />
+                  <span className="font-semibold">הוצאה</span>
+                </Button>
+                <Button
+                  onClick={() => {
+                    const event = new CustomEvent('fabAction', { detail: { type: 'debt' } });
+                    window.dispatchEvent(event);
+                    setFabMenuOpen(false);
+                  }}
+                  className="flex flex-col items-center gap-3 h-24 bg-red-50 text-red-700 hover:bg-red-100 border-2 border-red-200"
+                  variant="outline"
+                >
+                  <CreditCard className="w-8 h-8" />
+                  <span className="font-semibold">חוב</span>
+                </Button>
+                <Button
+                  onClick={() => {
+                    const event = new CustomEvent('fabAction', { detail: { type: 'asset' } });
+                    window.dispatchEvent(event);
+                    setFabMenuOpen(false);
+                  }}
+                  className="flex flex-col items-center gap-3 h-24 bg-purple-50 text-purple-700 hover:bg-purple-100 border-2 border-purple-200"
+                  variant="outline"
+                >
+                  <PiggyBank className="w-8 h-8" />
+                  <span className="font-semibold">נכס</span>
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
