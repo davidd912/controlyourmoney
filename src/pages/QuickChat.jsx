@@ -39,6 +39,65 @@ export default function QuickChat() {
 
     const currentHousehold = households && households.length > 0 ? households[0] : null;
 
+    // Fetch custom categories for the household
+    const { data: allCustomBudgetItems = [] } = useQuery({
+        queryKey: ['allCustomBudgetItems', currentHousehold?.id],
+        queryFn: async () => {
+            if (!currentHousehold?.id) return [];
+            return base44.entities.Expense.filter({ 
+                household_id: currentHousehold.id,
+                category: 'custom',
+                is_budget: true
+            });
+        },
+        enabled: !!currentHousehold?.id
+    });
+
+    // Build available categories list
+    const availableCategories = React.useMemo(() => {
+        const expenseCategories = [
+            { value: 'food', label: 'מזון' },
+            { value: 'leisure', label: 'פנאי ובילויים' },
+            { value: 'clothing', label: 'ביגוד והנעלה' },
+            { value: 'household_items', label: 'ציוד לבית' },
+            { value: 'home_maintenance', label: 'תחזוקת בית' },
+            { value: 'grooming', label: 'טיפוח' },
+            { value: 'education', label: 'חינוך' },
+            { value: 'events', label: 'אירועים' },
+            { value: 'health', label: 'בריאות' },
+            { value: 'transportation', label: 'תחבורה' },
+            { value: 'family', label: 'משפחה' },
+            { value: 'communication', label: 'תקשורת' },
+            { value: 'housing', label: 'דיור' },
+            { value: 'obligations', label: 'התחייבויות' },
+            { value: 'assets', label: 'נכסים' },
+            { value: 'finance', label: 'פיננסים' },
+            { value: 'other', label: 'אחר' }
+        ];
+
+        const incomeCategories = [
+            { value: 'salary', label: 'משכורת' },
+            { value: 'allowance', label: 'קצבה' },
+            { value: 'other', label: 'אחר' }
+        ];
+
+        // Add custom categories
+        const customCategories = allCustomBudgetItems
+            .filter(item => item.custom_category_name)
+            .map(item => ({
+                value: `custom_${item.custom_category_name}`,
+                label: item.custom_category_name
+            }))
+            .filter((cat, index, self) => 
+                self.findIndex(c => c.value === cat.value) === index
+            );
+
+        return {
+            expense: [...expenseCategories, ...customCategories],
+            income: incomeCategories
+        };
+    }, [allCustomBudgetItems]);
+
     const handleParse = async () => {
         if (!inputText.trim() || !currentHousehold) return;
 
@@ -344,12 +403,50 @@ export default function QuickChat() {
                                             )}
                                         </div>
                                         {isFieldMissing('category_id') || !getCurrentValue('category_id') ? (
-                                            <Input
-                                                placeholder="לדוגמה: food, leisure, salary..."
+                                            <Select
                                                 value={getCurrentValue('category_id') || ''}
-                                                onChange={(e) => updateField('category_id', e.target.value)}
-                                                className="font-medium"
-                                            />
+                                                onValueChange={(value) => updateField('category_id', value)}
+                                            >
+                                                <SelectTrigger className="font-medium">
+                                                    <SelectValue placeholder="בחר קטגוריה..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {getCurrentValue('type') === 'expense' ? (
+                                                        <>
+                                                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">קטגוריות הוצאה</div>
+                                                            {availableCategories.expense.map(cat => (
+                                                                <SelectItem key={cat.value} value={cat.value}>
+                                                                    {cat.label}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </>
+                                                    ) : getCurrentValue('type') === 'income' ? (
+                                                        <>
+                                                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">קטגוריות הכנסה</div>
+                                                            {availableCategories.income.map(cat => (
+                                                                <SelectItem key={cat.value} value={cat.value}>
+                                                                    {cat.label}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">קטגוריות הוצאה</div>
+                                                            {availableCategories.expense.map(cat => (
+                                                                <SelectItem key={cat.value} value={cat.value}>
+                                                                    {cat.label}
+                                                                </SelectItem>
+                                                            ))}
+                                                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 mt-2">קטגוריות הכנסה</div>
+                                                            {availableCategories.income.map(cat => (
+                                                                <SelectItem key={cat.value} value={cat.value}>
+                                                                    {cat.label}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </>
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
                                         ) : (
                                             <span className="font-medium text-gray-900">
                                                 {getCategoryLabel(getCurrentValue('category_id'))}
