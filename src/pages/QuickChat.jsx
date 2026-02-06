@@ -183,29 +183,11 @@ export default function QuickChat() {
     };
 
     const getCategoryLabel = (categoryId) => {
-        const categories = {
-            food: 'מזון',
-            leisure: 'פנאי ובילויים',
-            clothing: 'ביגוד והנעלה',
-            household_items: 'ציוד לבית',
-            home_maintenance: 'תחזוקת בית',
-            grooming: 'טיפוח',
-            education: 'חינוך',
-            events: 'אירועים',
-            health: 'בריאות',
-            transportation: 'תחבורה',
-            family: 'משפחה',
-            communication: 'תקשורת',
-            housing: 'דיור',
-            obligations: 'התחייבויות',
-            assets: 'נכסים',
-            finance: 'פיננסים',
-            custom: 'מותאם אישית',
-            salary: 'משכורת',
-            allowance: 'קצבה',
-            other: 'אחר'
+        const allAvailableCategories = {
+            ...Object.fromEntries(availableCategories.expense.map(cat => [cat.value, cat.label])),
+            ...Object.fromEntries(availableCategories.income.map(cat => [cat.value, cat.label])),
         };
-        return categories[categoryId] || categoryId;
+        return allAvailableCategories[categoryId] || categoryId;
     };
 
     return (
@@ -398,60 +380,54 @@ export default function QuickChat() {
                                     <div className="p-3 bg-gray-50 rounded-lg">
                                         <div className="flex justify-between items-center mb-2">
                                             <span className="text-gray-600">קטגוריה:</span>
-                                            {isFieldMissing('category_id') && (
+                                            {(isFieldMissing('category_id') || !getCurrentValue('category_id')) && (
                                                 <Badge variant="secondary" className="bg-amber-100 text-amber-800 text-xs">חסר</Badge>
                                             )}
                                         </div>
-                                        {isFieldMissing('category_id') || !getCurrentValue('category_id') ? (
-                                            <Select
-                                                value={getCurrentValue('category_id') || ''}
-                                                onValueChange={(value) => updateField('category_id', value)}
-                                            >
-                                                <SelectTrigger className="font-medium">
-                                                    <SelectValue placeholder="בחר קטגוריה..." />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {getCurrentValue('type') === 'expense' ? (
-                                                        <>
-                                                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">קטגוריות הוצאה</div>
-                                                            {availableCategories.expense.map(cat => (
-                                                                <SelectItem key={cat.value} value={cat.value}>
-                                                                    {cat.label}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </>
-                                                    ) : getCurrentValue('type') === 'income' ? (
-                                                        <>
-                                                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">קטגוריות הכנסה</div>
-                                                            {availableCategories.income.map(cat => (
-                                                                <SelectItem key={cat.value} value={cat.value}>
-                                                                    {cat.label}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">קטגוריות הוצאה</div>
-                                                            {availableCategories.expense.map(cat => (
-                                                                <SelectItem key={cat.value} value={cat.value}>
-                                                                    {cat.label}
-                                                                </SelectItem>
-                                                            ))}
-                                                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 mt-2">קטגוריות הכנסה</div>
-                                                            {availableCategories.income.map(cat => (
-                                                                <SelectItem key={cat.value} value={cat.value}>
-                                                                    {cat.label}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </>
-                                                    )}
-                                                </SelectContent>
-                                            </Select>
-                                        ) : (
-                                            <span className="font-medium text-gray-900">
-                                                {getCategoryLabel(getCurrentValue('category_id'))}
-                                            </span>
-                                        )}
+                                        <Select
+                                            value={getCurrentValue('category_id') || ''}
+                                            onValueChange={(value) => updateField('category_id', value)}
+                                        >
+                                            <SelectTrigger className="font-medium">
+                                                <SelectValue placeholder="בחר קטגוריה..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {getCurrentValue('type') === 'expense' ? (
+                                                    <>
+                                                        <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">קטגוריות הוצאה</div>
+                                                        {availableCategories.expense.map(cat => (
+                                                            <SelectItem key={cat.value} value={cat.value}>
+                                                                {cat.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </>
+                                                ) : getCurrentValue('type') === 'income' ? (
+                                                    <>
+                                                        <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">קטגוריות הכנסה</div>
+                                                        {availableCategories.income.map(cat => (
+                                                            <SelectItem key={cat.value} value={cat.value}>
+                                                                {cat.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">קטגוריות הוצאה</div>
+                                                        {availableCategories.expense.map(cat => (
+                                                            <SelectItem key={cat.value} value={cat.value}>
+                                                                {cat.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                        <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 mt-2">קטגוריות הכנסה</div>
+                                                        {availableCategories.income.map(cat => (
+                                                            <SelectItem key={cat.value} value={cat.value}>
+                                                                {cat.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </>
+                                                )}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
 
                                     {/* Matched Rule */}
