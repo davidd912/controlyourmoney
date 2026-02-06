@@ -19,7 +19,7 @@ import {
   Copy
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import moment from 'moment';
 
@@ -88,6 +88,7 @@ export default function Dashboard() {
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const { data: user } = useQuery({
     queryKey: ['user'],
@@ -145,6 +146,29 @@ export default function Dashboard() {
     window.addEventListener('fabAction', handleFABAction);
     return () => window.removeEventListener('fabAction', handleFABAction);
   }, []);
+
+  // Handle navigation state for opening forms from other pages
+  React.useEffect(() => {
+    if (location.state?.openForm) {
+      setEditItem(null);
+      switch (location.state.openForm) {
+        case 'income':
+          setIncomeFormOpen(true);
+          break;
+        case 'expense':
+          setExpenseFormOpen(true);
+          break;
+        case 'debt':
+          setDebtFormOpen(true);
+          break;
+        case 'asset':
+          setAssetFormOpen(true);
+          break;
+      }
+      // Clear the state so it doesn't reopen on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state]);
 
 
 

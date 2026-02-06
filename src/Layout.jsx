@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { 
@@ -32,6 +32,7 @@ export default function Layout({ children, currentPageName }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [fabMenuOpen, setFabMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const prefersReducedMotion = useReducedMotion();
 
   // Close mobile menu on route change
@@ -318,9 +319,13 @@ export default function Layout({ children, currentPageName }) {
               <div className="grid grid-cols-2 gap-3">
                 <Button
                   onClick={() => {
-                    const event = new CustomEvent('fabAction', { detail: { type: 'income' } });
-                    window.dispatchEvent(event);
                     setFabMenuOpen(false);
+                    if (currentPageName === 'Dashboard') {
+                      const event = new CustomEvent('fabAction', { detail: { type: 'income' } });
+                      window.dispatchEvent(event);
+                    } else {
+                      navigate(createPageUrl('Dashboard'), { state: { openForm: 'income' } });
+                    }
                   }}
                   className="flex flex-col items-center gap-3 h-24 bg-green-50 text-green-700 hover:bg-green-100 border-2 border-green-200"
                   variant="outline"
@@ -330,9 +335,13 @@ export default function Layout({ children, currentPageName }) {
                 </Button>
                 <Button
                   onClick={() => {
-                    const event = new CustomEvent('fabAction', { detail: { type: 'expense' } });
-                    window.dispatchEvent(event);
                     setFabMenuOpen(false);
+                    if (currentPageName === 'Dashboard') {
+                      const event = new CustomEvent('fabAction', { detail: { type: 'expense' } });
+                      window.dispatchEvent(event);
+                    } else {
+                      navigate(createPageUrl('Dashboard'), { state: { openForm: 'expense' } });
+                    }
                   }}
                   className="flex flex-col items-center gap-3 h-24 bg-orange-50 text-orange-700 hover:bg-orange-100 border-2 border-orange-200"
                   variant="outline"
@@ -342,9 +351,13 @@ export default function Layout({ children, currentPageName }) {
                 </Button>
                 <Button
                   onClick={() => {
-                    const event = new CustomEvent('fabAction', { detail: { type: 'debt' } });
-                    window.dispatchEvent(event);
                     setFabMenuOpen(false);
+                    if (currentPageName === 'Dashboard') {
+                      const event = new CustomEvent('fabAction', { detail: { type: 'debt' } });
+                      window.dispatchEvent(event);
+                    } else {
+                      navigate(createPageUrl('Dashboard'), { state: { openForm: 'debt' } });
+                    }
                   }}
                   className="flex flex-col items-center gap-3 h-24 bg-red-50 text-red-700 hover:bg-red-100 border-2 border-red-200"
                   variant="outline"
@@ -354,9 +367,13 @@ export default function Layout({ children, currentPageName }) {
                 </Button>
                 <Button
                   onClick={() => {
-                    const event = new CustomEvent('fabAction', { detail: { type: 'asset' } });
-                    window.dispatchEvent(event);
                     setFabMenuOpen(false);
+                    if (currentPageName === 'Dashboard') {
+                      const event = new CustomEvent('fabAction', { detail: { type: 'asset' } });
+                      window.dispatchEvent(event);
+                    } else {
+                      navigate(createPageUrl('Dashboard'), { state: { openForm: 'asset' } });
+                    }
                   }}
                   className="flex flex-col items-center gap-3 h-24 bg-purple-50 text-purple-700 hover:bg-purple-100 border-2 border-purple-200"
                   variant="outline"
