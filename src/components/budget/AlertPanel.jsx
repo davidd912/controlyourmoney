@@ -16,27 +16,27 @@ import {
 
 const severityConfig = {
   low: {
-    color: 'bg-blue-50 border-blue-200',
-    textColor: 'text-blue-700',
-    badgeColor: 'bg-blue-100 text-blue-700',
+    color: 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800',
+    textColor: 'text-blue-700 dark:text-blue-400',
+    badgeColor: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
     icon: Lightbulb
   },
   medium: {
-    color: 'bg-yellow-50 border-yellow-200',
-    textColor: 'text-yellow-700',
-    badgeColor: 'bg-yellow-100 text-yellow-700',
+    color: 'bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800',
+    textColor: 'text-yellow-700 dark:text-yellow-400',
+    badgeColor: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300',
     icon: AlertTriangle
   },
   high: {
-    color: 'bg-orange-50 border-orange-200',
-    textColor: 'text-orange-700',
-    badgeColor: 'bg-orange-100 text-orange-700',
+    color: 'bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800',
+    textColor: 'text-orange-700 dark:text-orange-400',
+    badgeColor: 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300',
     icon: TrendingUp
   },
   critical: {
-    color: 'bg-red-50 border-red-200',
-    textColor: 'text-red-700',
-    badgeColor: 'bg-red-100 text-red-700',
+    color: 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800',
+    textColor: 'text-red-700 dark:text-red-400',
+    badgeColor: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300',
     icon: AlertTriangle
   }
 };
@@ -62,15 +62,15 @@ export default function AlertPanel({ alerts, onDismiss, onMarkRead, onRefresh, i
   const unreadCount = alerts.filter(a => !a.is_read && !a.is_dismissed).length;
 
   return (
-    <Card className="border-0 shadow-lg">
+    <Card className="border-0 shadow-lg dark:bg-gray-800 dark:border-gray-700">
       <CardHeader>
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <Sparkles className="w-6 h-6 text-purple-600" />
+            <Sparkles className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             <div className="text-right">
-              <CardTitle className="text-lg">התראות חכמות</CardTitle>
+              <CardTitle className="text-lg dark:text-white">התראות חכמות</CardTitle>
               {unreadCount > 0 && (
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {unreadCount} התראות שלא נקראו
                 </p>
               )}
@@ -131,9 +131,9 @@ export default function AlertPanel({ alerts, onDismiss, onMarkRead, onRefresh, i
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="text-center py-8 text-gray-500"
+                className="text-center py-8 text-gray-500 dark:text-gray-400"
               >
-                <Sparkles className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <Sparkles className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
                 <p className="text-right">אין התראות חדשות</p>
               </motion.div>
             ) : (
@@ -147,7 +147,7 @@ export default function AlertPanel({ alerts, onDismiss, onMarkRead, onRefresh, i
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className={`p-4 rounded-lg border-2 ${config.color} ${!alert.is_read ? 'ring-2 ring-offset-2 ring-purple-300' : ''}`}
+                    className={`p-4 rounded-lg border-2 ${config.color} ${!alert.is_read ? 'ring-2 ring-offset-2 dark:ring-offset-gray-800 ring-purple-300 dark:ring-purple-600' : ''}`}
                   >
                     <div className="flex items-start gap-3">
                       <Icon className={`w-5 h-5 mt-1 ${config.textColor}`} />
@@ -155,9 +155,9 @@ export default function AlertPanel({ alerts, onDismiss, onMarkRead, onRefresh, i
                         <div className="flex items-start justify-between gap-2">
                           <div className="text-right">
                             <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold text-gray-900">{alert.title}</h3>
+                              <h3 className="font-semibold text-gray-900 dark:text-white">{alert.title}</h3>
                               {!alert.is_read && (
-                                <Badge className="bg-purple-100 text-purple-700 text-xs">חדש</Badge>
+                                <Badge className="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs">חדש</Badge>
                               )}
                             </div>
                             <Badge className={`${config.badgeColor} text-xs mb-2`}>
@@ -186,21 +186,21 @@ export default function AlertPanel({ alerts, onDismiss, onMarkRead, onRefresh, i
                           </div>
                         </div>
 
-                        <p className="text-sm text-gray-700 mb-2">{alert.message}</p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{alert.message}</p>
 
                         {alert.amount && (
-                          <p className="text-sm font-semibold text-gray-900 mb-2">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
                             סכום: ₪{alert.amount.toLocaleString()}
                           </p>
                         )}
 
                         {alert.suggestion && (
-                          <div className="mt-3 p-3 bg-white/60 rounded-lg border border-gray-200 text-right">
-                            <p className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                              <Lightbulb className="w-4 h-4 text-yellow-600" />
+                          <div className="mt-3 p-3 bg-white/60 dark:bg-gray-700/60 rounded-lg border border-gray-200 dark:border-gray-600 text-right">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center gap-2">
+                              <Lightbulb className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
                               המלצה:
                             </p>
-                            <p className="text-sm text-gray-600">{alert.suggestion}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">{alert.suggestion}</p>
                           </div>
                         )}
                       </div>

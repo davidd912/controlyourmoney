@@ -1178,22 +1178,22 @@ ${JSON.stringify(financialData, null, 2)}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <CategoryBreakdown expenses={filteredExpenses} budgets={budgetSettings} />
               
-              <Card className="border-0 shadow-lg">
+              <Card className="border-0 shadow-lg dark:bg-gray-800 dark:border-gray-700">
                 <CardHeader>
-                  <CardTitle className="text-lg">סיכום חובות</CardTitle>
+                  <CardTitle className="text-lg dark:text-white">סיכום חובות</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                    <span className="text-green-700">חובות בהסדר</span>
-                    <span className="font-bold text-green-700">₪{arrangedDebts.toLocaleString()}</span>
+                  <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-950 rounded-lg">
+                    <span className="text-green-700 dark:text-green-400">חובות בהסדר</span>
+                    <span className="font-bold text-green-700 dark:text-green-400">₪{arrangedDebts.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-                    <span className="text-red-700">חובות לא בהסדר</span>
-                    <span className="font-bold text-red-700">₪{unarrangedDebts.toLocaleString()}</span>
+                  <div className="flex justify-between items-center p-3 bg-red-50 dark:bg-red-950 rounded-lg">
+                    <span className="text-red-700 dark:text-red-400">חובות לא בהסדר</span>
+                    <span className="font-bold text-red-700 dark:text-red-400">₪{unarrangedDebts.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-100 rounded-lg">
-                    <span className="font-semibold">סה״כ חובות</span>
-                    <span className="font-bold">₪{totalDebts.toLocaleString()}</span>
+                  <div className="flex justify-between items-center p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    <span className="font-semibold dark:text-gray-200">סה״כ חובות</span>
+                    <span className="font-bold dark:text-white">₪{totalDebts.toLocaleString()}</span>
                   </div>
                 </CardContent>
               </Card>
