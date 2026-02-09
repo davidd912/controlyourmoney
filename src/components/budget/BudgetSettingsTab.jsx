@@ -98,9 +98,9 @@ export default function BudgetSettingsTab({
 
   return (
     <div className="space-y-6">
-      <Card className="border-0 shadow-lg">
+      <Card className="border-0 shadow-lg dark:bg-gray-800 dark:border-gray-700">
         <CardHeader>
-          <CardTitle className="text-lg flex items-center justify-between">
+          <CardTitle className="text-lg flex items-center justify-between dark:text-white">
             <span>הגדרת תקציב חודשי לפי קטגוריות</span>
             <Button
               onClick={handleSave}
@@ -114,8 +114,8 @@ export default function BudgetSettingsTab({
         </CardHeader>
         <CardContent>
           {/* Add Custom Category Section */}
-          <div className="mb-6 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border-2 border-dashed border-blue-300">
-            <Label className="text-base font-semibold text-blue-900 mb-3 block">
+          <div className="mb-6 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 rounded-lg border-2 border-dashed border-blue-300 dark:border-blue-700">
+            <Label className="text-base font-semibold text-blue-900 dark:text-blue-200 mb-3 block">
               ✨ הוסף קטגוריה מותאמת אישית
             </Label>
             <div className="flex gap-2">
@@ -143,9 +143,9 @@ export default function BudgetSettingsTab({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className="p-4 bg-gradient-to-br from-white to-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
+                className="p-4 bg-gradient-to-br from-white to-gray-50 dark:from-gray-700 dark:to-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow"
               >
-                <Label className="flex items-center gap-2 mb-2 font-semibold text-gray-700">
+                <Label className="flex items-center gap-2 mb-2 font-semibold text-gray-700 dark:text-gray-200">
                   <span className="text-2xl">{icon}</span>
                   {label}
                 </Label>
@@ -158,12 +158,12 @@ export default function BudgetSettingsTab({
                     className="text-left pr-8"
                     dir="ltr"
                   />
-                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm">
                     ₪
                   </span>
                 </div>
                 {budgets[key] && (
-                  <p className="text-xs text-gray-500 mt-1 text-left" dir="ltr">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-left" dir="ltr">
                     ₪{parseInt(budgets[key]).toLocaleString()}
                   </p>
                 )}
@@ -179,16 +179,16 @@ export default function BudgetSettingsTab({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border-2 border-purple-300 hover:shadow-md transition-shadow relative"
+                  className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 rounded-lg border-2 border-purple-300 dark:border-purple-700 hover:shadow-md transition-shadow relative"
                 >
                   <button
                     onClick={() => handleRemoveCustomCategory(categoryName)}
-                    className="absolute top-2 left-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                    className="absolute top-2 left-2 w-6 h-6 bg-red-500 dark:bg-red-600 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 dark:hover:bg-red-700 transition-colors"
                     title="מחק קטגוריה"
                   >
                     ×
                   </button>
-                  <Label className="flex items-center gap-2 mb-2 font-semibold text-purple-700">
+                  <Label className="flex items-center gap-2 mb-2 font-semibold text-purple-700 dark:text-purple-300">
                     <span className="text-2xl">✏️</span>
                     {categoryName}
                   </Label>
@@ -217,13 +217,13 @@ export default function BudgetSettingsTab({
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-lg bg-blue-50">
+      <Card className="border-0 shadow-lg bg-blue-50 dark:bg-blue-950">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <div className="text-2xl">💡</div>
             <div>
-              <h4 className="font-semibold text-blue-900 mb-1">טיפ להגדרת תקציב</h4>
-              <p className="text-sm text-blue-800">
+              <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-1">טיפ להגדרת תקציב</h4>
+              <p className="text-sm text-blue-800 dark:text-blue-300">
                 הגדר תקציב ריאלי לכל קטגוריה בהתאם להוצאות החודשיות שלך. 
                 בסקירה הכללית תוכל לראות את ההתקדמות שלך ביחס לתקציב שהגדרת.
               </p>
