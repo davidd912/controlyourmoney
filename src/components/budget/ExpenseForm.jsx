@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import MobileSelect from "@/components/budget/MobileSelect";
-import { useMediaQuery } from "@/components/hooks/useMediaQuery";
 
 const expenseCategories = {
   food: {
@@ -92,7 +91,6 @@ const expenseCategories = {
 };
 
 export default function ExpenseForm({ open, onClose, onSave, editItem, remainingBudgetByCategory = {}, customCategories = [] }) {
-  const isMobile = useMediaQuery('(max-width: 768px)');
   const [formData, setFormData] = useState({
     category: '',
     custom_category_name: '',
