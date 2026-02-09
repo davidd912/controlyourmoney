@@ -883,16 +883,16 @@ ${JSON.stringify(financialData, null, 2)}
   if (!selectedHouseholdId && households.length === 0 && user) {
     return (
       <>
-        <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4 min-h-[60vh]">
-          <Card className="max-w-md w-full">
+        <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4 min-h-[60vh]">
+          <Card className="max-w-md w-full dark:bg-gray-800 dark:border-gray-700">
             <CardHeader>
-              <CardTitle className="text-center flex items-center justify-center gap-2">
-                <Wallet className="w-6 h-6 text-blue-600" />
+              <CardTitle className="text-center flex items-center justify-center gap-2 dark:text-white">
+                <Wallet className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 ברוכים הבאים!
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-center text-gray-600">
+              <p className="text-center text-gray-600 dark:text-gray-400">
                 כדי להתחיל, צור משק בית ראשון שלך
               </p>
               <Button
@@ -1027,12 +1027,12 @@ ${JSON.stringify(financialData, null, 2)}
             animate={{ opacity: 1, scale: 1 }}
             className="mb-6"
           >
-            <Card className="border-red-200 bg-red-50">
+            <Card className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950">
               <CardContent className="p-4 flex items-center gap-4">
-                <AlertCircle className="w-8 h-8 text-red-500" />
+                <AlertCircle className="w-8 h-8 text-red-500 dark:text-red-400" />
                 <div>
-                  <p className="font-semibold text-red-700">חובות לא מוסדרים</p>
-                  <p className="text-sm text-red-600">
+                  <p className="font-semibold text-red-700 dark:text-red-300">חובות לא מוסדרים</p>
+                  <p className="text-sm text-red-600 dark:text-red-400">
                     סה״כ ₪{unarrangedDebts.toLocaleString()} בחובות שלא בהסדר
                   </p>
                 </div>
@@ -1215,7 +1215,7 @@ ${JSON.stringify(financialData, null, 2)}
           {/* Income Tab */}
           <TabsContent value="income" className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-xl font-semibold">הכנסות חודשיות</h2>
+              <h2 className="text-xl font-semibold dark:text-white">הכנסות חודשיות</h2>
               <div className="flex gap-2">
                 <ExportButton
                   data={filteredIncomes}
@@ -1240,7 +1240,7 @@ ${JSON.stringify(financialData, null, 2)}
           {/* Expenses Tab */}
           <TabsContent value="expenses" className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-xl font-semibold">הוצאות חודשיות</h2>
+              <h2 className="text-xl font-semibold dark:text-white">הוצאות חודשיות</h2>
               <div className="flex gap-2">
                 <ExportButton
                   data={filteredExpenses}
@@ -1277,7 +1277,7 @@ ${JSON.stringify(financialData, null, 2)}
           {/* Debts Tab */}
           <TabsContent value="debts" className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-xl font-semibold">פירוט חובות</h2>
+              <h2 className="text-xl font-semibold dark:text-white">פירוט חובות</h2>
               <div className="flex gap-2">
                 <ExportButton
                   data={debts}
@@ -1310,7 +1310,7 @@ ${JSON.stringify(financialData, null, 2)}
           {/* Assets Tab */}
           <TabsContent value="assets" className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-xl font-semibold">חסכונות ונכסים</h2>
+              <h2 className="text-xl font-semibold dark:text-white">חסכונות ונכסים</h2>
               <div className="flex gap-2">
                 <ExportButton
                   data={assets}
