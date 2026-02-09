@@ -5,10 +5,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, Trash2, Mail, Home, UserPlus, User, LogOut, Edit, BarChart3, Calendar } from "lucide-react";
+import { Users, Plus, Trash2, Mail, Home, UserPlus, User, LogOut, Edit, BarChart3, Calendar, UserX } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function UserSettings() {
   const [newHouseholdName, setNewHouseholdName] = useState('');
@@ -16,6 +26,7 @@ export default function UserSettings() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [newFullName, setNewFullName] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -134,6 +145,22 @@ export default function UserSettings() {
     base44.auth.logout();
   };
 
+  const handleDeleteAccount = async () => {
+    try {
+      // Delete all user's data first
+      const userHouseholds = households.filter(h => h.owner_email === user.email);
+      for (const household of userHouseholds) {
+        await base44.entities.Household.delete(household.id);
+      }
+      
+      // Then logout (account deletion would need backend support)
+      alert('נתוני המשתמש נמחקו. אנא פנה לתמיכה למחיקת החשבון המלאה.');
+      base44.auth.logout();
+    } catch (error) {
+      alert('שגיאה במחיקת החשבון: ' + error.message);
+    }
+  };
+
   return (
     <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
@@ -215,14 +242,22 @@ export default function UserSettings() {
             </div>
 
             {/* Logout Button */}
-            <div className="pt-4 border-t">
+            <div className="pt-4 border-t space-y-2">
               <Button
                 onClick={handleLogout}
                 variant="outline"
-                className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 border-red-200"
               >
                 <LogOut className="w-4 h-4 ml-2" />
                 התנתק מהמערכת
+              </Button>
+              <Button
+                onClick={() => setShowDeleteDialog(true)}
+                variant="outline"
+                className="w-full text-red-700 hover:text-red-800 hover:bg-red-100 dark:hover:bg-red-950 border-red-300"
+              >
+                <UserX className="w-4 h-4 ml-2" />
+                מחק חשבון לצמיתות
               </Button>
             </div>
           </CardContent>
@@ -479,6 +514,27 @@ export default function UserSettings() {
             })
           )}
         </div>
+
+        {/* Delete Account Dialog */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent dir="rtl">
+            <AlertDialogHeader>
+              <AlertDialogTitle>האם אתה בטוח?</AlertDialogTitle>
+              <AlertDialogDescription>
+                פעולה זו תמחק את כל הנתונים שלך לצמיתות, כולל משקי בית, הכנסות, הוצאות וחובות. לא ניתן לשחזר את הנתונים לאחר המחיקה.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>ביטול</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteAccount}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                מחק חשבון
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

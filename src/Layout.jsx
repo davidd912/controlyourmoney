@@ -16,7 +16,10 @@ import {
   TrendingUp,
   TrendingDown,
   CreditCard,
-  PiggyBank
+  PiggyBank,
+  ArrowRight,
+  Moon,
+  Sun
 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
@@ -31,9 +34,27 @@ const navigation = [
 export default function Layout({ children, currentPageName }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [fabMenuOpen, setFabMenuOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('darkMode') === 'true' || false;
+    }
+    return false;
+  });
   const location = useLocation();
   const navigate = useNavigate();
   const prefersReducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('darkMode', 'false');
+    }
+  }, [darkMode]);
+
+  const isRootRoute = currentPageName === 'Dashboard';
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -52,7 +73,7 @@ export default function Layout({ children, currentPageName }) {
   const rightNavItems = navigation.slice(2, 4);
 
   return (
-    <div dir="rtl" className="flex flex-col min-h-screen bg-gray-50" lang="he">
+    <div dir="rtl" className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900" lang="he">
       {/* Skip to main content link for keyboard users */}
       <a
         href="#main-content"
@@ -62,15 +83,27 @@ export default function Layout({ children, currentPageName }) {
       </a>
 
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50" role="banner">
+      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50" role="banner">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
+            {/* Back Button */}
+            {!isRootRoute && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(-1)}
+                className="md:flex text-gray-600 dark:text-gray-300"
+                aria-label="חזור"
+              >
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+            )}
             {/* Logo */}
             <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3" aria-label="דף הבית - ניהול תקציב">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center" aria-hidden="true">
                 <Wallet className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900 hidden sm:block">
+              <span className="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">
                 ניהול תקציב
               </span>
             </Link>
@@ -101,8 +134,8 @@ export default function Layout({ children, currentPageName }) {
                       className={`
                         flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
                         ${isActive 
-                          ? 'bg-blue-100 text-blue-700' 
-                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                          ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
+                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
                         }
                       `}
                       aria-current={isActive ? 'page' : undefined}
@@ -113,19 +146,40 @@ export default function Layout({ children, currentPageName }) {
                   </motion.div>
                 );
               })}
+              
+              {/* Dark Mode Toggle */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setDarkMode(!darkMode)}
+                className="text-gray-600 dark:text-gray-300"
+                aria-label={darkMode ? "מצב בהיר" : "מצב כהה"}
+              >
+                {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </Button>
             </nav>
 
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label={mobileMenuOpen ? "סגור תפריט" : "פתח תפריט"}
-              aria-expanded={mobileMenuOpen}
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </Button>
+            {/* Mobile menu button and dark mode */}
+            <div className="flex items-center gap-2 md:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setDarkMode(!darkMode)}
+                className="text-gray-600 dark:text-gray-300"
+                aria-label={darkMode ? "מצב בהיר" : "מצב כהה"}
+              >
+                {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label={mobileMenuOpen ? "סגור תפריט" : "פתח תפריט"}
+                aria-expanded={mobileMenuOpen}
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -137,7 +191,7 @@ export default function Layout({ children, currentPageName }) {
               animate={prefersReducedMotion ? { opacity: 1, height: 'auto' } : { opacity: 1, height: 'auto' }}
               exit={prefersReducedMotion ? { opacity: 0, height: 'auto' } : { opacity: 0, height: 0 }}
               transition={prefersReducedMotion ? { duration: 0 } : { type: "tween", duration: 0.3 }}
-              className="md:hidden border-t bg-white"
+              className="md:hidden border-t bg-white dark:bg-gray-800"
             >
               <nav className="px-4 py-3 space-y-1" role="navigation" aria-label="תפריט ניווט נייד">
                 {navigation.map((item) => {
@@ -156,8 +210,8 @@ export default function Layout({ children, currentPageName }) {
                         className={`
                           flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all
                           ${isActive 
-                            ? 'bg-blue-100 text-blue-700' 
-                            : 'text-gray-600 hover:bg-gray-100'
+                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
+                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                           }
                         `}
                         aria-current={isActive ? 'page' : undefined}
@@ -180,27 +234,27 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t mt-auto hidden md:block" role="contentinfo">
+      <footer className="bg-white dark:bg-gray-800 border-t mt-auto hidden md:block" role="contentinfo">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-col items-center md:items-start gap-2">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 © {new Date().getFullYear()} ניהול תקציב משפחתי. כל הזכויות שמורות.
               </p>
-              <p className="text-xs text-gray-400 flex items-center gap-1">
+              <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
                 🔒 הנתונים שלך מאובטחים ומוצפנים בטכנולוגיית SSL/TLS מתקדמת
               </p>
             </div>
             <div className="flex gap-6">
               <Link 
                 to={createPageUrl('TermsOfService')} 
-                className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
               >
                 תנאי שימוש
               </Link>
               <Link 
                 to={createPageUrl('PrivacyPolicy')} 
-                className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
               >
                 מדיניות פרטיות
               </Link>
@@ -224,7 +278,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Bottom Navigation for Mobile with FAB */}
       <nav 
-        className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white border-t shadow-lg" 
+        className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-gray-800 border-t shadow-lg" 
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)' }}
         role="navigation" 
         aria-label="תפריט ניווט תחתון"
@@ -242,8 +296,8 @@ export default function Layout({ children, currentPageName }) {
                   className={`
                     flex flex-col items-center justify-center p-2 text-[10px] font-medium transition-colors leading-tight min-w-[60px]
                     ${isActive 
-                      ? 'text-blue-600' 
-                      : 'text-gray-500 hover:text-blue-500'
+                      ? 'text-blue-600 dark:text-blue-400' 
+                      : 'text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400'
                     }
                   `}
                   aria-current={isActive ? 'page' : undefined}
@@ -284,8 +338,8 @@ export default function Layout({ children, currentPageName }) {
                   className={`
                     flex flex-col items-center justify-center p-2 text-[10px] font-medium transition-colors leading-tight min-w-[60px]
                     ${isActive 
-                      ? 'text-blue-600' 
-                      : 'text-gray-500 hover:text-blue-500'
+                      ? 'text-blue-600 dark:text-blue-400' 
+                      : 'text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400'
                     }
                   `}
                   aria-current={isActive ? 'page' : undefined}
@@ -311,11 +365,11 @@ export default function Layout({ children, currentPageName }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 100 }}
               transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-white rounded-t-3xl p-6 w-full max-w-md shadow-2xl"
+              className="bg-white dark:bg-gray-800 rounded-t-3xl p-6 w-full max-w-md shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6" />
-              <h3 className="text-xl font-bold text-center mb-6">הוסף פריט חדש</h3>
+              <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-6" />
+              <h3 className="text-xl font-bold text-center mb-6 text-gray-900 dark:text-white">הוסף פריט חדש</h3>
               <div className="grid grid-cols-2 gap-3">
                 <Button
                   onClick={() => {
