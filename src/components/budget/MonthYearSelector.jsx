@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import MobileSelect from '@/components/budget/MobileSelect';
 
 const HEBREW_MONTHS = [
   'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
@@ -56,31 +56,27 @@ export default function MonthYearSelector({ month, year, onMonthChange, onYearCh
       </Button>
 
       <div className="flex items-center gap-2">
-        <Select value={month.toString()} onValueChange={(val) => onMonthChange(parseInt(val))}>
-          <SelectTrigger className="w-32">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {HEBREW_MONTHS.map((monthName, index) => (
-              <SelectItem key={index + 1} value={(index + 1).toString()}>
-                {monthName}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <MobileSelect
+          value={month.toString()}
+          onValueChange={(val) => onMonthChange(parseInt(val))}
+          placeholder={HEBREW_MONTHS[month - 1]}
+          label="בחר חודש"
+          options={HEBREW_MONTHS.map((monthName, index) => ({
+            value: (index + 1).toString(),
+            label: monthName
+          }))}
+        />
 
-        <Select value={year.toString()} onValueChange={(val) => onYearChange(parseInt(val))}>
-          <SelectTrigger className="w-24">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {yearOptions.map((y) => (
-              <SelectItem key={y} value={y.toString()}>
-                {y}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <MobileSelect
+          value={year.toString()}
+          onValueChange={(val) => onYearChange(parseInt(val))}
+          placeholder={year.toString()}
+          label="בחר שנה"
+          options={yearOptions.map((y) => ({
+            value: y.toString(),
+            label: y.toString()
+          }))}
+        />
       </div>
 
       <Button
