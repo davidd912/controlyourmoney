@@ -35,6 +35,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import CreateHouseholdDialog from "@/components/budget/CreateHouseholdDialog";
+import PullToRefresh from "@/components/PullToRefresh";
 
 import ExportButton, { convertToCSV, downloadCSV } from "@/components/budget/ExportButton";
 import HouseholdSelector from "@/components/budget/HouseholdSelector";
@@ -919,9 +920,18 @@ ${JSON.stringify(financialData, null, 2)}
 
   const currentHousehold = households.find(h => h.id === selectedHouseholdId);
 
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries(['incomes']);
+    await queryClient.invalidateQueries(['expenses']);
+    await queryClient.invalidateQueries(['debts']);
+    await queryClient.invalidateQueries(['assets']);
+    await queryClient.invalidateQueries(['alerts']);
+  };
+
   return (
-    <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="max-w-7xl mx-auto p-4 md:p-6 pb-8">
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="max-w-7xl mx-auto p-4 md:p-6 pb-8">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -1361,7 +1371,8 @@ ${JSON.stringify(financialData, null, 2)}
           onCreateHousehold={handleCreateHousehold}
           isCreating={createHousehold.isPending}
         />
+        </div>
       </div>
-    </div>
+    </PullToRefresh>
   );
 }

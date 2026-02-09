@@ -162,37 +162,37 @@ export default function UserSettings() {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-8">
+    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-            <User className="w-8 h-8 text-blue-600" />
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
+            <User className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             הגדרות משתמש
           </h1>
-          <p className="text-gray-500">
+          <p className="text-gray-500 dark:text-gray-400">
             נהל את הפרופיל שלך ואת משקי הבית המשותפים
           </p>
         </motion.div>
 
         {/* User Profile Card */}
-        <Card className="mb-6 border-2">
+        <Card className="mb-6 border-2 dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="w-5 h-5 text-blue-600" />
+            <CardTitle className="flex items-center gap-2 dark:text-white">
+              <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               פרופיל אישי
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Display Name */}
             <div>
-              <label className="block text-sm font-medium mb-2">שם מלא</label>
+              <label className="block text-sm font-medium mb-2 dark:text-gray-300">שם מלא</label>
               {!isEditingName ? (
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <span className="text-lg font-semibold">{user?.full_name}</span>
+                <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <span className="text-lg font-semibold dark:text-white">{user?.full_name}</span>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -234,10 +234,10 @@ export default function UserSettings() {
 
             {/* Email (read-only) */}
             <div>
-              <label className="block text-sm font-medium mb-2">אימייל</label>
-              <div className="p-3 bg-gray-50 rounded-lg flex items-center gap-2">
-                <Mail className="w-4 h-4 text-gray-400" />
-                <span>{user?.email}</span>
+              <label className="block text-sm font-medium mb-2 dark:text-gray-300">אימייל</label>
+              <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center gap-2">
+                <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                <span className="dark:text-gray-300">{user?.email}</span>
               </div>
             </div>
 
@@ -266,10 +266,10 @@ export default function UserSettings() {
         {/* Admin Stats Section */}
         {user?.role === 'admin' && stats && (
           <div className="mb-6">
-            <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+            <Card className="border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-purple-900">
-                  <BarChart3 className="w-5 h-5 text-purple-600" />
+                <CardTitle className="flex items-center gap-2 text-purple-900 dark:text-purple-200">
+                  <BarChart3 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   סטטיסטיקות מערכת - Admin
                 </CardTitle>
               </CardHeader>
@@ -357,11 +357,11 @@ export default function UserSettings() {
 
         {/* Household Management Section */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Home className="w-6 h-6 text-blue-600" />
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <Home className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             משקי בית משותפים
           </h2>
-          <p className="text-gray-500 mb-4">
+          <p className="text-gray-500 dark:text-gray-400 mb-4">
             צור משק בית משותף והזמן בן/בת זוג או שותפים לנהל את התקציב ביחד
           </p>
         </div>
@@ -376,7 +376,7 @@ export default function UserSettings() {
             צור משק בית חדש
           </Button>
         ) : (
-          <Card className="mb-6">
+          <Card className="mb-6 dark:bg-gray-800 dark:border-gray-700">
             <CardContent className="pt-6">
               <form onSubmit={handleCreateHousehold} className="space-y-4">
                 <div>
@@ -410,11 +410,11 @@ export default function UserSettings() {
         {/* Existing Households */}
         <div className="space-y-4">
           {households.length === 0 ? (
-            <Card>
+            <Card className="dark:bg-gray-800 dark:border-gray-700">
               <CardContent className="py-12 text-center">
-                <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-500 mb-4">עדיין לא יצרת משק בית</p>
-                <p className="text-sm text-gray-400">
+                <Users className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+                <p className="text-gray-500 dark:text-gray-400 mb-4">עדיין לא יצרת משק בית</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">
                   צור משק בית כדי להתחיל לנהל תקציב משותף
                 </p>
               </CardContent>
@@ -423,16 +423,16 @@ export default function UserSettings() {
             households.map((household) => {
               const isOwner = household.owner_email === user?.email;
               return (
-                <Card key={household.id} className="border-2">
+                <Card key={household.id} className="border-2 dark:bg-gray-800 dark:border-gray-700">
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="flex items-center gap-2">
-                          <Home className="w-5 h-5 text-blue-600" />
+                        <CardTitle className="flex items-center gap-2 dark:text-white">
+                          <Home className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                           {household.name}
                         </CardTitle>
                         {isOwner && (
-                          <Badge className="mt-2 bg-blue-100 text-blue-700">בעלים</Badge>
+                          <Badge className="mt-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">בעלים</Badge>
                         )}
                       </div>
                       {isOwner && (
@@ -450,7 +450,7 @@ export default function UserSettings() {
                   <CardContent className="space-y-4">
                     {/* Members List */}
                     <div>
-                      <h3 className="font-semibold mb-3 flex items-center gap-2">
+                      <h3 className="font-semibold mb-3 flex items-center gap-2 dark:text-gray-200">
                         <Users className="w-4 h-4" />
                         חברים ({household.members?.length || 0})
                       </h3>
@@ -458,11 +458,11 @@ export default function UserSettings() {
                         {household.members?.map((memberEmail) => (
                           <div
                             key={memberEmail}
-                            className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                            className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
                           >
                             <div className="flex items-center gap-2">
-                              <Mail className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm">{memberEmail}</span>
+                              <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                              <span className="text-sm dark:text-gray-300">{memberEmail}</span>
                               {memberEmail === household.owner_email && (
                                 <Badge variant="outline" className="text-xs">בעלים</Badge>
                               )}
@@ -485,7 +485,7 @@ export default function UserSettings() {
                     {/* Invite Member */}
                     {isOwner && (
                       <div>
-                        <h3 className="font-semibold mb-3 flex items-center gap-2">
+                        <h3 className="font-semibold mb-3 flex items-center gap-2 dark:text-gray-200">
                           <UserPlus className="w-4 h-4" />
                           הזמן חבר חדש
                         </h3>
@@ -503,7 +503,7 @@ export default function UserSettings() {
                             שלח הזמנה
                           </Button>
                         </div>
-                        <p className="text-xs text-gray-500 mt-2">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                           המערכת תשלח הזמנה למייל שהוזן. אם המשתמש עדיין לא רשום, יישלח אליו מייל הרשמה.
                         </p>
                       </div>

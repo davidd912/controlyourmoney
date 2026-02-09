@@ -191,8 +191,8 @@ export default function QuickChat() {
     };
 
     return (
-        <div dir="rtl" className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
-            <div className="max-w-2xl mx-auto py-8">
+      <div dir="rtl" className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
+        <div className="max-w-2xl mx-auto py-8">
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
@@ -202,8 +202,8 @@ export default function QuickChat() {
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full mb-4">
                         <Sparkles className="w-8 h-8 text-white" />
                     </div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">צ'אט חכם</h1>
-                    <p className="text-gray-600">הוסף טרנזקציה במהירות באמצעי טקסט חופשי</p>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">צ'אט חכם</h1>
+                    <p className="text-gray-600 dark:text-gray-400">הוסף טרנזקציה במהירות באמצעי טקסט חופשי</p>
                 </motion.div>
 
                 {/* Success Message */}
@@ -215,11 +215,11 @@ export default function QuickChat() {
                             exit={{ opacity: 0, y: -10 }}
                             className="mb-4"
                         >
-                            <Card className="bg-green-50 border-green-200">
+                            <Card className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
                                 <CardContent className="py-4">
                                     <div className="flex items-center gap-3">
-                                        <CheckCircle className="w-5 h-5 text-green-600" />
-                                        <p className="text-green-800 font-medium">הטרנזקציה נוספה בהצלחה!</p>
+                                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                                        <p className="text-green-800 dark:text-green-300 font-medium">הטרנזקציה נוספה בהצלחה!</p>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -236,11 +236,11 @@ export default function QuickChat() {
                             exit={{ opacity: 0, y: -10 }}
                             className="mb-4"
                         >
-                            <Card className="bg-red-50 border-red-200">
+                            <Card className="bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800">
                                 <CardContent className="py-4">
                                     <div className="flex items-center gap-3">
-                                        <AlertCircle className="w-5 h-5 text-red-600" />
-                                        <p className="text-red-800">{error}</p>
+                                        <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                                        <p className="text-red-800 dark:text-red-300">{error}</p>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -249,7 +249,7 @@ export default function QuickChat() {
                 </AnimatePresence>
 
                 {/* Input Section */}
-                <Card className="mb-6 shadow-lg">
+                <Card className="mb-6 shadow-lg dark:bg-gray-800 dark:border-gray-700">
                     <CardContent className="pt-6">
                         <div className="flex gap-3">
                             <Input
@@ -273,7 +273,7 @@ export default function QuickChat() {
                             </Button>
                         </div>
                         {!currentHousehold && (
-                            <p className="text-sm text-amber-600 mt-2">אנא צור משק בית תחילה כדי להשתמש בצ'אט החכם</p>
+                            <p className="text-sm text-amber-600 dark:text-amber-400 mt-2">אנא צור משק בית תחילה כדי להשתמש בצ'אט החכם</p>
                         )}
                     </CardContent>
                 </Card>
@@ -286,9 +286,9 @@ export default function QuickChat() {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                         >
-                            <Card className="shadow-xl border-2 border-blue-200">
-                                <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
-                                    <CardTitle className="flex items-center justify-between">
+                            <Card className="shadow-xl border-2 border-blue-200 dark:border-blue-800 dark:bg-gray-800">
+                                <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
+                                    <CardTitle className="flex items-center justify-between dark:text-white">
                                         <span>פרטי הטרנזקציה</span>
                                         <Badge 
                                             variant={parsedData.confidence >= 80 ? "default" : "secondary"}
