@@ -264,9 +264,20 @@ export default function Dashboard() {
     enabled: !!user && !!selectedHouseholdId
   });
 
-  // Mutations
+  // Mutations with Optimistic Updates
   const createIncome = useMutation({
     mutationFn: (data) => base44.entities.Income.create(data),
+    onMutate: async (newIncome) => {
+      await queryClient.cancelQueries(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
+      const previousIncomes = queryClient.getQueryData(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
+      queryClient.setQueryData(['incomes', selectedHouseholdId, selectedMonth, selectedYear], old => 
+        [...(old || []), { ...newIncome, id: 'temp-' + Date.now() }]
+      );
+      return { previousIncomes };
+    },
+    onError: (err, newIncome, context) => {
+      queryClient.setQueryData(['incomes', selectedHouseholdId, selectedMonth, selectedYear], context.previousIncomes);
+    },
     onSuccess: () => { queryClient.invalidateQueries(['incomes']); setIncomeFormOpen(false); setEditItem(null); }
   });
   const updateIncome = useMutation({
@@ -280,6 +291,17 @@ export default function Dashboard() {
 
   const createExpense = useMutation({
     mutationFn: (data) => base44.entities.Expense.create(data),
+    onMutate: async (newExpense) => {
+      await queryClient.cancelQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
+      const previousExpenses = queryClient.getQueryData(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
+      queryClient.setQueryData(['expenses', selectedHouseholdId, selectedMonth, selectedYear], old => 
+        [...(old || []), { ...newExpense, id: 'temp-' + Date.now() }]
+      );
+      return { previousExpenses };
+    },
+    onError: (err, newExpense, context) => {
+      queryClient.setQueryData(['expenses', selectedHouseholdId, selectedMonth, selectedYear], context.previousExpenses);
+    },
     onSuccess: () => { queryClient.invalidateQueries(['expenses']); setExpenseFormOpen(false); setEditItem(null); }
   });
   const updateExpense = useMutation({
@@ -293,6 +315,17 @@ export default function Dashboard() {
 
   const createDebt = useMutation({
     mutationFn: (data) => base44.entities.Debt.create(data),
+    onMutate: async (newDebt) => {
+      await queryClient.cancelQueries(['debts', selectedHouseholdId]);
+      const previousDebts = queryClient.getQueryData(['debts', selectedHouseholdId]);
+      queryClient.setQueryData(['debts', selectedHouseholdId], old => 
+        [...(old || []), { ...newDebt, id: 'temp-' + Date.now() }]
+      );
+      return { previousDebts };
+    },
+    onError: (err, newDebt, context) => {
+      queryClient.setQueryData(['debts', selectedHouseholdId], context.previousDebts);
+    },
     onSuccess: () => { queryClient.invalidateQueries(['debts']); setDebtFormOpen(false); setEditItem(null); }
   });
   const updateDebt = useMutation({
@@ -887,7 +920,7 @@ ${JSON.stringify(financialData, null, 2)}
   const currentHousehold = households.find(h => h.id === selectedHouseholdId);
 
   return (
-    <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="max-w-7xl mx-auto p-4 md:p-6 pb-8">
         {/* Header */}
         <motion.div 
@@ -897,20 +930,20 @@ ${JSON.stringify(financialData, null, 2)}
         >
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
                 ניהול תקציב משפחתי
               </h1>
-              <p className="text-gray-500">
+              <p className="text-gray-500 dark:text-gray-400">
                 תכנון ובניית תקציב חודשי מותאם אישית
               </p>
               {currentHousehold && (
                 <div className="mt-3 flex items-center gap-2">
-                  <Badge className="bg-blue-100 text-blue-700 flex items-center gap-1">
+                  <Badge className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 flex items-center gap-1">
                     <Wallet className="w-3 h-3" />
                     {currentHousehold.name}
                   </Badge>
                   {currentHousehold.members && currentHousehold.members.length > 1 && (
-                    <Badge variant="outline" className="flex items-center gap-1">
+                    <Badge variant="outline" className="flex items-center gap-1 dark:border-gray-600 dark:text-gray-300">
                       <Users className="w-3 h-3" />
                       {currentHousehold.members.length} חברים
                     </Badge>
@@ -1000,7 +1033,7 @@ ${JSON.stringify(financialData, null, 2)}
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <div className="bg-white shadow-sm p-1.5 rounded-xl overflow-x-auto">
+          <div className="bg-white dark:bg-gray-800 shadow-sm p-1.5 rounded-xl overflow-x-auto">
             <TabsList className="inline-flex min-w-full sm:min-w-0 gap-1 bg-transparent p-0" role="tablist" aria-label="ניווט בין קטגוריות">
               <TabsTrigger 
                 value="overview" 

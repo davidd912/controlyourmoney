@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { X } from "lucide-react";
+import MobileSelect from "@/components/budget/MobileSelect";
 
 const incomeCategories = {
   salary: {
@@ -64,37 +63,33 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="income-category">קטגוריה</Label>
-            <Select
+            <MobileSelect
+              id="income-category"
               value={formData.category}
               onValueChange={(value) => setFormData({ ...formData, category: value, subcategory: '' })}
-            >
-              <SelectTrigger id="income-category">
-                <SelectValue placeholder="בחר קטגוריה" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(incomeCategories).map(([key, { label }]) => (
-                  <SelectItem key={key} value={key}>{label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder="בחר קטגוריה"
+              label="בחר קטגוריה"
+              options={Object.entries(incomeCategories).map(([key, { label }]) => ({
+                value: key,
+                label: label
+              }))}
+            />
           </div>
 
           {formData.category && (
             <div className="space-y-2">
               <Label htmlFor="income-subcategory">תת-קטגוריה</Label>
-              <Select
+              <MobileSelect
+                id="income-subcategory"
                 value={formData.subcategory}
                 onValueChange={(value) => setFormData({ ...formData, subcategory: value })}
-              >
-                <SelectTrigger id="income-subcategory">
-                  <SelectValue placeholder="בחר תת-קטגוריה" />
-                </SelectTrigger>
-                <SelectContent>
-                  {incomeCategories[formData.category]?.subcategories.map((sub) => (
-                    <SelectItem key={sub} value={sub}>{sub}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="בחר תת-קטגוריה"
+                label="בחר תת-קטגוריה"
+                options={incomeCategories[formData.category]?.subcategories.map((sub) => ({
+                  value: sub,
+                  label: sub
+                })) || []}
+              />
             </div>
           )}
 

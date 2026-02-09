@@ -1,3 +1,4 @@
+css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -58,10 +59,16 @@
     overscroll-behavior: none;
     -webkit-user-select: none;
     user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
   
-  input, textarea {
+  input, textarea, [contenteditable] {
     -webkit-user-select: text;
     user-select: text;
+  }
+  
+  button, a, [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
   }
 }

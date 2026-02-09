@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import MobileSelect from "@/components/budget/MobileSelect";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 const expenseCategories = {
   food: {
@@ -91,6 +92,7 @@ const expenseCategories = {
 };
 
 export default function ExpenseForm({ open, onClose, onSave, editItem, remainingBudgetByCategory = {}, customCategories = [] }) {
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const [formData, setFormData] = useState({
     category: '',
     custom_category_name: '',

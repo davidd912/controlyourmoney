@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import MobileSelect from "@/components/budget/MobileSelect";
 
 const assetTypes = {
   savings1: "חיסכון 1",
@@ -66,19 +66,17 @@ export default function AssetForm({ open, onClose, onSave, editItem }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="asset-type">סוג הנכס</Label>
-            <Select
+            <MobileSelect
+              id="asset-type"
               value={formData.asset_type}
               onValueChange={(value) => setFormData({ ...formData, asset_type: value })}
-            >
-              <SelectTrigger id="asset-type">
-                <SelectValue placeholder="בחר סוג נכס" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(assetTypes).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>{label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder="בחר סוג נכס"
+              label="סוג הנכס"
+              options={Object.entries(assetTypes).map(([key, label]) => ({
+                value: key,
+                label: label
+              }))}
+            />
           </div>
 
           <div className="space-y-2">

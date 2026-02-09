@@ -83,7 +83,11 @@ export default function Layout({ children, currentPageName }) {
       </a>
 
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50" role="banner">
+      <header 
+        className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50" 
+        role="banner"
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      >
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Back Button */}
@@ -230,7 +234,17 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Main Content */}
       <main id="main-content" role="main" aria-label="תוכן ראשי" className="flex-1 pb-[132px] md:pb-0">
-        {children}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentPageName}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Footer */}

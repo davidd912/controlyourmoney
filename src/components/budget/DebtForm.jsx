@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import MobileSelect from "@/components/budget/MobileSelect";
 
 const debtTypes = {
   gmach: "גמ\"ח",
@@ -102,19 +102,17 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="debt-type">סוג החוב</Label>
-              <Select
+              <MobileSelect
+                id="debt-type"
                 value={formData.debt_type}
                 onValueChange={(value) => setFormData({ ...formData, debt_type: value })}
-              >
-                <SelectTrigger id="debt-type">
-                  <SelectValue placeholder="בחר סוג" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(debtTypes).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="בחר סוג"
+                label="סוג החוב"
+                options={Object.entries(debtTypes).map(([key, label]) => ({
+                  value: key,
+                  label: label
+                }))}
+              />
             </div>
           </div>
 
