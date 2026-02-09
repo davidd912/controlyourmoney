@@ -57,9 +57,9 @@ export default function AssetForm({ open, onClose, onSave, editItem }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md" dir="rtl">
+      <DialogContent className="sm:max-w-md dark:bg-gray-800 dark:border-gray-700" dir="rtl">
         <DialogHeader>
-          <DialogTitle className="text-right">
+          <DialogTitle className="text-right dark:text-white">
             {editItem ? 'עריכת נכס' : 'הוספת נכס/חיסכון'}
           </DialogTitle>
         </DialogHeader>
@@ -123,13 +123,13 @@ export default function AssetForm({ open, onClose, onSave, editItem }) {
             />
           </div>
 
-          <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
+          <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
             <Checkbox
               id="recurring"
               checked={formData.is_recurring}
               onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked })}
             />
-            <Label htmlFor="recurring" className="cursor-pointer font-normal">
+            <Label htmlFor="recurring" className="cursor-pointer font-normal dark:text-gray-300">
               הפקדה קבועה (רוב החסכונות קבועים)
             </Label>
           </div>

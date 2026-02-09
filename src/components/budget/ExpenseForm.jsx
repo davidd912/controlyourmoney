@@ -130,9 +130,9 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto" dir="rtl">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto dark:bg-gray-800 dark:border-gray-700" dir="rtl">
         <DialogHeader>
-          <DialogTitle className="text-right">
+          <DialogTitle className="text-right dark:text-white">
             {editItem ? 'עריכת הוצאה' : 'הוספת הוצאה'}
           </DialogTitle>
         </DialogHeader>
@@ -297,13 +297,13 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
             />
           </div>
 
-          <div className="flex items-center gap-2 p-3 bg-orange-50 rounded-lg">
+          <div className="flex items-center gap-2 p-3 bg-orange-50 dark:bg-orange-950 rounded-lg">
             <Checkbox
               id="recurring"
               checked={formData.is_recurring}
               onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked })}
             />
-            <Label htmlFor="recurring" className="cursor-pointer font-normal">
+            <Label htmlFor="recurring" className="cursor-pointer font-normal dark:text-gray-300">
               הוצאה קבועה (תועתק אוטומטית לחודשים הבאים)
             </Label>
           </div>

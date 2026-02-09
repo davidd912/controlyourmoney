@@ -4,19 +4,19 @@ import { motion } from "framer-motion";
 
 export default function SummaryCard({ title, value, subtitle, icon: Icon, color = "blue", trend }) {
   const colorClasses = {
-    blue: "bg-blue-50 text-blue-600 border-blue-200",
-    orange: "bg-orange-50 text-orange-600 border-orange-200",
-    green: "bg-green-50 text-green-600 border-green-200",
-    red: "bg-red-50 text-red-600 border-red-200",
-    purple: "bg-purple-50 text-purple-600 border-purple-200"
+    blue: "bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800",
+    orange: "bg-orange-50 dark:bg-orange-950 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800",
+    green: "bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400 border-green-200 dark:border-green-800",
+    red: "bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800",
+    purple: "bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800"
   };
 
   const iconBg = {
-    blue: "bg-blue-100",
-    orange: "bg-orange-100",
-    green: "bg-green-100",
-    red: "bg-red-100",
-    purple: "bg-purple-100"
+    blue: "bg-blue-100 dark:bg-blue-900",
+    orange: "bg-orange-100 dark:bg-orange-900",
+    green: "bg-green-100 dark:bg-green-900",
+    red: "bg-red-100 dark:bg-red-900",
+    purple: "bg-purple-100 dark:bg-purple-900"
   };
 
   return (
@@ -29,15 +29,15 @@ export default function SummaryCard({ title, value, subtitle, icon: Icon, color 
         <CardContent className="p-5">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-1" id={`summary-${title}`}>{title}</p>
-              <p className="text-2xl font-bold text-gray-900" aria-labelledby={`summary-${title}`}>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1" id={`summary-${title}`}>{title}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white" aria-labelledby={`summary-${title}`}>
                 ₪{value?.toLocaleString() || 0}
               </p>
               {subtitle && (
-                <p className="text-xs text-gray-400 mt-1">{subtitle}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{subtitle}</p>
               )}
               {trend !== undefined && (
-                <p className={`text-sm mt-2 font-medium ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <p className={`text-sm mt-2 font-medium ${trend >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                   {trend >= 0 ? '+' : ''}{trend.toLocaleString()} ₪ / חודש
                 </p>
               )}
