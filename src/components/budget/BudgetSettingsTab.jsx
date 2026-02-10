@@ -25,13 +25,13 @@ const expenseCategories = {
   finance: { label: "פיננסים", icon: "🏦" }
 };
 
-export default function BudgetSettingsTab({
-  householdId,
-  month,
-  year,
+export default function BudgetSettingsTab({ 
+  householdId, 
+  month, 
+  year, 
   existingBudgets = [],
   allCustomCategories = [],
-  onSave
+  onSave 
 }) {
   const [budgets, setBudgets] = useState({});
   const [customCategories, setCustomCategories] = useState([]);
@@ -42,7 +42,7 @@ export default function BudgetSettingsTab({
     // Load existing budgets into state
     const budgetMap = {};
     const customCats = [];
-    existingBudgets.forEach((budget) => {
+    existingBudgets.forEach(budget => {
       if (budget.category === 'custom' && budget.custom_category_name) {
         const customKey = `custom_${budget.custom_category_name}`;
         budgetMap[customKey] = budget.amount;
@@ -51,22 +51,22 @@ export default function BudgetSettingsTab({
         budgetMap[budget.category] = budget.amount;
       }
     });
-
+    
     // Merge existing budgets' custom categories with all known custom categories
-    setCustomCategories((prev) => {
+    setCustomCategories(prev => {
       const allUniqueCustoms = [...new Set([...prev, ...customCats, ...allCustomCategories])];
       return allUniqueCustoms;
     });
-
+    
     // Merge budgets, don't replace
-    setBudgets((prev) => ({
+    setBudgets(prev => ({
       ...prev,
       ...budgetMap
     }));
   }, [existingBudgets]);
 
   const handleBudgetChange = (category, value) => {
-    setBudgets((prev) => ({
+    setBudgets(prev => ({
       ...prev,
       [category]: value
     }));
@@ -80,7 +80,7 @@ export default function BudgetSettingsTab({
   };
 
   const handleRemoveCustomCategory = (categoryName) => {
-    setCustomCategories(customCategories.filter((c) => c !== categoryName));
+    setCustomCategories(customCategories.filter(c => c !== categoryName));
     const customKey = `custom_${categoryName}`;
     const newBudgets = { ...budgets };
     delete newBudgets[customKey];
@@ -101,12 +101,12 @@ export default function BudgetSettingsTab({
       <Card className="border-0 shadow-lg dark:bg-gray-800 dark:border-gray-700">
         <CardHeader>
           <CardTitle className="text-lg flex items-center justify-between dark:text-white">
-            <span className="text-slate-950">הגדרת תקציב חודשי לפי קטגוריות</span>
+            <span>הגדרת תקציב חודשי לפי קטגוריות</span>
             <Button
               onClick={handleSave}
               disabled={isSaving}
-              className="bg-blue-600 hover:bg-blue-700">
-
+              className="bg-blue-600 hover:bg-blue-700"
+            >
               <Save className="w-4 h-4 ml-2" />
               {isSaving ? 'שומר...' : 'שמור תקציב'}
             </Button>
@@ -124,51 +124,51 @@ export default function BudgetSettingsTab({
                 onChange={(e) => setNewCustomCategory(e.target.value)}
                 placeholder="שם הקטגוריה החדשה..."
                 onKeyPress={(e) => e.key === 'Enter' && handleAddCustomCategory()}
-                className="flex-1" />
-
+                className="flex-1"
+              />
               <Button
                 onClick={handleAddCustomCategory}
                 disabled={!newCustomCategory.trim()}
-                className="bg-blue-600 hover:bg-blue-700">
-
+                className="bg-blue-600 hover:bg-blue-700"
+              >
                 הוסף
               </Button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Object.entries(expenseCategories).map(([key, { label, icon }]) =>
-            <motion.div
-              key={key}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-              className="p-4 bg-gradient-to-br from-white to-gray-50 dark:from-gray-700 dark:to-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow">
-
+            {Object.entries(expenseCategories).map(([key, { label, icon }]) => (
+              <motion.div
+                key={key}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="p-4 bg-gradient-to-br from-white to-gray-50 dark:from-gray-700 dark:to-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow"
+              >
                 <Label className="flex items-center gap-2 mb-2 font-semibold text-gray-700 dark:text-gray-200">
                   <span className="text-2xl">{icon}</span>
                   {label}
                 </Label>
                 <div className="relative">
                   <Input
-                  type="number"
-                  value={budgets[key] || ''}
-                  onChange={(e) => handleBudgetChange(key, e.target.value)}
-                  placeholder="הזן תקציב..."
-                  className="text-left pr-8"
-                  dir="ltr" />
-
+                    type="number"
+                    value={budgets[key] || ''}
+                    onChange={(e) => handleBudgetChange(key, e.target.value)}
+                    placeholder="הזן תקציב..."
+                    className="text-left pr-8"
+                    dir="ltr"
+                  />
                   <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm">
                     ₪
                   </span>
                 </div>
-                {budgets[key] &&
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-left" dir="ltr">
+                {budgets[key] && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-left" dir="ltr">
                     ₪{parseInt(budgets[key]).toLocaleString()}
                   </p>
-              }
+                )}
               </motion.div>
-            )}
+            ))}
 
             {/* Custom Categories */}
             {customCategories.map((categoryName) => {
@@ -179,13 +179,13 @@ export default function BudgetSettingsTab({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 rounded-lg border-2 border-purple-300 dark:border-purple-700 hover:shadow-md transition-shadow relative">
-
+                  className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 rounded-lg border-2 border-purple-300 dark:border-purple-700 hover:shadow-md transition-shadow relative"
+                >
                   <button
                     onClick={() => handleRemoveCustomCategory(categoryName)}
                     className="absolute top-2 left-2 w-6 h-6 bg-red-500 dark:bg-red-600 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 dark:hover:bg-red-700 transition-colors"
-                    title="מחק קטגוריה">
-
+                    title="מחק קטגוריה"
+                  >
                     ×
                   </button>
                   <Label className="flex items-center gap-2 mb-2 font-semibold text-purple-700 dark:text-purple-300">
@@ -199,19 +199,19 @@ export default function BudgetSettingsTab({
                       onChange={(e) => handleBudgetChange(customKey, e.target.value)}
                       placeholder="הזן תקציב..."
                       className="text-left pr-8"
-                      dir="ltr" />
-
+                      dir="ltr"
+                    />
                     <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
                       ₪
                     </span>
                   </div>
-                  {budgets[customKey] &&
-                  <p className="text-xs text-gray-500 mt-1 text-left" dir="ltr">
+                  {budgets[customKey] && (
+                    <p className="text-xs text-gray-500 mt-1 text-left" dir="ltr">
                       ₪{parseInt(budgets[customKey]).toLocaleString()}
                     </p>
-                  }
-                </motion.div>);
-
+                  )}
+                </motion.div>
+              );
             })}
           </div>
         </CardContent>
@@ -231,6 +231,6 @@ export default function BudgetSettingsTab({
           </div>
         </CardContent>
       </Card>
-    </div>);
-
+    </div>
+  );
 }

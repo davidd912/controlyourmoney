@@ -5,19 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import {
-  Plus,
-  TrendingUp,
-  TrendingDown,
-  Wallet,
-  CreditCard,
+import { 
+  Plus, 
+  TrendingUp, 
+  TrendingDown, 
+  Wallet, 
+  CreditCard, 
   PiggyBank,
   ArrowLeft,
   AlertCircle,
   Download,
   Users,
-  Copy } from
-"lucide-react";
+  Copy
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -48,7 +48,7 @@ const expenseLabels = {
   household_items: "תכולת בית", home_maintenance: "אחזקת בית", grooming: "טיפוח",
   education: "חינוך", events: "אירועים ותרומות", health: "בריאות",
   transportation: "תחבורה", family: "משפחה", communication: "תקשורת",
-  housing: "דיור", obligations: "התחייבויות", assets: "נכסים", finance: "פיננסים",
+  housing: "דיור", obligations: "התחייבויות", assets: "נכסים", finance: "פיננסים", 
   custom: "קטגוריה מותאמת אישית", other: "אחר"
 };
 
@@ -101,9 +101,9 @@ export default function Dashboard() {
     queryFn: async () => {
       if (!user) return [];
       const all = await base44.entities.Household.list();
-      return all.filter((h) =>
-      h.owner_email === user.email ||
-      h.members && h.members.includes(user.email)
+      return all.filter(h => 
+        h.owner_email === user.email || 
+        (h.members && h.members.includes(user.email))
       );
     },
     enabled: !!user
@@ -177,7 +177,7 @@ export default function Dashboard() {
     queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear],
     queryFn: async () => {
       if (!user || !selectedHouseholdId) return [];
-      return base44.entities.Income.filter({
+      return base44.entities.Income.filter({ 
         household_id: selectedHouseholdId,
         month: selectedMonth,
         year: selectedYear
@@ -190,7 +190,7 @@ export default function Dashboard() {
     queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear],
     queryFn: async () => {
       if (!user || !selectedHouseholdId) return [];
-      return base44.entities.Expense.filter({
+      return base44.entities.Expense.filter({ 
         household_id: selectedHouseholdId,
         month: selectedMonth,
         year: selectedYear
@@ -203,7 +203,7 @@ export default function Dashboard() {
     queryKey: ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear],
     queryFn: async () => {
       if (!user || !selectedHouseholdId) return [];
-      return base44.entities.Expense.filter({
+      return base44.entities.Expense.filter({ 
         household_id: selectedHouseholdId,
         month: selectedMonth,
         year: selectedYear,
@@ -219,7 +219,7 @@ export default function Dashboard() {
     queryKey: ['allCustomBudgetItems', selectedHouseholdId],
     queryFn: async () => {
       if (!user || !selectedHouseholdId) return [];
-      return base44.entities.Expense.filter({
+      return base44.entities.Expense.filter({ 
         household_id: selectedHouseholdId,
         category: 'custom',
         is_budget: true
@@ -230,12 +230,12 @@ export default function Dashboard() {
 
   // Update custom categories cache based on allCustomBudgetItems
   React.useEffect(() => {
-    const customCats = allCustomBudgetItems.
-    filter((b) => b.custom_category_name).
-    map((b) => b.custom_category_name).
-    filter((name, index, self) => self.indexOf(name) === index);
-
-    setCustomCategoriesCache(customCats);
+    const customCats = allCustomBudgetItems
+      .filter(b => b.custom_category_name)
+      .map(b => b.custom_category_name)
+      .filter((name, index, self) => self.indexOf(name) === index);
+    
+    setCustomCategoriesCache(customCats); 
   }, [allCustomBudgetItems]);
 
   const { data: debts = [], isLoading: loadingDebts } = useQuery({
@@ -271,19 +271,19 @@ export default function Dashboard() {
     onMutate: async (newIncome) => {
       await queryClient.cancelQueries(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
       const previousIncomes = queryClient.getQueryData(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
-      queryClient.setQueryData(['incomes', selectedHouseholdId, selectedMonth, selectedYear], (old) =>
-      [...(old || []), { ...newIncome, id: 'temp-' + Date.now() }]
+      queryClient.setQueryData(['incomes', selectedHouseholdId, selectedMonth, selectedYear], old => 
+        [...(old || []), { ...newIncome, id: 'temp-' + Date.now() }]
       );
       return { previousIncomes };
     },
     onError: (err, newIncome, context) => {
       queryClient.setQueryData(['incomes', selectedHouseholdId, selectedMonth, selectedYear], context.previousIncomes);
     },
-    onSuccess: () => {queryClient.invalidateQueries(['incomes']);setIncomeFormOpen(false);setEditItem(null);}
+    onSuccess: () => { queryClient.invalidateQueries(['incomes']); setIncomeFormOpen(false); setEditItem(null); }
   });
   const updateIncome = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Income.update(id, data),
-    onSuccess: () => {queryClient.invalidateQueries(['incomes']);setIncomeFormOpen(false);setEditItem(null);}
+    onSuccess: () => { queryClient.invalidateQueries(['incomes']); setIncomeFormOpen(false); setEditItem(null); }
   });
   const deleteIncome = useMutation({
     mutationFn: (id) => base44.entities.Income.delete(id),
@@ -295,19 +295,19 @@ export default function Dashboard() {
     onMutate: async (newExpense) => {
       await queryClient.cancelQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
       const previousExpenses = queryClient.getQueryData(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
-      queryClient.setQueryData(['expenses', selectedHouseholdId, selectedMonth, selectedYear], (old) =>
-      [...(old || []), { ...newExpense, id: 'temp-' + Date.now() }]
+      queryClient.setQueryData(['expenses', selectedHouseholdId, selectedMonth, selectedYear], old => 
+        [...(old || []), { ...newExpense, id: 'temp-' + Date.now() }]
       );
       return { previousExpenses };
     },
     onError: (err, newExpense, context) => {
       queryClient.setQueryData(['expenses', selectedHouseholdId, selectedMonth, selectedYear], context.previousExpenses);
     },
-    onSuccess: () => {queryClient.invalidateQueries(['expenses']);setExpenseFormOpen(false);setEditItem(null);}
+    onSuccess: () => { queryClient.invalidateQueries(['expenses']); setExpenseFormOpen(false); setEditItem(null); }
   });
   const updateExpense = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Expense.update(id, data),
-    onSuccess: () => {queryClient.invalidateQueries(['expenses']);setExpenseFormOpen(false);setEditItem(null);}
+    onSuccess: () => { queryClient.invalidateQueries(['expenses']); setExpenseFormOpen(false); setEditItem(null); }
   });
   const deleteExpense = useMutation({
     mutationFn: (id) => base44.entities.Expense.delete(id),
@@ -319,19 +319,19 @@ export default function Dashboard() {
     onMutate: async (newDebt) => {
       await queryClient.cancelQueries(['debts', selectedHouseholdId]);
       const previousDebts = queryClient.getQueryData(['debts', selectedHouseholdId]);
-      queryClient.setQueryData(['debts', selectedHouseholdId], (old) =>
-      [...(old || []), { ...newDebt, id: 'temp-' + Date.now() }]
+      queryClient.setQueryData(['debts', selectedHouseholdId], old => 
+        [...(old || []), { ...newDebt, id: 'temp-' + Date.now() }]
       );
       return { previousDebts };
     },
     onError: (err, newDebt, context) => {
       queryClient.setQueryData(['debts', selectedHouseholdId], context.previousDebts);
     },
-    onSuccess: () => {queryClient.invalidateQueries(['debts']);setDebtFormOpen(false);setEditItem(null);}
+    onSuccess: () => { queryClient.invalidateQueries(['debts']); setDebtFormOpen(false); setEditItem(null); }
   });
   const updateDebt = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Debt.update(id, data),
-    onSuccess: () => {queryClient.invalidateQueries(['debts']);setDebtFormOpen(false);setEditItem(null);}
+    onSuccess: () => { queryClient.invalidateQueries(['debts']); setDebtFormOpen(false); setEditItem(null); }
   });
   const deleteDebt = useMutation({
     mutationFn: (id) => base44.entities.Debt.delete(id),
@@ -340,11 +340,11 @@ export default function Dashboard() {
 
   const createAsset = useMutation({
     mutationFn: (data) => base44.entities.Asset.create(data),
-    onSuccess: () => {queryClient.invalidateQueries(['assets']);setAssetFormOpen(false);setEditItem(null);}
+    onSuccess: () => { queryClient.invalidateQueries(['assets']); setAssetFormOpen(false); setEditItem(null); }
   });
   const updateAsset = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Asset.update(id, data),
-    onSuccess: () => {queryClient.invalidateQueries(['assets']);setAssetFormOpen(false);setEditItem(null);}
+    onSuccess: () => { queryClient.invalidateQueries(['assets']); setAssetFormOpen(false); setEditItem(null); }
   });
   const deleteAsset = useMutation({
     mutationFn: (id) => base44.entities.Asset.delete(id),
@@ -368,28 +368,28 @@ export default function Dashboard() {
 
   // Separate actual expenses from budget settings
   const filteredIncomes = incomes;
-  const actualExpenses = expenses.filter((e) => !e.is_budget || e.is_current);
+  const actualExpenses = expenses.filter(e => !e.is_budget || e.is_current);
   const filteredExpenses = actualExpenses;
 
   // Calculate remaining budget per category
   const remainingBudgetByCategory = {};
-  budgetSettings.forEach((budget) => {
+  budgetSettings.forEach(budget => {
     let categoryKey = budget.category;
     let categoryExpenses;
-
+    
     if (budget.category === 'custom' && budget.custom_category_name) {
       // For custom categories, match by both category and custom_category_name
-      categoryExpenses = filteredExpenses.
-      filter((e) => e.category === 'custom' && e.custom_category_name === budget.custom_category_name).
-      reduce((sum, e) => sum + (e.amount || 0), 0);
+      categoryExpenses = filteredExpenses
+        .filter(e => e.category === 'custom' && e.custom_category_name === budget.custom_category_name)
+        .reduce((sum, e) => sum + (e.amount || 0), 0);
       categoryKey = `custom_${budget.custom_category_name}`;
     } else {
       // For regular categories
-      categoryExpenses = filteredExpenses.
-      filter((e) => e.category === budget.category).
-      reduce((sum, e) => sum + (e.amount || 0), 0);
+      categoryExpenses = filteredExpenses
+        .filter(e => e.category === budget.category)
+        .reduce((sum, e) => sum + (e.amount || 0), 0);
     }
-
+    
     remainingBudgetByCategory[categoryKey] = budget.amount - categoryExpenses;
   });
 
@@ -402,7 +402,7 @@ export default function Dashboard() {
   const currentActualDate = moment();
   const selectedDate = moment([selectedYear, selectedMonth - 1]);
 
-  const adjustedDebts = debts.map((debt) => {
+  const adjustedDebts = debts.map(debt => {
     if (!debt.is_recurring || !debt.monthly_payment || debt.monthly_payment <= 0) {
       return { ...debt, adjusted_remaining_balance: debt.remaining_balance || debt.total_amount };
     }
@@ -415,13 +415,13 @@ export default function Dashboard() {
     }
 
     let calculatedBalance = debt.remaining_balance || debt.total_amount;
-
+    
     if (selectedDate.isBefore(referenceDate, 'month')) {
       const monthsDifference = referenceDate.diff(selectedDate, 'months');
-      calculatedBalance = (debt.remaining_balance || debt.total_amount) + monthsDifference * debt.monthly_payment;
+      calculatedBalance = (debt.remaining_balance || debt.total_amount) + (monthsDifference * debt.monthly_payment);
     } else if (selectedDate.isAfter(referenceDate, 'month')) {
       const monthsDifference = selectedDate.diff(referenceDate, 'months');
-      calculatedBalance = (debt.remaining_balance || debt.total_amount) - monthsDifference * debt.monthly_payment;
+      calculatedBalance = (debt.remaining_balance || debt.total_amount) - (monthsDifference * debt.monthly_payment);
     }
 
     const adjusted_remaining_balance = Math.max(0, calculatedBalance);
@@ -429,45 +429,45 @@ export default function Dashboard() {
   });
 
   const totalDebts = adjustedDebts.reduce((sum, d) => sum + (d.adjusted_remaining_balance || 0), 0);
-  const arrangedDebts = adjustedDebts.filter((d) => d.is_arranged).reduce((sum, d) => sum + (d.adjusted_remaining_balance || 0), 0);
+  const arrangedDebts = adjustedDebts.filter(d => d.is_arranged).reduce((sum, d) => sum + (d.adjusted_remaining_balance || 0), 0);
   const unarrangedDebts = totalDebts - arrangedDebts;
   const totalAssetValue = assets.reduce((sum, a) => sum + (a.current_value || 0), 0);
 
   const handleSaveIncome = async (data) => {
-    const dataWithHousehold = {
-      ...data,
+    const dataWithHousehold = { 
+      ...data, 
       household_id: selectedHouseholdId,
       month: selectedMonth,
       year: selectedYear,
       is_budget: false,
       is_current: true
     };
-
+    
     if (editItem) {
       updateIncome.mutate({ id: editItem.id, data: dataWithHousehold });
     } else {
       // Create the income item
       await createIncome.mutateAsync(dataWithHousehold);
-
+      
       // If recurring, copy to next 12 months
       if (data.is_recurring) {
         const futureIncomes = [];
         for (let i = 1; i <= 12; i++) {
           let futureMonth = selectedMonth + i;
           let futureYear = selectedYear;
-
+          
           while (futureMonth > 12) {
             futureMonth -= 12;
             futureYear += 1;
           }
-
+          
           futureIncomes.push({
             ...dataWithHousehold,
             month: futureMonth,
             year: futureYear
           });
         }
-
+        
         if (futureIncomes.length > 0) {
           await base44.entities.Income.bulkCreate(futureIncomes);
           queryClient.invalidateQueries(['incomes']);
@@ -477,40 +477,40 @@ export default function Dashboard() {
   };
 
   const handleSaveExpense = async (data) => {
-    const dataWithHousehold = {
-      ...data,
+    const dataWithHousehold = { 
+      ...data, 
       household_id: selectedHouseholdId,
       month: selectedMonth,
       year: selectedYear,
       is_budget: false,
       is_current: true
     };
-
+    
     if (editItem) {
       updateExpense.mutate({ id: editItem.id, data: dataWithHousehold });
     } else {
       // Create the expense item
       await createExpense.mutateAsync(dataWithHousehold);
-
+      
       // If recurring, copy to next 12 months
       if (data.is_recurring) {
         const futureExpenses = [];
         for (let i = 1; i <= 12; i++) {
           let futureMonth = selectedMonth + i;
           let futureYear = selectedYear;
-
+          
           while (futureMonth > 12) {
             futureMonth -= 12;
             futureYear += 1;
           }
-
+          
           futureExpenses.push({
             ...dataWithHousehold,
             month: futureMonth,
             year: futureYear
           });
         }
-
+        
         if (futureExpenses.length > 0) {
           await base44.entities.Expense.bulkCreate(futureExpenses);
           queryClient.invalidateQueries(['expenses']);
@@ -555,7 +555,7 @@ export default function Dashboard() {
       }
 
       const itemsToBulkCreate = [];
-
+      
       // 1. Create budget records for this month (amount > 0)
       Object.entries(budgets).forEach(([key, value]) => {
         const amount = value ? parseFloat(value) : 0;
@@ -592,12 +592,12 @@ export default function Dashboard() {
 
       // 2. Create registration records for new custom categories (amount: 0)
       const existingCustomCategoryNamesInDb = new Set(
-        allCustomBudgetItems.
-        filter((item) => item.custom_category_name).
-        map((item) => item.custom_category_name)
+        allCustomBudgetItems
+          .filter(item => item.custom_category_name)
+          .map(item => item.custom_category_name)
       );
 
-      customCategories.forEach((categoryName) => {
+      customCategories.forEach(categoryName => {
         if (!existingCustomCategoryNamesInDb.has(categoryName)) {
           itemsToBulkCreate.push({
             household_id: selectedHouseholdId,
@@ -629,70 +629,70 @@ export default function Dashboard() {
   };
 
   const incomeColumns = [
-  { key: 'category', label: 'קטגוריה', render: (val) => incomeLabels[val] || val },
-  { key: 'subcategory', label: 'תת-קטגוריה' },
-  { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` },
-  { key: 'description', label: 'תיאור' }];
-
+    { key: 'category', label: 'קטגוריה', render: (val) => incomeLabels[val] || val },
+    { key: 'subcategory', label: 'תת-קטגוריה' },
+    { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` },
+    { key: 'description', label: 'תיאור' }
+  ];
 
   const expenseColumns = [
-  { key: 'category', label: 'קטגוריה', render: (val, item) => getExpenseLabel(item) },
-  { key: 'subcategory', label: 'תת-קטגוריה' },
-  { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` },
-  { key: 'priority', label: 'עדיפות', render: (val) => {
+    { key: 'category', label: 'קטגוריה', render: (val, item) => getExpenseLabel(item) },
+    { key: 'subcategory', label: 'תת-קטגוריה' },
+    { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` },
+    { key: 'priority', label: 'עדיפות', render: (val) => {
       if (!val) return '-';
       const labels = { 1: 'קל לצמצם', 2: 'קשה אך אפשרי', 3: 'לא נוגעים' };
       const colors = { 1: 'bg-green-100 text-green-700', 2: 'bg-yellow-100 text-yellow-700', 3: 'bg-red-100 text-red-700' };
       return <Badge className={colors[val]}>{labels[val]}</Badge>;
-    } }];
-
+    }}
+  ];
 
   const debtColumns = [
-  { key: 'creditor_name', label: 'נושה' },
-  { key: 'debt_type', label: 'סוג', render: (val) => debtLabels[val] || val },
-  { key: 'total_amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` },
-  { key: 'monthly_payment', label: 'החזר חודשי', render: (val) => val ? `₪${val.toLocaleString()}` : '-' },
-  { key: 'is_arranged', label: 'סטטוס', render: (val) =>
-    <Badge className={val ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>
+    { key: 'creditor_name', label: 'נושה' },
+    { key: 'debt_type', label: 'סוג', render: (val) => debtLabels[val] || val },
+    { key: 'total_amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` },
+    { key: 'monthly_payment', label: 'החזר חודשי', render: (val) => val ? `₪${val.toLocaleString()}` : '-' },
+    { key: 'is_arranged', label: 'סטטוס', render: (val) => (
+      <Badge className={val ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>
         {val ? 'בהסדר' : 'לא בהסדר'}
       </Badge>
-  }];
-
+    )}
+  ];
 
   const assetColumns = [
-  { key: 'asset_type', label: 'סוג', render: (val) => assetLabels[val] || val },
-  { key: 'name', label: 'שם' },
-  { key: 'monthly_deposit', label: 'הפקדה חודשית', render: (val) => val ? `₪${val.toLocaleString()}` : '-' },
-  { key: 'current_value', label: 'שווי נוכחי', render: (val) => `₪${(val || 0).toLocaleString()}` }];
-
+    { key: 'asset_type', label: 'סוג', render: (val) => assetLabels[val] || val },
+    { key: 'name', label: 'שם' },
+    { key: 'monthly_deposit', label: 'הפקדה חודשית', render: (val) => val ? `₪${val.toLocaleString()}` : '-' },
+    { key: 'current_value', label: 'שווי נוכחי', render: (val) => `₪${(val || 0).toLocaleString()}` }
+  ];
 
   const generateSmartAlerts = async () => {
     if (!user || isGeneratingAlerts) return;
-
+    
     setIsGeneratingAlerts(true);
-
+    
     try {
       // Prepare financial data for AI analysis
       const financialData = {
-        incomes: filteredIncomes.map((i) => ({
+        incomes: filteredIncomes.map(i => ({
           category: incomeLabels[i.category] || i.category,
           amount: i.amount,
           subcategory: i.subcategory
         })),
-        expenses: filteredExpenses.map((e) => ({
+        expenses: filteredExpenses.map(e => ({
           category: getExpenseLabel(e),
           amount: e.amount,
           subcategory: e.subcategory,
           priority: e.priority
         })),
-        debts: debts.map((d) => ({
+        debts: debts.map(d => ({
           type: debtLabels[d.debt_type] || d.debt_type,
           total: d.total_amount,
           monthly: d.monthly_payment,
           arranged: d.is_arranged,
           creditor: d.creditor_name
         })),
-        assets: assets.map((a) => ({
+        assets: assets.map(a => ({
           type: assetLabels[a.asset_type] || a.asset_type,
           value: a.current_value,
           monthly: a.monthly_deposit
@@ -767,7 +767,7 @@ ${JSON.stringify(financialData, null, 2)}
       // Save alerts to database
       if (result.alerts && result.alerts.length > 0) {
         await base44.entities.Alert.bulkCreate(
-          result.alerts.map((alert) => ({
+          result.alerts.map(alert => ({
             ...alert,
             household_id: selectedHouseholdId,
             is_read: false,
@@ -839,7 +839,7 @@ ${JSON.stringify(financialData, null, 2)}
     if (filteredExpenses.length > 0) {
       allCSV += 'הוצאות\n';
       // For expenses, we need to handle the priority badge rendering
-      const expenseColumnsForCSV = expenseColumns.map((col) => {
+      const expenseColumnsForCSV = expenseColumns.map(col => {
         if (col.key === 'priority') {
           return {
             ...col,
@@ -858,7 +858,7 @@ ${JSON.stringify(financialData, null, 2)}
     // Debts section
     if (debts.length > 0) {
       allCSV += 'חובות\n';
-      const debtColumnsForCSV = debtColumns.map((col) => {
+      const debtColumnsForCSV = debtColumns.map(col => {
         if (col.key === 'is_arranged') {
           return {
             ...col,
@@ -897,8 +897,8 @@ ${JSON.stringify(financialData, null, 2)}
               </p>
               <Button
                 onClick={() => setCreateHouseholdOpen(true)}
-                className="w-full bg-blue-600 hover:bg-blue-700">
-
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
                 <Plus className="w-4 h-4 ml-2" />
                 צור משק בית
               </Button>
@@ -912,13 +912,13 @@ ${JSON.stringify(financialData, null, 2)}
           newHouseholdName={newHouseholdName}
           onNewHouseholdNameChange={setNewHouseholdName}
           onCreateHousehold={handleCreateHousehold}
-          isCreating={createHousehold.isPending} />
-
-      </>);
-
+          isCreating={createHousehold.isPending}
+        />
+      </>
+    );
   }
 
-  const currentHousehold = households.find((h) => h.id === selectedHouseholdId);
+  const currentHousehold = households.find(h => h.id === selectedHouseholdId);
 
   const handleRefresh = async () => {
     await queryClient.invalidateQueries(['incomes']);
@@ -933,11 +933,11 @@ ${JSON.stringify(financialData, null, 2)}
       <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="max-w-7xl mx-auto p-4 md:p-6 pb-8">
         {/* Header */}
-        <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8">
-
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
@@ -946,27 +946,27 @@ ${JSON.stringify(financialData, null, 2)}
               <p className="text-gray-500 dark:text-gray-400">
                 תכנון ובניית תקציב חודשי מותאם אישית
               </p>
-              {currentHousehold &&
+              {currentHousehold && (
                 <div className="mt-3 flex items-center gap-2">
                   <Badge className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 flex items-center gap-1">
                     <Wallet className="w-3 h-3" />
                     {currentHousehold.name}
                   </Badge>
-                  {currentHousehold.members && currentHousehold.members.length > 1 &&
-                  <Badge variant="outline" className="flex items-center gap-1 dark:border-gray-600 dark:text-gray-300">
+                  {currentHousehold.members && currentHousehold.members.length > 1 && (
+                    <Badge variant="outline" className="flex items-center gap-1 dark:border-gray-600 dark:text-gray-300">
                       <Users className="w-3 h-3" />
                       {currentHousehold.members.length} חברים
                     </Badge>
-                  }
+                  )}
                 </div>
-                }
+              )}
             </div>
             <Button
-                onClick={handleExportAll}
-                variant="outline"
-                className="gap-2 hidden md:flex"
-                aria-label="ייצא את כל הנתונים לקובץ CSV">
-
+              onClick={handleExportAll}
+              variant="outline"
+              className="gap-2 hidden md:flex"
+              aria-label="ייצא את כל הנתונים לקובץ CSV"
+            >
               <Download className="w-4 h-4" aria-hidden="true" />
               ייצא הכל ל-CSV
             </Button>
@@ -974,59 +974,59 @@ ${JSON.stringify(financialData, null, 2)}
         </motion.div>
 
         {/* Household Selector */}
-        {households.length > 0 &&
+        {households.length > 0 && (
           <HouseholdSelector
             households={households}
             selectedId={selectedHouseholdId}
             onSelect={setSelectedHouseholdId}
-            currentUserEmail={user?.email} />
-
-          }
+            currentUserEmail={user?.email}
+          />
+        )}
 
         {/* Month Year Selector */}
         <MonthYearSelector
-            month={selectedMonth}
-            year={selectedYear}
-            onMonthChange={setSelectedMonth}
-            onYearChange={setSelectedYear} />
-
+          month={selectedMonth}
+          year={selectedYear}
+          onMonthChange={setSelectedMonth}
+          onYearChange={setSelectedYear}
+        />
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <SummaryCard
-              title="סה״כ הכנסות"
-              value={totalIncome}
-              icon={TrendingUp}
-              color="green" />
-
+            title="סה״כ הכנסות"
+            value={totalIncome}
+            icon={TrendingUp}
+            color="green"
+          />
           <SummaryCard
-              title="סה״כ הוצאות"
-              value={totalExpenses}
-              icon={TrendingDown}
-              color="orange" />
-
+            title="סה״כ הוצאות"
+            value={totalExpenses}
+            icon={TrendingDown}
+            color="orange"
+          />
           <SummaryCard
-              title="יתרה חודשית"
-              value={monthlyBalance}
-              icon={Wallet}
-              color={monthlyBalance >= 0 ? "blue" : "red"}
-              subtitle={`יתרה שנתית: ₪${(monthlyBalance * 12).toLocaleString()}`} />
-
+            title="יתרה חודשית"
+            value={monthlyBalance}
+            icon={Wallet}
+            color={monthlyBalance >= 0 ? "blue" : "red"}
+            subtitle={`יתרה שנתית: ₪${(monthlyBalance * 12).toLocaleString()}`}
+          />
           <SummaryCard
-              title="סה״כ נכסים"
-              value={totalAssetValue}
-              icon={PiggyBank}
-              color="purple" />
-
+            title="סה״כ נכסים"
+            value={totalAssetValue}
+            icon={PiggyBank}
+            color="purple"
+          />
         </div>
 
         {/* Debt Alert */}
-        {unarrangedDebts > 0 &&
+        {unarrangedDebts > 0 && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="mb-6">
-
+            className="mb-6"
+          >
             <Card className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950">
               <CardContent className="p-4 flex items-center gap-4">
                 <AlertCircle className="w-8 h-8 text-red-500 dark:text-red-400" />
@@ -1039,46 +1039,46 @@ ${JSON.stringify(financialData, null, 2)}
               </CardContent>
             </Card>
           </motion.div>
-          }
+        )}
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="bg-white dark:bg-gray-800 shadow-sm p-1.5 rounded-xl overflow-x-auto">
             <TabsList className="inline-flex min-w-full sm:min-w-0 gap-1 bg-transparent p-0" role="tablist" aria-label="ניווט בין קטגוריות">
-              <TabsTrigger
-                  value="overview"
-                  className="animated-tab whitespace-nowrap">
-
+              <TabsTrigger 
+                value="overview" 
+                className="animated-tab whitespace-nowrap"
+              >
                 סקירה כללית
               </TabsTrigger>
-              <TabsTrigger
-                  value="budget"
-                  className="animated-tab whitespace-nowrap">
-
+              <TabsTrigger 
+                value="budget" 
+                className="animated-tab whitespace-nowrap"
+              >
                 הגדרת תקציב
               </TabsTrigger>
-              <TabsTrigger
-                  value="income"
-                  className="animated-tab whitespace-nowrap">
-
+              <TabsTrigger 
+                value="income" 
+                className="animated-tab whitespace-nowrap"
+              >
                 הכנסות
               </TabsTrigger>
-              <TabsTrigger
-                  value="expenses"
-                  className="animated-tab whitespace-nowrap">
-
+              <TabsTrigger 
+                value="expenses" 
+                className="animated-tab whitespace-nowrap"
+              >
                 הוצאות
               </TabsTrigger>
-              <TabsTrigger
-                  value="debts"
-                  className="animated-tab whitespace-nowrap">
-
+              <TabsTrigger 
+                value="debts" 
+                className="animated-tab whitespace-nowrap"
+              >
                 חובות
               </TabsTrigger>
-              <TabsTrigger
-                  value="assets"
-                  className="animated-tab whitespace-nowrap">
-
+              <TabsTrigger 
+                value="assets" 
+                className="animated-tab whitespace-nowrap"
+              >
                 חסכונות ונכסים
               </TabsTrigger>
             </TabsList>
@@ -1168,19 +1168,19 @@ ${JSON.stringify(financialData, null, 2)}
           <TabsContent value="overview" className="space-y-6">
             {/* Smart Alerts */}
             <AlertPanel
-                alerts={alerts}
-                onDismiss={handleDismissAlert}
-                onMarkRead={handleMarkAlertRead}
-                onRefresh={generateSmartAlerts}
-                isGenerating={isGeneratingAlerts} />
-
+              alerts={alerts}
+              onDismiss={handleDismissAlert}
+              onMarkRead={handleMarkAlertRead}
+              onRefresh={generateSmartAlerts}
+              isGenerating={isGeneratingAlerts}
+            />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <CategoryBreakdown expenses={filteredExpenses} budgets={budgetSettings} />
               
               <Card className="border-0 shadow-lg dark:bg-gray-800 dark:border-gray-700">
                 <CardHeader>
-                  <CardTitle className="text-slate-950 text-lg font-semibold tracking-tight dark:text-white">סיכום חובות</CardTitle>
+                  <CardTitle className="text-lg dark:text-white">סיכום חובות</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-950 rounded-lg">
@@ -1191,8 +1191,8 @@ ${JSON.stringify(financialData, null, 2)}
                     <span className="text-red-700 dark:text-red-400">חובות לא בהסדר</span>
                     <span className="font-bold text-red-700 dark:text-red-400">₪{unarrangedDebts.toLocaleString()}</span>
                   </div>
-                  <div className="bg-gray-100 text-black p-3 rounded-lg flex justify-between items-center dark:bg-gray-700">
-                    <span className="text-slate-950 font-semibold dark:text-gray-200">סה״כ חובות</span>
+                  <div className="flex justify-between items-center p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    <span className="font-semibold dark:text-gray-200">סה״כ חובות</span>
                     <span className="font-bold dark:text-white">₪{totalDebts.toLocaleString()}</span>
                   </div>
                 </CardContent>
@@ -1203,176 +1203,176 @@ ${JSON.stringify(financialData, null, 2)}
           {/* Budget Settings Tab */}
           <TabsContent value="budget" className="space-y-4">
             <BudgetSettingsTab
-                householdId={selectedHouseholdId}
-                month={selectedMonth}
-                year={selectedYear}
-                existingBudgets={budgetSettings}
-                allCustomCategories={customCategoriesCache}
-                onSave={handleSaveBudgetSettings} />
-
+              householdId={selectedHouseholdId}
+              month={selectedMonth}
+              year={selectedYear}
+              existingBudgets={budgetSettings}
+              allCustomCategories={customCategoriesCache}
+              onSave={handleSaveBudgetSettings}
+            />
           </TabsContent>
 
           {/* Income Tab */}
           <TabsContent value="income" className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-slate-950 text-xl font-semibold dark:text-white">הכנסות חודשיות</h2>
+              <h2 className="text-xl font-semibold dark:text-white">הכנסות חודשיות</h2>
               <div className="flex gap-2">
                 <ExportButton
-                    data={filteredIncomes}
-                    columns={incomeColumns}
-                    filename="הכנסות" />
-
-                <Button onClick={() => {setEditItem(null);setIncomeFormOpen(true);}} className="bg-blue-600 hover:bg-blue-700">
+                  data={filteredIncomes}
+                  columns={incomeColumns}
+                  filename="הכנסות"
+                />
+                <Button onClick={() => { setEditItem(null); setIncomeFormOpen(true); }} className="bg-blue-600 hover:bg-blue-700">
                   <Plus className="w-4 h-4 ml-2" />
                   הוסף הכנסה
                 </Button>
               </div>
             </div>
             <DataTable
-                data={filteredIncomes}
-                columns={incomeColumns}
-                onEdit={(item) => {setEditItem(item);setIncomeFormOpen(true);}}
-                onDelete={(item) => deleteIncome.mutate(item.id)}
-                emptyMessage="לא הוזנו הכנסות עדיין" />
-
+              data={filteredIncomes}
+              columns={incomeColumns}
+              onEdit={(item) => { setEditItem(item); setIncomeFormOpen(true); }}
+              onDelete={(item) => deleteIncome.mutate(item.id)}
+              emptyMessage="לא הוזנו הכנסות עדיין"
+            />
           </TabsContent>
 
           {/* Expenses Tab */}
           <TabsContent value="expenses" className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-slate-950 text-xl font-semibold dark:text-white">הוצאות חודשיות</h2>
+              <h2 className="text-xl font-semibold dark:text-white">הוצאות חודשיות</h2>
               <div className="flex gap-2">
                 <ExportButton
-                    data={filteredExpenses}
-                    columns={expenseColumns.map((col) => {
-                      if (col.key === 'priority') {
-                        return {
-                          ...col,
-                          render: (val) => {
-                            if (!val) return '-';
-                            const labels = { 1: 'קל לצמצם', 2: 'קשה אך אפשרי', 3: 'לא נוגעים' };
-                            return labels[val];
-                          }
-                        };
-                      }
-                      return col;
-                    })}
-                    filename="הוצאות" />
-
-                <Button onClick={() => {setEditItem(null);setExpenseFormOpen(true);}} className="bg-orange-500 hover:bg-orange-600">
+                  data={filteredExpenses}
+                  columns={expenseColumns.map(col => {
+                    if (col.key === 'priority') {
+                      return {
+                        ...col,
+                        render: (val) => {
+                          if (!val) return '-';
+                          const labels = { 1: 'קל לצמצם', 2: 'קשה אך אפשרי', 3: 'לא נוגעים' };
+                          return labels[val];
+                        }
+                      };
+                    }
+                    return col;
+                  })}
+                  filename="הוצאות"
+                />
+                <Button onClick={() => { setEditItem(null); setExpenseFormOpen(true); }} className="bg-orange-500 hover:bg-orange-600">
                   <Plus className="w-4 h-4 ml-2" />
                   הוסף הוצאה
                 </Button>
               </div>
             </div>
             <DataTable
-                data={filteredExpenses}
-                columns={expenseColumns}
-                onEdit={(item) => {setEditItem(item);setExpenseFormOpen(true);}}
-                onDelete={(item) => deleteExpense.mutate(item.id)}
-                emptyMessage="לא הוזנו הוצאות עדיין" />
-
+              data={filteredExpenses}
+              columns={expenseColumns}
+              onEdit={(item) => { setEditItem(item); setExpenseFormOpen(true); }}
+              onDelete={(item) => deleteExpense.mutate(item.id)}
+              emptyMessage="לא הוזנו הוצאות עדיין"
+            />
           </TabsContent>
 
           {/* Debts Tab */}
           <TabsContent value="debts" className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-slate-950 text-xl font-semibold dark:text-white">פירוט חובות</h2>
+              <h2 className="text-xl font-semibold dark:text-white">פירוט חובות</h2>
               <div className="flex gap-2">
                 <ExportButton
-                    data={debts}
-                    columns={debtColumns.map((col) => {
-                      if (col.key === 'is_arranged') {
-                        return {
-                          ...col,
-                          render: (val) => val ? 'בהסדר' : 'לא בהסדר'
-                        };
-                      }
-                      return col;
-                    })}
-                    filename="חובות" />
-
-                <Button onClick={() => {setEditItem(null);setDebtFormOpen(true);}} className="bg-red-500 hover:bg-red-600">
+                  data={debts}
+                  columns={debtColumns.map(col => {
+                    if (col.key === 'is_arranged') {
+                      return {
+                        ...col,
+                        render: (val) => val ? 'בהסדר' : 'לא בהסדר'
+                      };
+                    }
+                    return col;
+                  })}
+                  filename="חובות"
+                />
+                <Button onClick={() => { setEditItem(null); setDebtFormOpen(true); }} className="bg-red-500 hover:bg-red-600">
                   <Plus className="w-4 h-4 ml-2" />
                   הוסף חוב
                 </Button>
               </div>
             </div>
             <DataTable
-                data={adjustedDebts.map((d) => ({ ...d, total_amount: d.adjusted_remaining_balance }))}
-                columns={debtColumns}
-                onEdit={(item) => {setEditItem(item);setDebtFormOpen(true);}}
-                onDelete={(item) => deleteDebt.mutate(item.id)}
-                emptyMessage="לא הוזנו חובות" />
-
+              data={adjustedDebts.map(d => ({ ...d, total_amount: d.adjusted_remaining_balance }))}
+              columns={debtColumns}
+              onEdit={(item) => { setEditItem(item); setDebtFormOpen(true); }}
+              onDelete={(item) => deleteDebt.mutate(item.id)}
+              emptyMessage="לא הוזנו חובות"
+            />
           </TabsContent>
 
           {/* Assets Tab */}
           <TabsContent value="assets" className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-slate-950 text-xl font-semibold dark:text-white">חסכונות ונכסים</h2>
+              <h2 className="text-xl font-semibold dark:text-white">חסכונות ונכסים</h2>
               <div className="flex gap-2">
                 <ExportButton
-                    data={assets}
-                    columns={assetColumns}
-                    filename="חסכונות_ונכסים" />
-
-                <Button onClick={() => {setEditItem(null);setAssetFormOpen(true);}} className="bg-green-600 hover:bg-green-700">
+                  data={assets}
+                  columns={assetColumns}
+                  filename="חסכונות_ונכסים"
+                />
+                <Button onClick={() => { setEditItem(null); setAssetFormOpen(true); }} className="bg-green-600 hover:bg-green-700">
                   <Plus className="w-4 h-4 ml-2" />
                   הוסף נכס
                 </Button>
               </div>
             </div>
             <DataTable
-                data={assets}
-                columns={assetColumns}
-                onEdit={(item) => {setEditItem(item);setAssetFormOpen(true);}}
-                onDelete={(item) => deleteAsset.mutate(item.id)}
-                emptyMessage="לא הוזנו נכסים או חסכונות" />
-
+              data={assets}
+              columns={assetColumns}
+              onEdit={(item) => { setEditItem(item); setAssetFormOpen(true); }}
+              onDelete={(item) => deleteAsset.mutate(item.id)}
+              emptyMessage="לא הוזנו נכסים או חסכונות"
+            />
           </TabsContent>
         </Tabs>
 
         {/* Forms */}
         <IncomeForm
-            open={incomeFormOpen}
-            onClose={() => {setIncomeFormOpen(false);setEditItem(null);}}
-            onSave={handleSaveIncome}
-            editItem={editItem} />
-
+          open={incomeFormOpen}
+          onClose={() => { setIncomeFormOpen(false); setEditItem(null); }}
+          onSave={handleSaveIncome}
+          editItem={editItem}
+        />
         <ExpenseForm
-            open={expenseFormOpen}
-            onClose={() => {setExpenseFormOpen(false);setEditItem(null);}}
-            onSave={handleSaveExpense}
-            editItem={editItem}
-            remainingBudgetByCategory={remainingBudgetByCategory}
-            customCategories={customCategoriesCache} />
-
+          open={expenseFormOpen}
+          onClose={() => { setExpenseFormOpen(false); setEditItem(null); }}
+          onSave={handleSaveExpense}
+          editItem={editItem}
+          remainingBudgetByCategory={remainingBudgetByCategory}
+          customCategories={customCategoriesCache}
+        />
         <DebtForm
-            open={debtFormOpen}
-            onClose={() => {setDebtFormOpen(false);setEditItem(null);}}
-            onSave={handleSaveDebt}
-            editItem={editItem} />
-
+          open={debtFormOpen}
+          onClose={() => { setDebtFormOpen(false); setEditItem(null); }}
+          onSave={handleSaveDebt}
+          editItem={editItem}
+        />
         <AssetForm
-            open={assetFormOpen}
-            onClose={() => {setAssetFormOpen(false);setEditItem(null);}}
-            onSave={handleSaveAsset}
-            editItem={editItem} />
-
+          open={assetFormOpen}
+          onClose={() => { setAssetFormOpen(false); setEditItem(null); }}
+          onSave={handleSaveAsset}
+          editItem={editItem}
+        />
 
 
 
         <CreateHouseholdDialog
-            open={createHouseholdOpen}
-            onOpenChange={setCreateHouseholdOpen}
-            newHouseholdName={newHouseholdName}
-            onNewHouseholdNameChange={setNewHouseholdName}
-            onCreateHousehold={handleCreateHousehold}
-            isCreating={createHousehold.isPending} />
-
+          open={createHouseholdOpen}
+          onOpenChange={setCreateHouseholdOpen}
+          newHouseholdName={newHouseholdName}
+          onNewHouseholdNameChange={setNewHouseholdName}
+          onCreateHousehold={handleCreateHousehold}
+          isCreating={createHousehold.isPending}
+        />
         </div>
       </div>
-    </PullToRefresh>);
-
+    </PullToRefresh>
+  );
 }

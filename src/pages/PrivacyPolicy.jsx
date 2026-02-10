@@ -138,8 +138,8 @@ export default function PrivacyPolicy() {
               </p>
               <div className="flex items-center gap-2">
                 <span className="text-gray-700">דוא"ל:</span>
-                <a href="mailto:davidd9@gmail.com" className="text-blue-600 hover:text-blue-800 font-semibold">task2gether@gmail.com
-
+                <a href="mailto:davidd9@gmail.com" className="text-blue-600 hover:text-blue-800 font-semibold">
+                  davidd9@gmail.com
                 </a>
               </div>
               <p className="text-sm text-gray-600 mt-3">
@@ -149,6 +149,6 @@ export default function PrivacyPolicy() {
           </CardContent>
         </Card>
       </div>
-    </div>);
-
+    </div>
+  );
 }
