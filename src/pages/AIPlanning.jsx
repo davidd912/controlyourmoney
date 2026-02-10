@@ -489,13 +489,13 @@ ${JSON.stringify(monthlyData, null, 2)}
 
   if (!selectedHouseholdId) {
     return (
-      <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4 min-h-[60vh]" lang="he">
-        <Card className="max-w-md w-full">
+      <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4 min-h-[60vh]" lang="he">
+        <Card className="max-w-md w-full dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="text-center">נדרש משק בית</CardTitle>
+            <CardTitle className="text-center dark:text-white">נדרש משק בית</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-center text-gray-600">
+            <p className="text-center text-gray-600 dark:text-gray-400">
               יש ליצור משק בית כדי להשתמש בכלי תכנון AI
             </p>
           </CardContent>
@@ -505,7 +505,7 @@ ${JSON.stringify(monthlyData, null, 2)}
   }
 
   return (
-    <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50" lang="he">
+    <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" lang="he">
       <div className="max-w-7xl mx-auto p-4 md:p-6 pb-8">
         {/* Security Banner */}
         <motion.div
@@ -513,7 +513,7 @@ ${JSON.stringify(monthlyData, null, 2)}
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
             <div className="flex items-center gap-3 text-sm">
               <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -522,8 +522,8 @@ ${JSON.stringify(monthlyData, null, 2)}
                 </svg>
               </div>
               <div className="flex-1 text-right">
-                <p className="font-semibold text-gray-900">הנתונים שלך מאובטחים ומוצפנים</p>
-                <p className="text-gray-600 text-xs mt-0.5">
+                <p className="font-semibold text-gray-900 dark:text-white">הנתונים שלך מאובטחים ומוצפנים</p>
+                <p className="text-gray-600 dark:text-gray-400 text-xs mt-0.5">
                   הניתוח מתבצע תוך שמירה קפדנית על פרטיותך. כל המידע מוצפן ונשמר בסודיות מוחלטת.
                 </p>
               </div>
@@ -542,10 +542,10 @@ ${JSON.stringify(monthlyData, null, 2)}
               <Brain className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
                 תכנון תקציב חכם
               </h1>
-              <p className="text-gray-500">
+              <p className="text-gray-500 dark:text-gray-400">
                 ניתוח מתקדם והמלצות מבוססות AI
               </p>
             </div>
@@ -553,7 +553,7 @@ ${JSON.stringify(monthlyData, null, 2)}
         </motion.div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <div className="bg-white shadow-sm p-1.5 rounded-xl overflow-x-auto">
+          <div className="bg-white dark:bg-gray-800 shadow-sm p-1.5 rounded-xl overflow-x-auto">
             <TabsList className="inline-flex min-w-full sm:min-w-0 gap-1 bg-transparent p-0">
               <TabsTrigger value="recommendations" className="rounded-lg whitespace-nowrap text-xs sm:text-sm">
                 <Lightbulb className="w-4 h-4 ml-1 sm:ml-2" />
@@ -580,15 +580,15 @@ ${JSON.stringify(monthlyData, null, 2)}
 
           {/* Recommendations Tab */}
           <TabsContent value="recommendations" className="space-y-6">
-            <Card>
+            <Card className="dark:bg-gray-800 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-purple-600" />
+                <CardTitle className="flex items-center gap-2 dark:text-white">
+                  <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   המלצות מותאמות אישית על סמך ההיסטוריה שלך
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-600 text-right">
+                <p className="text-gray-600 dark:text-gray-400 text-right">
                   קבל המלצות חכמות לשיפור התקציב שלך על סמך ניתוח דפוסי ההוצאה וההכנסה שלך
                 </p>
                 <Button
@@ -604,19 +604,19 @@ ${JSON.stringify(monthlyData, null, 2)}
                     {/* Patterns */}
                     {recommendations.patterns && recommendations.patterns.length > 0 && (
                       <div>
-                        <h3 className="text-lg font-bold mb-3">דפוסים שזוהו</h3>
+                        <h3 className="text-lg font-bold mb-3 dark:text-white">דפוסים שזוהו</h3>
                         <div className="grid gap-3">
                           {recommendations.patterns.map((pattern, idx) => (
-                            <Card key={idx} className="bg-blue-50 border-blue-200">
+                            <Card key={idx} className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
                               <CardContent className="p-4">
                                 <div className="flex items-start gap-3">
-                                  <TrendingUp className="w-5 h-5 text-blue-600 mt-1" />
+                                  <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-1" />
                                   <div className="text-right flex-1">
-                                    <p className="font-semibold text-blue-900">
+                                    <p className="font-semibold text-blue-900 dark:text-blue-100">
                                       {translateCategory(pattern.category)}
                                     </p>
-                                    <p className="text-sm text-blue-700">{pattern.trend}</p>
-                                    <p className="text-sm text-gray-700 mt-1">{pattern.description}</p>
+                                    <p className="text-sm text-blue-700 dark:text-blue-300">{pattern.trend}</p>
+                                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{pattern.description}</p>
                                   </div>
                                 </div>
                               </CardContent>
@@ -629,27 +629,27 @@ ${JSON.stringify(monthlyData, null, 2)}
                     {/* Savings Opportunities */}
                     {recommendations.savings_opportunities && recommendations.savings_opportunities.length > 0 && (
                       <div>
-                        <h3 className="text-lg font-bold mb-3">הזדמנויות לחסכון</h3>
+                        <h3 className="text-lg font-bold mb-3 dark:text-white">הזדמנויות לחסכון</h3>
                         <div className="grid gap-3">
                           {recommendations.savings_opportunities.map((opp, idx) => (
-                            <Card key={idx} className="bg-green-50 border-green-200">
+                            <Card key={idx} className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
                               <CardContent className="p-4">
                                 <div className="flex items-start justify-between gap-3">
                                   <div className="flex-1 text-right">
-                                    <p className="font-semibold text-green-900">
+                                    <p className="font-semibold text-green-900 dark:text-green-100">
                                       {translateCategory(opp.category)}
                                     </p>
-                                    <p className="text-sm text-gray-700 mt-1">{opp.explanation}</p>
+                                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{opp.explanation}</p>
                                     <div className="flex gap-4 mt-2 text-sm flex-wrap">
-                                      <span className="text-gray-600">
+                                      <span className="text-gray-600 dark:text-gray-400">
                                         ממוצע נוכחי: ₪{opp.current_avg?.toLocaleString()}
                                       </span>
-                                      <span className="text-green-700 font-semibold">
+                                      <span className="text-green-700 dark:text-green-300 font-semibold">
                                         מומלץ: ₪{opp.suggested_amount?.toLocaleString()}
                                       </span>
                                     </div>
                                   </div>
-                                  <Badge className="bg-green-600 text-white shrink-0">
+                                  <Badge className="bg-green-600 dark:bg-green-700 text-white shrink-0">
                                     חסכון: ₪{opp.potential_savings?.toLocaleString()}
                                   </Badge>
                                 </div>
@@ -663,18 +663,18 @@ ${JSON.stringify(monthlyData, null, 2)}
                     {/* Risk Areas */}
                     {recommendations.risk_areas && recommendations.risk_areas.length > 0 && (
                       <div>
-                        <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
-                          <AlertTriangle className="w-5 h-5 text-red-600" />
+                        <h3 className="text-lg font-bold mb-3 flex items-center gap-2 dark:text-white">
+                          <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                           אזורי סיכון
                         </h3>
                         <div className="grid gap-3">
                           {recommendations.risk_areas.map((risk, idx) => (
-                            <Card key={idx} className="bg-red-50 border-red-200">
+                            <Card key={idx} className="bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800">
                               <CardContent className="p-4">
                                 <div className="flex items-start justify-between gap-3">
                                   <div className="text-right flex-1">
-                                    <p className="font-semibold text-red-900">{risk.area}</p>
-                                    <p className="text-sm text-gray-700 mt-1">{risk.description}</p>
+                                    <p className="font-semibold text-red-900 dark:text-red-100">{risk.area}</p>
+                                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{risk.description}</p>
                                   </div>
                                   <Badge className={
                                     risk.severity === 'high' || risk.severity === 'גבוה' 
@@ -694,14 +694,14 @@ ${JSON.stringify(monthlyData, null, 2)}
                     {/* Budget Balance Tips */}
                     {recommendations.budget_balance_tips && recommendations.budget_balance_tips.length > 0 && (
                       <div>
-                        <h3 className="text-lg font-bold mb-3">טיפים לאיזון תקציבי</h3>
-                        <Card className="bg-purple-50 border-purple-200">
+                        <h3 className="text-lg font-bold mb-3 dark:text-white">טיפים לאיזון תקציבי</h3>
+                        <Card className="bg-purple-50 dark:bg-purple-950 border-purple-200 dark:border-purple-800">
                           <CardContent className="p-4">
                             <ul className="space-y-2 text-right">
                               {recommendations.budget_balance_tips.map((tip, idx) => (
                                 <li key={idx} className="flex items-start gap-2">
-                                  <span className="text-purple-600 font-bold">•</span>
-                                  <span className="text-gray-700">{tip}</span>
+                                  <span className="text-purple-600 dark:text-purple-400 font-bold">•</span>
+                                  <span className="text-gray-700 dark:text-gray-300">{tip}</span>
                                 </li>
                               ))}
                             </ul>
@@ -713,8 +713,8 @@ ${JSON.stringify(monthlyData, null, 2)}
                     {/* Expense by Category Chart */}
                     {recommendations.savings_opportunities && recommendations.savings_opportunities.length > 0 && (
                       <div>
-                        <h3 className="text-lg font-bold mb-3">התפלגות הוצאות לפי קטגוריה</h3>
-                        <Card>
+                        <h3 className="text-lg font-bold mb-3 dark:text-white">התפלגות הוצאות לפי קטגוריה</h3>
+                        <Card className="dark:bg-gray-800 dark:border-gray-700">
                           <CardContent className="p-6">
                             <ResponsiveContainer width="100%" height={300}>
                               <PieChart>
@@ -750,15 +750,15 @@ ${JSON.stringify(monthlyData, null, 2)}
 
                     {/* Forecast Tab */}
           <TabsContent value="forecast" className="space-y-6">
-            <Card>
+            <Card className="dark:bg-gray-800 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-blue-600" />
+                <CardTitle className="flex items-center gap-2 dark:text-white">
+                  <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   תחזית הכנסות והוצאות ל-12 חודשים
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-600 text-right">
+                <p className="text-gray-600 dark:text-gray-400 text-right">
                   קבל תחזית מבוססת AI להכנסות והוצאות שלך לשנה הקרובה
                 </p>
                 <Button
@@ -775,33 +775,33 @@ ${JSON.stringify(monthlyData, null, 2)}
                       {forecast.monthly_forecast.map((month, idx) => {
                         const isPositive = month.predicted_balance >= 0;
                         return (
-                          <Card key={idx} className="bg-white">
+                          <Card key={idx} className="bg-white dark:bg-gray-800 dark:border-gray-700">
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between">
                                 <div className="flex-1 text-right">
-                                  <p className="font-semibold text-gray-900">
+                                  <p className="font-semibold text-gray-900 dark:text-white">
                                     {month.month}/{month.year}
                                   </p>
-                                  <p className="text-sm text-gray-600 mt-1">{month.notes}</p>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{month.notes}</p>
                                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-3 text-sm">
-                                   <div>
-                                     <span className="text-gray-500">הכנסות</span>
-                                     <p className="font-semibold text-green-700">
-                                       ₪{month.predicted_income?.toLocaleString()}
-                                     </p>
-                                   </div>
-                                   <div>
-                                     <span className="text-gray-500">הוצאות</span>
-                                     <p className="font-semibold text-orange-700">
-                                       ₪{month.predicted_expenses?.toLocaleString()}
-                                     </p>
-                                   </div>
-                                   <div>
-                                     <span className="text-gray-500">יתרה</span>
-                                     <p className={`font-semibold ${isPositive ? 'text-blue-700' : 'text-red-700'}`}>
-                                       ₪{month.predicted_balance?.toLocaleString()}
-                                     </p>
-                                   </div>
+                                  <div>
+                                    <span className="text-gray-500 dark:text-gray-400">הכנסות</span>
+                                    <p className="font-semibold text-green-700 dark:text-green-400">
+                                      ₪{month.predicted_income?.toLocaleString()}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-500 dark:text-gray-400">הוצאות</span>
+                                    <p className="font-semibold text-orange-700 dark:text-orange-400">
+                                      ₪{month.predicted_expenses?.toLocaleString()}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-500 dark:text-gray-400">יתרה</span>
+                                    <p className={`font-semibold ${isPositive ? 'text-blue-700 dark:text-blue-400' : 'text-red-700 dark:text-red-400'}`}>
+                                      ₪{month.predicted_balance?.toLocaleString()}
+                                    </p>
+                                  </div>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -820,39 +820,39 @@ ${JSON.stringify(monthlyData, null, 2)}
                     </div>
 
                     {forecast.yearly_summary && (
-                      <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200">
+                      <Card className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-blue-200 dark:border-blue-800">
                         <CardHeader>
-                          <CardTitle>סיכום שנתי</CardTitle>
+                          <CardTitle className="dark:text-white">סיכום שנתי</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             <div>
-                              <span className="text-sm text-gray-600">סה״כ הכנסות</span>
-                              <p className="text-2xl font-bold text-green-700">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">סה״כ הכנסות</span>
+                              <p className="text-2xl font-bold text-green-700 dark:text-green-400">
                                 ₪{forecast.yearly_summary.total_income?.toLocaleString()}
                               </p>
                             </div>
                             <div>
-                              <span className="text-sm text-gray-600">סה״כ הוצאות</span>
-                              <p className="text-2xl font-bold text-orange-700">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">סה״כ הוצאות</span>
+                              <p className="text-2xl font-bold text-orange-700 dark:text-orange-400">
                                 ₪{forecast.yearly_summary.total_expenses?.toLocaleString()}
                               </p>
                             </div>
                             <div>
-                              <span className="text-sm text-gray-600">יתרה שנתית</span>
-                              <p className={`text-2xl font-bold ${forecast.yearly_summary.total_balance >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+                              <span className="text-sm text-gray-600 dark:text-gray-400">יתרה שנתית</span>
+                              <p className={`text-2xl font-bold ${forecast.yearly_summary.total_balance >= 0 ? 'text-blue-700 dark:text-blue-400' : 'text-red-700 dark:text-red-400'}`}>
                                 ₪{forecast.yearly_summary.total_balance?.toLocaleString()}
                               </p>
                             </div>
                           </div>
                           {forecast.yearly_summary.key_insights && (
                             <div className="mt-4 text-right">
-                              <h4 className="font-semibold mb-2">תובנות מפתח</h4>
+                              <h4 className="font-semibold mb-2 dark:text-white">תובנות מפתח</h4>
                               <ul className="space-y-2">
                                 {forecast.yearly_summary.key_insights.map((insight, idx) => (
                                   <li key={idx} className="flex items-start gap-2">
-                                    <span className="text-blue-600 font-bold">•</span>
-                                    <span className="text-gray-700">{insight}</span>
+                                    <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
+                                    <span className="text-gray-700 dark:text-gray-300">{insight}</span>
                                   </li>
                                 ))}
                               </ul>
@@ -864,8 +864,8 @@ ${JSON.stringify(monthlyData, null, 2)}
 
                     {/* Forecast Line Chart */}
                     <div>
-                      <h3 className="text-lg font-bold mb-3">גרף תחזית - הכנסות מול הוצאות</h3>
-                      <Card>
+                      <h3 className="text-lg font-bold mb-3 dark:text-white">גרף תחזית - הכנסות מול הוצאות</h3>
+                      <Card className="dark:bg-gray-800 dark:border-gray-700">
                         <CardContent className="p-6">
                           <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={forecast.monthly_forecast}>
@@ -919,21 +919,21 @@ ${JSON.stringify(monthlyData, null, 2)}
 
                     {/* What-If Tab */}
           <TabsContent value="whatif" className="space-y-6">
-            <Card>
+            <Card className="dark:bg-gray-800 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calculator className="w-5 h-5 text-orange-600" />
+                <CardTitle className="flex items-center gap-2 dark:text-white">
+                  <Calculator className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                   ניתוח תרחישים - "מה אם?"
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-600 text-right">
+                <p className="text-gray-600 dark:text-gray-400 text-right">
                   בדוק את ההשפעה של שינויים צפויים על התקציב שלך
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="income-change">שינוי בהכנסות (₪)</Label>
+                    <Label htmlFor="income-change" className="dark:text-gray-200">שינוי בהכנסות (₪)</Label>
                     <Input
                       id="income-change"
                       type="number"
@@ -943,11 +943,11 @@ ${JSON.stringify(monthlyData, null, 2)}
                       className="text-left"
                       dir="ltr"
                     />
-                    <p className="text-xs text-gray-500">מספר חיובי = עלייה, שלילי = ירידה</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">מספר חיובי = עלייה, שלילי = ירידה</p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="expense-change">שינוי בהוצאות (₪)</Label>
+                    <Label htmlFor="expense-change" className="dark:text-gray-200">שינוי בהוצאות (₪)</Label>
                     <Input
                       id="expense-change"
                       type="number"
@@ -957,11 +957,11 @@ ${JSON.stringify(monthlyData, null, 2)}
                       className="text-left"
                       dir="ltr"
                     />
-                    <p className="text-xs text-gray-500">מספר חיובי = עלייה, שלילי = ירידה</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">מספר חיובי = עלייה, שלילי = ירידה</p>
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="category">קטגוריה (אופציונלי)</Label>
+                    <Label htmlFor="category" className="dark:text-gray-200">קטגוריה (אופציונלי)</Label>
                     <Input
                       id="category"
                       value={changeCategory}
@@ -983,39 +983,39 @@ ${JSON.stringify(monthlyData, null, 2)}
                   <div className="space-y-6 mt-6">
                     {/* Projected State */}
                     {whatIfResults.projected_state && (
-                      <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200">
+                      <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-950 dark:to-yellow-950 border-orange-200 dark:border-orange-800">
                         <CardHeader>
-                          <CardTitle className="text-lg">מצב צפוי</CardTitle>
+                          <CardTitle className="text-lg dark:text-white">מצב צפוי</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             <div>
-                              <span className="text-sm text-gray-600">הכנסות חדשות</span>
-                              <p className="text-xl font-bold text-green-700">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">הכנסות חדשות</span>
+                              <p className="text-xl font-bold text-green-700 dark:text-green-400">
                                 ₪{whatIfResults.projected_state.new_income?.toLocaleString()}
                               </p>
                             </div>
                             <div>
-                              <span className="text-sm text-gray-600">הוצאות חדשות</span>
-                              <p className="text-xl font-bold text-orange-700">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">הוצאות חדשות</span>
+                              <p className="text-xl font-bold text-orange-700 dark:text-orange-400">
                                 ₪{whatIfResults.projected_state.new_expenses?.toLocaleString()}
                               </p>
                             </div>
                             <div>
-                              <span className="text-sm text-gray-600">יתרה חדשה</span>
-                              <p className={`text-xl font-bold ${whatIfResults.projected_state.new_balance >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+                              <span className="text-sm text-gray-600 dark:text-gray-400">יתרה חדשה</span>
+                              <p className={`text-xl font-bold ${whatIfResults.projected_state.new_balance >= 0 ? 'text-blue-700 dark:text-blue-400' : 'text-red-700 dark:text-red-400'}`}>
                                 ₪{whatIfResults.projected_state.new_balance?.toLocaleString()}
                               </p>
                             </div>
                             <div>
-                              <span className="text-sm text-gray-600">שינוי חודשי</span>
-                              <p className={`text-xl font-bold ${whatIfResults.projected_state.monthly_change >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                              <span className="text-sm text-gray-600 dark:text-gray-400">שינוי חודשי</span>
+                              <p className={`text-xl font-bold ${whatIfResults.projected_state.monthly_change >= 0 ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
                                 ₪{whatIfResults.projected_state.monthly_change?.toLocaleString()}
                               </p>
                             </div>
                             <div>
-                              <span className="text-sm text-gray-600">שינוי שנתי</span>
-                              <p className={`text-xl font-bold ${whatIfResults.projected_state.yearly_change >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                              <span className="text-sm text-gray-600 dark:text-gray-400">שינוי שנתי</span>
+                              <p className={`text-xl font-bold ${whatIfResults.projected_state.yearly_change >= 0 ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
                                 ₪{whatIfResults.projected_state.yearly_change?.toLocaleString()}
                               </p>
                             </div>
@@ -1026,17 +1026,17 @@ ${JSON.stringify(monthlyData, null, 2)}
 
                     {/* Impact Analysis */}
                     {whatIfResults.impact_analysis && (
-                      <Card>
+                      <Card className="dark:bg-gray-800 dark:border-gray-700">
                         <CardHeader>
-                          <CardTitle className="text-lg">ניתוח השפעה</CardTitle>
+                          <CardTitle className="text-lg dark:text-white">ניתוח השפעה</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                          <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                            <span className="text-gray-700">השפעה על חסכון</span>
-                            <span className="font-semibold">{whatIfResults.impact_analysis.savings_impact}</span>
+                          <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <span className="text-gray-700 dark:text-gray-300">השפעה על חסכון</span>
+                            <span className="font-semibold dark:text-white">{whatIfResults.impact_analysis.savings_impact}</span>
                           </div>
-                          <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                            <span className="text-gray-700">רמת סיכון</span>
+                          <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <span className="text-gray-700 dark:text-gray-300">רמת סיכון</span>
                             <Badge className={
                               whatIfResults.impact_analysis.risk_level?.includes('גבוה') || whatIfResults.impact_analysis.risk_level?.includes('high')
                                 ? 'bg-red-600' 
@@ -1047,9 +1047,9 @@ ${JSON.stringify(monthlyData, null, 2)}
                               {whatIfResults.impact_analysis.risk_level}
                             </Badge>
                           </div>
-                          <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                            <span className="text-gray-700">קיימות</span>
-                            <span className="font-semibold">{whatIfResults.impact_analysis.sustainability}</span>
+                          <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <span className="text-gray-700 dark:text-gray-300">קיימות</span>
+                            <span className="font-semibold dark:text-white">{whatIfResults.impact_analysis.sustainability}</span>
                           </div>
                         </CardContent>
                       </Card>
@@ -1057,16 +1057,16 @@ ${JSON.stringify(monthlyData, null, 2)}
 
                     {/* Recommendations */}
                     {whatIfResults.recommendations && whatIfResults.recommendations.length > 0 && (
-                      <Card className="bg-blue-50 border-blue-200">
+                      <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
                         <CardHeader>
-                          <CardTitle className="text-lg">המלצות</CardTitle>
+                          <CardTitle className="text-lg dark:text-white">המלצות</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <ul className="space-y-2 text-right">
                             {whatIfResults.recommendations.map((rec, idx) => (
                               <li key={idx} className="flex items-start gap-2">
-                                <DollarSign className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                                <span className="text-gray-700">{rec}</span>
+                                <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                                <span className="text-gray-700 dark:text-gray-300">{rec}</span>
                               </li>
                             ))}
                           </ul>
@@ -1076,17 +1076,17 @@ ${JSON.stringify(monthlyData, null, 2)}
 
                     {/* Action Items */}
                     {whatIfResults.action_items && whatIfResults.action_items.length > 0 && (
-                      <Card>
+                      <Card className="dark:bg-gray-800 dark:border-gray-700">
                         <CardHeader>
-                          <CardTitle className="text-lg">פעולות מומלצות</CardTitle>
+                          <CardTitle className="text-lg dark:text-white">פעולות מומלצות</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-3">
                             {whatIfResults.action_items.map((item, idx) => (
-                              <div key={idx} className="flex items-start justify-between p-3 bg-gray-50 rounded-lg">
+                              <div key={idx} className="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                 <div className="flex-1 text-right">
-                                  <p className="font-semibold text-gray-900">{item.action}</p>
-                                  <p className="text-sm text-gray-600 mt-1">זמן ביצוע: {item.timeline}</p>
+                                  <p className="font-semibold text-gray-900 dark:text-white">{item.action}</p>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">זמן ביצוע: {item.timeline}</p>
                                 </div>
                                 <Badge className={
                                   item.priority?.includes('גבוה') || item.priority?.includes('high')
@@ -1111,11 +1111,11 @@ ${JSON.stringify(monthlyData, null, 2)}
 
           {/* Goals Tab */}
           <TabsContent value="goals" className="space-y-6">
-            <Card>
+            <Card className="dark:bg-gray-800 dark:border-gray-700">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="w-5 h-5 text-purple-600" />
+                  <CardTitle className="flex items-center gap-2 dark:text-white">
+                    <Target className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     המטרות הפיננסיות שלי
                   </CardTitle>
                   <Button
@@ -1130,8 +1130,8 @@ ${JSON.stringify(monthlyData, null, 2)}
               <CardContent>
                 {goals.length === 0 ? (
                   <div className="text-center py-12">
-                    <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 mb-4">טרם הגדרת מטרות פיננסיות</p>
+                    <Target className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400 mb-4">טרם הגדרת מטרות פיננסיות</p>
                     <Button
                       onClick={() => setGoalFormOpen(true)}
                       className="bg-purple-600 hover:bg-purple-700"

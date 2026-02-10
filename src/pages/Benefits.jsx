@@ -199,17 +199,17 @@ export default function Benefits() {
   };
 
   return (
-    <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50" lang="he">
+    <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" lang="he">
       <div className="max-w-4xl mx-auto p-4 md:p-6 pb-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
             הטבות וזכויות
           </h1>
-          <p className="text-gray-500">
+          <p className="text-gray-500 dark:text-gray-400">
             רשימת הטבות וזכויות שכדאי לבדוק בהתאם למצב הכלכלי שלכם
           </p>
         </motion.div>
@@ -221,7 +221,7 @@ export default function Benefits() {
             placeholder="חיפוש הטבות..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pr-10 bg-white text-right"
+            className="pr-10 bg-white dark:bg-gray-800 text-right"
             dir="rtl"
             aria-label="חיפוש הטבות וזכויות"
           />
@@ -237,15 +237,15 @@ export default function Benefits() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                <Card className="border-0 shadow-lg overflow-hidden">
-                  <CardHeader className={`${colorClasses[category.color]} border-b`}>
-                    <CardTitle className="flex items-center gap-3">
+                <Card className="border-0 shadow-lg overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+                  <CardHeader className={`${colorClasses[category.color]} dark:bg-gray-700 border-b`}>
+                    <CardTitle className="flex items-center gap-3 dark:text-white">
                       <Icon className={`w-6 h-6 ${iconColors[category.color]}`} aria-hidden="true" />
                       <span>{category.category}</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-0">
-                    <div className="divide-y">
+                    <div className="divide-y dark:divide-gray-700">
                       {category.items.map((item, index) => {
                         const key = `${category.id}-${index}`;
                         const isExpanded = expandedItems[key];
@@ -254,12 +254,12 @@ export default function Benefits() {
                           <div key={index} className="overflow-hidden">
                             <button
                               onClick={() => toggleExpand(category.id, index)}
-                              className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-right"
+                              className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-right"
                               dir="rtl"
                               aria-expanded={isExpanded}
                               aria-controls={`benefits-${key}`}
                             >
-                              <span className="font-medium text-gray-800">{item.title}</span>
+                              <span className="font-medium text-gray-800 dark:text-gray-200">{item.title}</span>
                               <div className="flex items-center gap-2">
                                 <Badge variant="outline" className="text-xs">
                                   {item.benefits.length} הטבות
@@ -286,7 +286,7 @@ export default function Benefits() {
                                     {item.benefits.map((benefit, bIndex) => (
                                       <li
                                         key={bIndex}
-                                        className="flex items-start gap-2 text-sm text-gray-600 text-right"
+                                        className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400 text-right"
                                       >
                                         <span className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
                                           category.color === 'blue' ? 'bg-blue-400' : 'bg-green-400'
@@ -311,8 +311,8 @@ export default function Benefits() {
 
         {filteredData.length === 0 && (
           <div className="text-center py-12" role="status">
-            <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" aria-hidden="true" />
-            <p className="text-gray-500">לא נמצאו תוצאות</p>
+            <Search className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" aria-hidden="true" />
+            <p className="text-gray-500 dark:text-gray-400">לא נמצאו תוצאות</p>
           </div>
         )}
       </div>
