@@ -1,31 +1,31 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { 
-  BookOpen, 
-  Home, 
-  TrendingUp, 
-  TrendingDown, 
-  CreditCard, 
+import {
+  BookOpen,
+  Home,
+  TrendingUp,
+  TrendingDown,
+  CreditCard,
   PiggyBank,
   Users,
   Target,
   AlertCircle,
   Download,
   UserPlus,
-  Award
-} from "lucide-react";
+  Award } from
+"lucide-react";
 import { motion } from "framer-motion";
 
 export default function Guide() {
   return (
-    <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-6 pb-8">
+    <div dir="rtl" className="bg-gradient-to-br text-slate-900 pb-8 p-4 from-slate-50 via-blue-50 to-indigo-50 md:p-6">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
+          className="mb-8">
+
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
             <BookOpen className="w-8 h-8 text-blue-600" />
             מדריך למשתמש
@@ -42,7 +42,7 @@ export default function Guide() {
               על האפליקציה
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4 text-right">
+          <CardContent className="bg-gray-950 text-gray-950 pt-0 p-6 text-right space-y-4">
             <p className="text-gray-700 leading-relaxed">
               אפליקציית ניהול התקציב המשפחתי נועדה לעזור לכם לקבל שליטה מלאה על המצב הכלכלי שלכם. 
               המערכת מאפשרת לכם לעקוב אחר הכנסות והוצאות, לנהל חובות ונכסים, ולקבל התראות חכמות 
@@ -574,6 +574,6 @@ export default function Guide() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>);
+
 }
