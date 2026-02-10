@@ -142,8 +142,8 @@ export default function Layout({ children, currentPageName }) {
                       className={`
                         flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
                         ${isActive 
-                          ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
-                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                          ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary' 
+                          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                         }
                       `}
                       aria-current={isActive ? 'page' : undefined}
@@ -218,8 +218,8 @@ export default function Layout({ children, currentPageName }) {
                         className={`
                           flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all
                           ${isActive 
-                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
-                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                          ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary' 
+                          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                           }
                         `}
                         aria-current={isActive ? 'page' : undefined}
@@ -256,10 +256,10 @@ export default function Layout({ children, currentPageName }) {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-col items-center md:items-start gap-2">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 © {new Date().getFullYear()} ניהול תקציב משפחתי. כל הזכויות שמורות.
               </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
                 🔒 הנתונים שלך מאובטחים ומוצפנים בטכנולוגיית SSL/TLS מתקדמת
               </p>
             </div>
@@ -387,7 +387,7 @@ export default function Layout({ children, currentPageName }) {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-6" />
-              <h3 className="text-xl font-bold text-center mb-6 text-gray-900 dark:text-white">הוסף פריט חדש</h3>
+              <h3 className="text-xl font-bold text-center mb-6 text-foreground">הוסף פריט חדש</h3>
               <div className="grid grid-cols-2 gap-3">
                 <Button
                   onClick={() => {
@@ -399,7 +399,7 @@ export default function Layout({ children, currentPageName }) {
                       navigate(createPageUrl('Dashboard'), { state: { openForm: 'income' } });
                     }
                   }}
-                  className="flex flex-col items-center gap-3 h-24 bg-green-50 text-green-700 hover:bg-green-100 border-2 border-green-200"
+                  className="flex flex-col items-center gap-3 h-24 bg-success/10 text-success hover:bg-success/20 border-2 border-success/30"
                   variant="outline"
                 >
                   <TrendingUp className="w-8 h-8" />
@@ -415,7 +415,7 @@ export default function Layout({ children, currentPageName }) {
                       navigate(createPageUrl('Dashboard'), { state: { openForm: 'expense' } });
                     }
                   }}
-                  className="flex flex-col items-center gap-3 h-24 bg-orange-50 text-orange-700 hover:bg-orange-100 border-2 border-orange-200"
+                  className="flex flex-col items-center gap-3 h-24 bg-warning/10 text-warning hover:bg-warning/20 border-2 border-warning/30"
                   variant="outline"
                 >
                   <TrendingDown className="w-8 h-8" />
@@ -431,7 +431,7 @@ export default function Layout({ children, currentPageName }) {
                       navigate(createPageUrl('Dashboard'), { state: { openForm: 'debt' } });
                     }
                   }}
-                  className="flex flex-col items-center gap-3 h-24 bg-red-50 text-red-700 hover:bg-red-100 border-2 border-red-200"
+                  className="flex flex-col items-center gap-3 h-24 bg-destructive/10 text-destructive hover:bg-destructive/20 border-2 border-destructive/30"
                   variant="outline"
                 >
                   <CreditCard className="w-8 h-8" />
@@ -447,7 +447,7 @@ export default function Layout({ children, currentPageName }) {
                       navigate(createPageUrl('Dashboard'), { state: { openForm: 'asset' } });
                     }
                   }}
-                  className="flex flex-col items-center gap-3 h-24 bg-purple-50 text-purple-700 hover:bg-purple-100 border-2 border-purple-200"
+                  className="flex flex-col items-center gap-3 h-24 bg-primary/10 text-primary hover:bg-primary/20 border-2 border-primary/30"
                   variant="outline"
                 >
                   <PiggyBank className="w-8 h-8" />
