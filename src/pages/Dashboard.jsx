@@ -1215,7 +1215,7 @@ ${JSON.stringify(financialData, null, 2)}
           {/* Income Tab */}
           <TabsContent value="income" className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-xl font-semibold dark:text-white">הכנסות חודשיות</h2>
+              <h2 className="text-slate-950 text-xl font-semibold dark:text-white">הכנסות חודשיות</h2>
               <div className="flex gap-2">
                 <ExportButton
                     data={filteredIncomes}
@@ -1240,7 +1240,7 @@ ${JSON.stringify(financialData, null, 2)}
           {/* Expenses Tab */}
           <TabsContent value="expenses" className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-xl font-semibold dark:text-white">הוצאות חודשיות</h2>
+              <h2 className="text-slate-950 text-xl font-semibold dark:text-white">הוצאות חודשיות</h2>
               <div className="flex gap-2">
                 <ExportButton
                     data={filteredExpenses}
@@ -1277,7 +1277,7 @@ ${JSON.stringify(financialData, null, 2)}
           {/* Debts Tab */}
           <TabsContent value="debts" className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-xl font-semibold dark:text-white">פירוט חובות</h2>
+              <h2 className="text-slate-950 text-xl font-semibold dark:text-white">פירוט חובות</h2>
               <div className="flex gap-2">
                 <ExportButton
                     data={debts}
@@ -1310,7 +1310,7 @@ ${JSON.stringify(financialData, null, 2)}
           {/* Assets Tab */}
           <TabsContent value="assets" className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-xl font-semibold dark:text-white">חסכונות ונכסים</h2>
+              <h2 className="text-slate-950 text-xl font-semibold dark:text-white">חסכונות ונכסים</h2>
               <div className="flex gap-2">
                 <ExportButton
                     data={assets}
