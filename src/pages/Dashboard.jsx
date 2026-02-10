@@ -1180,7 +1180,7 @@ ${JSON.stringify(financialData, null, 2)}
               
               <Card className="border-0 shadow-lg dark:bg-gray-800 dark:border-gray-700">
                 <CardHeader>
-                  <CardTitle className="text-lg dark:text-white">סיכום חובות</CardTitle>
+                  <CardTitle className="text-slate-950 text-lg font-semibold tracking-tight dark:text-white">סיכום חובות</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-950 rounded-lg">
