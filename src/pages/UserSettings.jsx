@@ -9,7 +9,7 @@ import { Users, Plus, Trash2, Mail, Home, UserPlus, User, LogOut, Edit, BarChart
 import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { 
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -17,8 +17,8 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  AlertDialogTitle } from
+"@/components/ui/alert-dialog";
 
 export default function UserSettings() {
   const [newHouseholdName, setNewHouseholdName] = useState('');
@@ -50,9 +50,9 @@ export default function UserSettings() {
     queryFn: async () => {
       if (!user) return [];
       const all = await base44.entities.Household.list();
-      return all.filter(h => 
-        h.owner_email === user.email || 
-        (h.members && h.members.includes(user.email))
+      return all.filter((h) =>
+      h.owner_email === user.email ||
+      h.members && h.members.includes(user.email)
       );
     },
     enabled: !!user
@@ -87,7 +87,7 @@ export default function UserSettings() {
 
   const inviteMember = useMutation({
     mutationFn: async ({ householdId, email }) => {
-      const household = households.find(h => h.id === householdId);
+      const household = households.find((h) => h.id === householdId);
       const updatedMembers = [...(household.members || []), email];
       await base44.entities.Household.update(householdId, {
         members: updatedMembers
@@ -103,8 +103,8 @@ export default function UserSettings() {
 
   const removeMember = useMutation({
     mutationFn: async ({ householdId, email }) => {
-      const household = households.find(h => h.id === householdId);
-      const updatedMembers = household.members.filter(m => m !== email);
+      const household = households.find((h) => h.id === householdId);
+      const updatedMembers = household.members.filter((m) => m !== email);
       return base44.entities.Household.update(householdId, {
         members: updatedMembers
       });
@@ -148,11 +148,11 @@ export default function UserSettings() {
   const handleDeleteAccount = async () => {
     try {
       // Delete all user's data first
-      const userHouseholds = households.filter(h => h.owner_email === user.email);
+      const userHouseholds = households.filter((h) => h.owner_email === user.email);
       for (const household of userHouseholds) {
         await base44.entities.Household.delete(household.id);
       }
-      
+
       // Then logout (account deletion would need backend support)
       alert('נתוני המשתמש נמחקו. אנא פנה לתמיכה למחיקת החשבון המלאה.');
       base44.auth.logout();
@@ -167,8 +167,8 @@ export default function UserSettings() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
+          className="mb-8">
+
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
             <User className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             הגדרות משתמש
@@ -189,55 +189,55 @@ export default function UserSettings() {
           <CardContent className="space-y-4">
             {/* Display Name */}
             <div>
-              <label className="block text-sm font-medium mb-2 dark:text-gray-300">שם מלא</label>
-              {!isEditingName ? (
-                <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <span className="text-lg font-semibold dark:text-white">{user?.full_name}</span>
+              <label className="text-slate-900 mb-2 text-sm font-medium block dark:text-gray-300">שם מלא</label>
+              {!isEditingName ?
+              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <span className="bg-slate-300 text-slate-900 text-xl font-semibold dark:text-white">{user?.full_name}</span>
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setIsEditingName(true);
-                      setNewFullName(user?.full_name || '');
-                    }}
-                    className="text-blue-600 hover:text-blue-700"
-                  >
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setIsEditingName(true);
+                    setNewFullName(user?.full_name || '');
+                  }}
+                  className="text-blue-600 hover:text-blue-700">
+
                     <Edit className="w-4 h-4 ml-1" />
                     ערוך
                   </Button>
-                </div>
-              ) : (
-                <form onSubmit={handleUpdateName} className="space-y-3">
+                </div> :
+
+              <form onSubmit={handleUpdateName} className="space-y-3">
                   <Input
-                    placeholder="הכנס שם מלא"
-                    value={newFullName}
-                    onChange={(e) => setNewFullName(e.target.value)}
-                  />
+                  placeholder="הכנס שם מלא"
+                  value={newFullName}
+                  onChange={(e) => setNewFullName(e.target.value)} />
+
                   <div className="flex gap-2">
                     <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
                       שמור
                     </Button>
                     <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setIsEditingName(false);
-                        setNewFullName('');
-                      }}
-                    >
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditingName(false);
+                      setNewFullName('');
+                    }}>
+
                       ביטול
                     </Button>
                   </div>
                 </form>
-              )}
+              }
             </div>
 
             {/* Email (read-only) */}
             <div>
-              <label className="block text-sm font-medium mb-2 dark:text-gray-300">אימייל</label>
-              <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center gap-2">
+              <label className="text-slate-900 mb-2 text-sm font-medium block dark:text-gray-300">אימייל</label>
+              <div className="bg-gray-300 p-3 rounded-lg dark:bg-gray-700 flex items-center gap-2">
                 <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                <span className="dark:text-gray-300">{user?.email}</span>
+                <span className="bg-slate-300 text-slate-900 text-lg dark:text-gray-300">{user?.email}</span>
               </div>
             </div>
 
@@ -246,16 +246,16 @@ export default function UserSettings() {
               <Button
                 onClick={handleLogout}
                 variant="outline"
-                className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 border-red-200"
-              >
+                className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 border-red-200">
+
                 <LogOut className="w-4 h-4 ml-2" />
                 התנתק מהמערכת
               </Button>
               <Button
                 onClick={() => setShowDeleteDialog(true)}
                 variant="outline"
-                className="w-full text-red-700 hover:text-red-800 hover:bg-red-100 dark:hover:bg-red-950 border-red-300"
-              >
+                className="w-full text-red-700 hover:text-red-800 hover:bg-red-100 dark:hover:bg-red-950 border-red-300">
+
                 <UserX className="w-4 h-4 ml-2" />
                 מחק חשבון לצמיתות
               </Button>
@@ -264,8 +264,8 @@ export default function UserSettings() {
         </Card>
 
         {/* Admin Stats Section */}
-        {user?.role === 'admin' && stats && (
-          <div className="mb-6">
+        {user?.role === 'admin' && stats &&
+        <div className="mb-6">
             <Card className="border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-purple-900 dark:text-purple-200">
@@ -301,25 +301,25 @@ export default function UserSettings() {
                     משתמשים לפי תאריך
                   </h3>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {Object.entries(stats.usersByDate || {})
-                      .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
-                      .map(([date, users]) => (
-                        <div key={date} className="bg-white p-3 rounded-lg border">
+                    {Object.entries(stats.usersByDate || {}).
+                  sort(([dateA], [dateB]) => dateB.localeCompare(dateA)).
+                  map(([date, users]) =>
+                  <div key={date} className="bg-white p-3 rounded-lg border">
                           <div className="flex justify-between items-center mb-2">
                             <span className="font-semibold text-purple-900">{new Date(date).toLocaleDateString('he-IL')}</span>
                             <Badge className="bg-purple-100 text-purple-700">{users.length} משתמשים</Badge>
                           </div>
                           <div className="space-y-1">
-                            {users.map(u => (
-                              <div key={u.id} className="text-sm text-gray-600 flex items-center gap-2">
+                            {users.map((u) =>
+                      <div key={u.id} className="text-sm text-gray-600 flex items-center gap-2">
                                 <Mail className="w-3 h-3" />
                                 {u.full_name} ({u.email})
                                 {u.role === 'admin' && <Badge variant="outline" className="text-xs">אדמין</Badge>}
                               </div>
-                            ))}
+                      )}
                           </div>
                         </div>
-                      ))}
+                  )}
                   </div>
                 </div>
 
@@ -330,30 +330,30 @@ export default function UserSettings() {
                     משקי בית לפי תאריך
                   </h3>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {Object.entries(stats.householdsByDate || {})
-                      .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
-                      .map(([date, households]) => (
-                        <div key={date} className="bg-white p-3 rounded-lg border">
+                    {Object.entries(stats.householdsByDate || {}).
+                  sort(([dateA], [dateB]) => dateB.localeCompare(dateA)).
+                  map(([date, households]) =>
+                  <div key={date} className="bg-white p-3 rounded-lg border">
                           <div className="flex justify-between items-center mb-2">
                             <span className="font-semibold text-green-900">{new Date(date).toLocaleDateString('he-IL')}</span>
                             <Badge className="bg-green-100 text-green-700">{households.length} משקי בית</Badge>
                           </div>
                           <div className="space-y-1">
-                            {households.map(h => (
-                              <div key={h.id} className="text-sm text-gray-600 flex items-center gap-2">
+                            {households.map((h) =>
+                      <div key={h.id} className="text-sm text-gray-600 flex items-center gap-2">
                                 <Home className="w-3 h-3" />
                                 {h.name} - {h.owner_email} ({h.members_count} חברים)
                               </div>
-                            ))}
+                      )}
                           </div>
                         </div>
-                      ))}
+                  )}
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
-        )}
+        }
 
         {/* Household Management Section */}
         <div className="mb-6">
@@ -367,50 +367,50 @@ export default function UserSettings() {
         </div>
 
         {/* Create New Household */}
-        {!showCreateForm ? (
-          <Button
-            onClick={() => setShowCreateForm(true)}
-            className="mb-6 bg-blue-600 hover:bg-blue-700"
-          >
+        {!showCreateForm ?
+        <Button
+          onClick={() => setShowCreateForm(true)}
+          className="mb-6 bg-blue-600 hover:bg-blue-700">
+
             <Plus className="w-4 h-4 ml-2" />
             צור משק בית חדש
-          </Button>
-        ) : (
-          <Card className="mb-6 dark:bg-gray-800 dark:border-gray-700">
+          </Button> :
+
+        <Card className="mb-6 dark:bg-gray-800 dark:border-gray-700">
             <CardContent className="pt-6">
               <form onSubmit={handleCreateHousehold} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">שם משק הבית</label>
                   <Input
-                    placeholder='לדוגמה: "משפחת כהן"'
-                    value={newHouseholdName}
-                    onChange={(e) => setNewHouseholdName(e.target.value)}
-                  />
+                  placeholder='לדוגמה: "משפחת כהן"'
+                  value={newHouseholdName}
+                  onChange={(e) => setNewHouseholdName(e.target.value)} />
+
                 </div>
                 <div className="flex gap-2">
                   <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
                     צור משק בית
                   </Button>
                   <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setShowCreateForm(false);
-                      setNewHouseholdName('');
-                    }}
-                  >
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setNewHouseholdName('');
+                  }}>
+
                     ביטול
                   </Button>
                 </div>
               </form>
             </CardContent>
           </Card>
-        )}
+        }
 
         {/* Existing Households */}
         <div className="space-y-4">
-          {households.length === 0 ? (
-            <Card className="dark:bg-gray-800 dark:border-gray-700">
+          {households.length === 0 ?
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
               <CardContent className="py-12 text-center">
                 <Users className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                 <p className="text-gray-500 dark:text-gray-400 mb-4">עדיין לא יצרת משק בית</p>
@@ -418,12 +418,12 @@ export default function UserSettings() {
                   צור משק בית כדי להתחיל לנהל תקציב משותף
                 </p>
               </CardContent>
-            </Card>
-          ) : (
-            households.map((household) => {
-              const isOwner = household.owner_email === user?.email;
-              return (
-                <Card key={household.id} className="border-2 dark:bg-gray-800 dark:border-gray-700">
+            </Card> :
+
+          households.map((household) => {
+            const isOwner = household.owner_email === user?.email;
+            return (
+              <Card key={household.id} className="border-2 dark:bg-gray-800 dark:border-gray-700">
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
@@ -431,20 +431,20 @@ export default function UserSettings() {
                           <Home className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                           {household.name}
                         </CardTitle>
-                        {isOwner && (
-                          <Badge className="mt-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">בעלים</Badge>
-                        )}
+                        {isOwner &&
+                      <Badge className="mt-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">בעלים</Badge>
+                      }
                       </div>
-                      {isOwner && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteHousehold.mutate(household.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
+                      {isOwner &&
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteHousehold.mutate(household.id)}
+                      className="text-red-600 hover:text-red-700">
+
                           <Trash2 className="w-4 h-4" />
                         </Button>
-                      )}
+                    }
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -455,51 +455,51 @@ export default function UserSettings() {
                         חברים ({household.members?.length || 0})
                       </h3>
                       <div className="space-y-2">
-                        {household.members?.map((memberEmail) => (
-                          <div
-                            key={memberEmail}
-                            className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                          >
+                        {household.members?.map((memberEmail) =>
+                      <div
+                        key={memberEmail}
+                        className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+
                             <div className="flex items-center gap-2">
                               <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                               <span className="text-sm dark:text-gray-300">{memberEmail}</span>
-                              {memberEmail === household.owner_email && (
-                                <Badge variant="outline" className="text-xs">בעלים</Badge>
-                              )}
+                              {memberEmail === household.owner_email &&
+                          <Badge variant="outline" className="text-xs">בעלים</Badge>
+                          }
                             </div>
-                            {isOwner && memberEmail !== household.owner_email && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeMember.mutate({ householdId: household.id, email: memberEmail })}
-                                className="text-red-600 hover:text-red-700"
-                              >
+                            {isOwner && memberEmail !== household.owner_email &&
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeMember.mutate({ householdId: household.id, email: memberEmail })}
+                          className="text-red-600 hover:text-red-700">
+
                                 <Trash2 className="w-4 h-4" />
                               </Button>
-                            )}
+                        }
                           </div>
-                        ))}
+                      )}
                       </div>
                     </div>
 
                     {/* Invite Member */}
-                    {isOwner && (
-                      <div>
+                    {isOwner &&
+                  <div>
                         <h3 className="font-semibold mb-3 flex items-center gap-2 dark:text-gray-200">
                           <UserPlus className="w-4 h-4" />
                           הזמן חבר חדש
                         </h3>
                         <div className="flex gap-2">
                           <Input
-                            type="email"
-                            placeholder="הכנס כתובת אימייל"
-                            value={inviteEmail}
-                            onChange={(e) => setInviteEmail(e.target.value)}
-                          />
+                        type="email"
+                        placeholder="הכנס כתובת אימייל"
+                        value={inviteEmail}
+                        onChange={(e) => setInviteEmail(e.target.value)} />
+
                           <Button
-                            onClick={() => handleInvite(household.id)}
-                            disabled={!inviteEmail.trim() || !inviteEmail.includes('@')}
-                          >
+                        onClick={() => handleInvite(household.id)}
+                        disabled={!inviteEmail.trim() || !inviteEmail.includes('@')}>
+
                             שלח הזמנה
                           </Button>
                         </div>
@@ -507,12 +507,12 @@ export default function UserSettings() {
                           המערכת תשלח הזמנה למייל שהוזן. אם המשתמש עדיין לא רשום, יישלח אליו מייל הרשמה.
                         </p>
                       </div>
-                    )}
+                  }
                   </CardContent>
-                </Card>
-              );
-            })
-          )}
+                </Card>);
+
+          })
+          }
         </div>
 
         {/* Delete Account Dialog */}
@@ -528,14 +528,14 @@ export default function UserSettings() {
               <AlertDialogCancel>ביטול</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDeleteAccount}
-                className="bg-red-600 hover:bg-red-700"
-              >
+                className="bg-red-600 hover:bg-red-700">
+
                 מחק חשבון
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </div>
-  );
+    </div>);
+
 }
