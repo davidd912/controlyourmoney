@@ -13,23 +13,23 @@ export default function DataTable({
   emptyMessage = "אין נתונים להצגה" 
 }) {
   return (
-    <div className="rounded-lg border bg-white dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+    <div className="rounded-lg border border-border bg-card overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="bg-gray-50 dark:bg-gray-900">
+          <TableRow className="bg-muted/50">
             {columns.map((col) => (
-              <TableHead key={col.key} className={`text-right dark:text-gray-300 ${col.className || ''}`}>
+              <TableHead key={col.key} className={`text-right text-foreground font-semibold ${col.className || ''}`}>
                 {col.label}
               </TableHead>
             ))}
-            <TableHead className="w-24 text-center dark:text-gray-300">פעולות</TableHead>
+            <TableHead className="w-24 text-center text-foreground font-semibold">פעולות</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           <AnimatePresence mode="popLayout">
             {data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length + 1} className="text-center py-8 text-gray-400 dark:text-gray-500">
+                <TableCell colSpan={columns.length + 1} className="text-center py-8 text-muted-foreground">
                   {emptyMessage}
                 </TableCell>
               </TableRow>
@@ -41,10 +41,10 @@ export default function DataTable({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -50 }}
                   transition={{ duration: 0.2, delay: index * 0.02 }}
-                  className="border-b dark:border-gray-700 last:border-0 hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors"
+                  className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
                 >
                   {columns.map((col) => (
-                    <TableCell key={col.key} className={`dark:text-gray-300 ${col.cellClassName || ''}`}>
+                    <TableCell key={col.key} className={`text-foreground ${col.cellClassName || ''}`}>
                       {col.render ? col.render(item[col.key], item) : item[col.key]}
                     </TableCell>
                   ))}
@@ -54,7 +54,7 @@ export default function DataTable({
                         variant="ghost"
                         size="icon"
                         onClick={() => onEdit(item)}
-                        className="h-8 w-8 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
+                        className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -62,7 +62,7 @@ export default function DataTable({
                         variant="ghost"
                         size="icon"
                         onClick={() => onDelete(item)}
-                        className="h-8 w-8 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
