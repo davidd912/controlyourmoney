@@ -173,7 +173,7 @@ export default function UserSettings() {
             <User className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             הגדרות משתמש
           </h1>
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="text-gray-700 dark:text-gray-200">
             נהל את הפרופיל שלך ואת משקי הבית המשותפים
           </p>
         </motion.div>
@@ -189,10 +189,10 @@ export default function UserSettings() {
           <CardContent className="space-y-4">
             {/* Display Name */}
             <div>
-              <label className="block text-sm font-medium mb-2 dark:text-gray-300">שם מלא</label>
+              <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">שם מלא</label>
               {!isEditingName ? (
                 <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <span className="text-lg font-semibold dark:text-white">{user?.full_name}</span>
+                  <span className="text-lg font-semibold text-gray-900 dark:text-white">{user?.full_name}</span>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -234,10 +234,10 @@ export default function UserSettings() {
 
             {/* Email (read-only) */}
             <div>
-              <label className="block text-sm font-medium mb-2 dark:text-gray-300">אימייל</label>
+              <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">אימייל</label>
               <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center gap-2">
                 <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                <span className="dark:text-gray-300">{user?.email}</span>
+                <span className="text-gray-900 dark:text-gray-100">{user?.email}</span>
               </div>
             </div>
 
@@ -361,7 +361,7 @@ export default function UserSettings() {
             <Home className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             משקי בית משותפים
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 mb-4">
+          <p className="text-gray-700 dark:text-gray-200 mb-4">
             צור משק בית משותף והזמן בן/בת זוג או שותפים לנהל את התקציב ביחד
           </p>
         </div>
@@ -380,7 +380,7 @@ export default function UserSettings() {
             <CardContent className="pt-6">
               <form onSubmit={handleCreateHousehold} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">שם משק הבית</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">שם משק הבית</label>
                   <Input
                     placeholder='לדוגמה: "משפחת כהן"'
                     value={newHouseholdName}
@@ -450,7 +450,7 @@ export default function UserSettings() {
                   <CardContent className="space-y-4">
                     {/* Members List */}
                     <div>
-                      <h3 className="font-semibold mb-3 flex items-center gap-2 dark:text-gray-200">
+                      <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
                         <Users className="w-4 h-4" />
                         חברים ({household.members?.length || 0})
                       </h3>
@@ -462,7 +462,7 @@ export default function UserSettings() {
                           >
                             <div className="flex items-center gap-2">
                               <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                              <span className="text-sm dark:text-gray-300">{memberEmail}</span>
+                              <span className="text-sm text-gray-900 dark:text-gray-100">{memberEmail}</span>
                               {memberEmail === household.owner_email && (
                                 <Badge variant="outline" className="text-xs">בעלים</Badge>
                               )}
@@ -485,7 +485,7 @@ export default function UserSettings() {
                     {/* Invite Member */}
                     {isOwner && (
                       <div>
-                        <h3 className="font-semibold mb-3 flex items-center gap-2 dark:text-gray-200">
+                        <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
                           <UserPlus className="w-4 h-4" />
                           הזמן חבר חדש
                         </h3>
@@ -503,7 +503,7 @@ export default function UserSettings() {
                             שלח הזמנה
                           </Button>
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-2">
                           המערכת תשלח הזמנה למייל שהוזן. אם המשתמש עדיין לא רשום, יישלח אליו מייל הרשמה.
                         </p>
                       </div>
