@@ -305,26 +305,26 @@ export default function Layout({ children, currentPageName }) {
           {/* Right Side Items (2 items) */}
           <div className="flex flex-1 justify-around">
             {leftNavItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentPageName === item.page;
-              return (
-                <Link
-                  key={item.page}
-                  to={createPageUrl(item.page)}
-                  className={`
-                    flex flex-col items-center justify-center p-2 text-[10px] font-medium transition-colors leading-tight min-w-[60px]
-                    ${isActive 
-                      ? 'text-blue-600 dark:text-blue-400' 
-                      : 'text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400'
-                    }
-                  `}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  <Icon className="w-5 h-5 mb-0.5" aria-hidden="true" />
-                  <span className="line-clamp-2 max-w-[70px] text-center">{item.name}</span>
-                </Link>
-              );
-            })}
+                        const Icon = item.icon;
+                        const isActive = currentPageName === item.page;
+                        return (
+                          <Link
+                            key={item.page}
+                            to={createPageUrl(item.page)}
+                            className={`
+                              flex flex-col items-center justify-center p-2 text-[10px] font-medium transition-colors leading-tight min-w-[60px]
+                              ${isActive 
+                                ? 'text-primary dark:text-primary' 
+                                : 'text-muted-foreground hover:text-primary'
+                              }
+                            `}
+                            aria-current={isActive ? 'page' : undefined}
+                          >
+                            <Icon className="w-5 h-5 mb-0.5" aria-hidden="true" />
+                            <span className="line-clamp-2 max-w-[70px] text-center">{item.name}</span>
+                          </Link>
+                        );
+                      })}
           </div>
 
           {/* FAB Button in Center */}
@@ -347,26 +347,26 @@ export default function Layout({ children, currentPageName }) {
           {/* Left Side Items (2 items) */}
           <div className="flex flex-1 justify-around">
             {rightNavItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentPageName === item.page;
-              return (
-                <Link
-                  key={item.page}
-                  to={createPageUrl(item.page)}
-                  className={`
-                    flex flex-col items-center justify-center p-2 text-[10px] font-medium transition-colors leading-tight min-w-[60px]
-                    ${isActive 
-                      ? 'text-blue-600 dark:text-blue-400' 
-                      : 'text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400'
-                    }
-                  `}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  <Icon className="w-5 h-5 mb-0.5" aria-hidden="true" />
-                  <span className="line-clamp-2 max-w-[70px] text-center">{item.name}</span>
-                </Link>
-              );
-            })}
+                        const Icon = item.icon;
+                        const isActive = currentPageName === item.page;
+                        return (
+                          <Link
+                            key={item.page}
+                            to={createPageUrl(item.page)}
+                            className={`
+                              flex flex-col items-center justify-center p-2 text-[10px] font-medium transition-colors leading-tight min-w-[60px]
+                              ${isActive 
+                                ? 'text-primary dark:text-primary' 
+                                : 'text-muted-foreground hover:text-primary'
+                              }
+                            `}
+                            aria-current={isActive ? 'page' : undefined}
+                          >
+                            <Icon className="w-5 h-5 mb-0.5" aria-hidden="true" />
+                            <span className="line-clamp-2 max-w-[70px] text-center">{item.name}</span>
+                          </Link>
+                        );
+                      })}
           </div>
         </div>
       </nav>
