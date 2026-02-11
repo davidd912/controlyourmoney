@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Copy, CheckCircle, Loader2, ExternalLink } from "lucide-react";
 import { base44 } from '@/api/base44Client';
+import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
 
 export default function WhatsAppConnection({ household }) {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activationCode, setActivationCode] = useState(household?.activation_code);
@@ -40,11 +43,13 @@ export default function WhatsAppConnection({ household }) {
   };
 
   const openWhatsApp = () => {
-    // Replace this with your actual Twilio WhatsApp Sandbox number
-    const twilioNumber = '14155238886'; // Default Twilio Sandbox number - REPLACE WITH YOUR NUMBER
-    const message = encodeURIComponent(activationCode);
-    const url = `https://wa.me/${twilioNumber}?text=${message}`;
-    window.open(url, '_blank');
+    // Navigate to dedicated WhatsApp connection page
+    navigate(createPageUrl('WhatsAppConnect'), {
+      state: {
+        activationCode: activationCode,
+        householdName: household?.name
+      }
+    });
   };
 
   if (isConnected) {
