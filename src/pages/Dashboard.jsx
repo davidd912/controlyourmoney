@@ -24,6 +24,7 @@ import { createPageUrl } from "@/utils";
 import moment from 'moment';
 
 import SummaryCard from "@/components/budget/SummaryCard";
+import WhatsAppConnection from "@/components/budget/WhatsAppConnection";
 import CategoryBreakdown from "@/components/budget/CategoryBreakdown";
 import IncomeForm from "@/components/budget/IncomeForm";
 import ExpenseForm from "@/components/budget/ExpenseForm";
@@ -990,6 +991,13 @@ ${JSON.stringify(financialData, null, 2)}
           onMonthChange={setSelectedMonth}
           onYearChange={setSelectedYear}
         />
+
+        {/* WhatsApp Connection */}
+        {currentHousehold && (
+          <div className="mb-6">
+            <WhatsAppConnection household={currentHousehold} />
+          </div>
+        )}
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
