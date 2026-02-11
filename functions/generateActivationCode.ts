@@ -21,8 +21,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    // Generate 6-digit activation code
-    const activationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generate activation code with 'B44-' prefix
+    const activationCode = 'B44-' + Math.random().toString(36).substring(2, 10).toUpperCase();
     
     // Set expiration to 24 hours from now
     const expiresAt = new Date();
