@@ -921,14 +921,14 @@ ${JSON.stringify(financialData, null, 2)}
 
   const currentHousehold = households.find(h => h.id === selectedHouseholdId);
 
-  const handleRefresh = async () => {
+  const handleRefresh = React.useCallback(async () => {
     await queryClient.invalidateQueries(['incomes']);
     await queryClient.invalidateQueries(['expenses']);
     await queryClient.invalidateQueries(['debts']);
     await queryClient.invalidateQueries(['assets']);
     await queryClient.invalidateQueries(['alerts']);
     await queryClient.invalidateQueries(['households']);
-  };
+  }, [queryClient]);
 
   // Auto-refresh when returning to page (for WhatsApp updates)
   React.useEffect(() => {
@@ -940,7 +940,7 @@ ${JSON.stringify(financialData, null, 2)}
     
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, []);
+  }, [handleRefresh]);
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
