@@ -942,27 +942,6 @@ ${JSON.stringify(financialData, null, 2)}
 
   const currentHousehold = households.find(h => h.id === selectedHouseholdId);
 
-  const handleRefresh = React.useCallback(async () => {
-    await queryClient.invalidateQueries(['incomes']);
-    await queryClient.invalidateQueries(['expenses']);
-    await queryClient.invalidateQueries(['debts']);
-    await queryClient.invalidateQueries(['assets']);
-    await queryClient.invalidateQueries(['alerts']);
-    await queryClient.invalidateQueries(['households']);
-  }, [queryClient]);
-
-  // Auto-refresh when returning to page (for WhatsApp updates)
-  React.useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        handleRefresh();
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [handleRefresh]);
-
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
