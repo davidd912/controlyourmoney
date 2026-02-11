@@ -3,14 +3,21 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { from, body } = await req.json(); // from: WhatsApp number, body: message text
+    
+    // Twilio שולחת נתונים בפורמט Form ולא JSON
+    const formData = await req.formData();
+    const from = formData.get('From'); // מספר הטלפון של השולח (למשל whatsapp:+972...)
+    const body = formData.get('Body'); // תוכן ההודעה ששלחת
 
     if (!from || !body) {
-      return Response.json({ error: 'Missing from or body' }, { status: 400 });
+      return Response.json({ error: 'Missing From or Body' }, { status: 400 });
     }
 
+    // ניקוי המספר כדי שיכיל רק ספרות (לפעמים מגיע עם הקידומת whatsapp:)
+    const cleanFrom = from.replace('whatsapp:', '');
+
     // Check if WhatsApp number is already linked to a household
-    const households = await base44.asServiceRole.entities.Household.filter({ whatsapp_number: from });
+    const households = await base44.asServiceRole.entities.Household.filter({ whatsapp_number: cleanFrom });
     
     let household = households?.[0];
 
