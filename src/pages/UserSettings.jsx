@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, Trash2, Mail, Home, UserPlus, User, LogOut, Edit, BarChart3, Calendar, UserX } from "lucide-react";
+import { Users, Plus, Trash2, Mail, Home, UserPlus, User, LogOut, Edit, BarChart3, Calendar, UserX, Smartphone, Copy, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -27,6 +27,7 @@ export default function UserSettings() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [newFullName, setNewFullName] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [generatingCode, setGeneratingCode] = useState({});
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -159,6 +160,24 @@ export default function UserSettings() {
     } catch (error) {
       alert('שגיאה במחיקת החשבון: ' + error.message);
     }
+  };
+
+  const handleGenerateActivationCode = async (householdId) => {
+    try {
+      setGeneratingCode({ ...generatingCode, [householdId]: true });
+      const response = await base44.functions.invoke('generateActivationCode', { household_id: householdId });
+      queryClient.invalidateQueries(['households']);
+      alert(`קוד ההפעלה שלך: ${response.data.activation_code}\n\nתוקף: 24 שעות`);
+    } catch (error) {
+      alert('שגיאה ביצירת קוד הפעלה: ' + error.message);
+    } finally {
+      setGeneratingCode({ ...generatingCode, [householdId]: false });
+    }
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    alert('הקוד הועתק ללוח');
   };
 
   return (
@@ -481,6 +500,65 @@ export default function UserSettings() {
                         ))}
                       </div>
                     </div>
+
+                    {/* WhatsApp Integration */}
+                    {isOwner && (
+                      <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-lg border-2 border-green-200 dark:border-green-800">
+                        <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                          <Smartphone className="w-4 h-4 text-green-600" />
+                          חיבור WhatsApp
+                        </h3>
+                        
+                        {household.whatsapp_number ? (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 p-3 bg-white dark:bg-gray-800 rounded-lg">
+                              <Smartphone className="w-4 h-4 text-green-600" />
+                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">מחובר: {household.whatsapp_number}</span>
+                            </div>
+                            <p className="text-xs text-gray-600 dark:text-gray-300">
+                              💬 כעת ניתן לשלוח הודעות חופשיות לניהול התקציב דרך WhatsApp
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {household.activation_code && new Date(household.activation_code_expires) > new Date() ? (
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 p-3 bg-white dark:bg-gray-800 rounded-lg">
+                                  <span className="text-2xl font-bold text-green-600">{household.activation_code}</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => copyToClipboard(household.activation_code)}
+                                  >
+                                    <Copy className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                                <p className="text-xs text-gray-600 dark:text-gray-300">
+                                  ⏰ הקוד תקף עד: {new Date(household.activation_code_expires).toLocaleString('he-IL')}
+                                </p>
+                                <p className="text-xs text-gray-600 dark:text-gray-300">
+                                  📱 שלח קוד זה בהודעה ראשונה ל-WhatsApp כדי לקשר את החשבון
+                                </p>
+                              </div>
+                            ) : (
+                              <div>
+                                <Button
+                                  onClick={() => handleGenerateActivationCode(household.id)}
+                                  disabled={generatingCode[household.id]}
+                                  className="w-full bg-green-600 hover:bg-green-700"
+                                >
+                                  <RefreshCw className={`w-4 h-4 ml-2 ${generatingCode[household.id] ? 'animate-spin' : ''}`} />
+                                  צור קוד הפעלה
+                                </Button>
+                                <p className="text-xs text-gray-600 dark:text-gray-300 mt-2">
+                                  🔐 קוד ההפעלה יאפשר לך לקשר את מספר ה-WhatsApp שלך למשק בית זה
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Invite Member */}
                     {isOwner && (
