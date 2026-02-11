@@ -96,7 +96,8 @@ Deno.serve(async (req) => {
           category: { type: "string" },
           query_type: { type: "string" },
           search_term: { type: "string" },
-          new_amount: { type: "number" }
+          new_amount: { type: "number" },
+          search_query: { type: "string" }
         }
       }
     });
