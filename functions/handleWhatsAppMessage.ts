@@ -58,20 +58,21 @@ Deno.serve(async (req) => {
 
     // Use AI to analyze the message
     const aiResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `אתה עוזר AI לניהול תקציב משפחתי. נתח את ההודעה הבאה וזהה מה המשתמש רוצה:
+      prompt: `אתה Flowli AI, סוכן חכם לניהול תקציב משפחתי. נתח את ההודעה הבאה וזהה מה המשתמש רוצה:
 
 הודעה: "${body}"
 
 החזר JSON בפורמט הבא:
 {
-  "intent": "add_income" | "add_expense" | "query" | "edit" | "delete",
+  "intent": "add_income" | "add_expense" | "query" | "edit" | "delete" | "search_web" | "help",
   "type": "income" | "expense" (רלוונטי רק ל-add),
   "amount": מספר (אם רלוונטי),
   "description": תיאור קצר (אם רלוונטי),
   "category": קטגוריה מתאימה מהרשימה הקיימת (אם רלוונטי),
   "query_type": "monthly_summary" | "total_expenses" | "total_income" | "balance" (רק אם intent=query),
   "search_term": מילת חיפוש (רק אם intent=delete או edit),
-  "new_amount": סכום חדש (רק אם intent=edit)
+  "new_amount": סכום חדש (רק אם intent=edit),
+  "search_query": שאילתת חיפוש (רק אם intent=search_web)
 }
 
 קטגוריות הכנסה: salary, allowance, other
@@ -79,10 +80,12 @@ Deno.serve(async (req) => {
 
 כללי זיהוי:
 - מילים כמו "קיבלתי", "הופקד", "משכורת", "הכנסה" = add_income
-- מילים כמו "קניתי", "שילמתי", "הוצאה" = add_expense
+- מילים כמו "קניתי", "שילמתי", "הוצאה", "הוסף" = add_expense
 - שאלות כמו "כמה הוצאתי", "מה המצב", "יתרה" = query
 - מילים כמו "תמחק", "מחק" = delete
-- מילים כמו "תעדכן", "שנה" = edit`,
+- מילים כמו "תעדכן", "שנה" = edit
+- מילים כמו "חפש בגוגל", "חפש", "מה חדש", "חדשות" = search_web
+- מילים כמו "עזרה", "מה אתה יכול", "תסביר" = help`,
       response_json_schema: {
         type: "object",
         properties: {
