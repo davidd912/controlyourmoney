@@ -16,7 +16,8 @@ import {
   AlertCircle,
   Download,
   Users,
-  Copy
+  Copy,
+  MessageCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -975,15 +976,26 @@ ${JSON.stringify(financialData, null, 2)}
                 </div>
               )}
             </div>
-            <Button
-              onClick={handleExportAll}
-              variant="outline"
-              className="gap-2 hidden md:flex"
-              aria-label="ייצא את כל הנתונים לקובץ CSV"
-            >
-              <Download className="w-4 h-4" aria-hidden="true" />
-              ייצא הכל ל-CSV
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => navigate(createPageUrl('WhatsAppConnect'))}
+                variant="outline"
+                className="gap-2 hidden md:flex text-green-600 hover:text-white hover:bg-green-500 border-green-500"
+                aria-label="התחבר ל-WhatsApp"
+              >
+                <MessageCircle className="w-4 h-4" aria-hidden="true" />
+                WhatsApp
+              </Button>
+              <Button
+                onClick={handleExportAll}
+                variant="outline"
+                className="gap-2 hidden md:flex"
+                aria-label="ייצא את כל הנתונים לקובץ CSV"
+              >
+                <Download className="w-4 h-4" aria-hidden="true" />
+                ייצא הכל ל-CSV
+              </Button>
+            </div>
           </div>
         </motion.div>
 
@@ -1005,12 +1017,7 @@ ${JSON.stringify(financialData, null, 2)}
           onYearChange={setSelectedYear}
         />
 
-        {/* WhatsApp Connection */}
-        {currentHousehold && (
-          <div className="mb-6">
-            <WhatsAppConnection household={currentHousehold} />
-          </div>
-        )}
+
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
