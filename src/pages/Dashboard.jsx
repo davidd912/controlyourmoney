@@ -880,6 +880,27 @@ ${JSON.stringify(financialData, null, 2)}
     downloadCSV(allCSV, 'תקציב_משפחתי_מלא');
   };
 
+  const handleRefresh = React.useCallback(async () => {
+    await queryClient.invalidateQueries(['incomes']);
+    await queryClient.invalidateQueries(['expenses']);
+    await queryClient.invalidateQueries(['debts']);
+    await queryClient.invalidateQueries(['assets']);
+    await queryClient.invalidateQueries(['alerts']);
+    await queryClient.invalidateQueries(['households']);
+  }, [queryClient]);
+
+  // Auto-refresh when returning to page (for WhatsApp updates)
+  React.useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        handleRefresh();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [handleRefresh]);
+
   // No household selected - show setup screen
   if (!selectedHouseholdId && households.length === 0 && user) {
     return (
