@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
       if (matchingHousehold) {
         // Link WhatsApp number to household
         await base44.asServiceRole.entities.Household.update(matchingHousehold.id, {
-          whatsapp_number: from,
+          whatsapp_number: cleanFrom,
           activation_code: null,
           activation_code_expires: null
         });
