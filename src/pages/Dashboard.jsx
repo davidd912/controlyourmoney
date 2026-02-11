@@ -822,6 +822,37 @@ ${JSON.stringify(financialData, null, 2)}
     });
   };
 
+  const handleWhatsAppConnect = async () => {
+    if (!currentHousehold) return;
+    
+    // Check if already has activation code
+    let code = currentHousehold.activation_code;
+    let expiresAt = currentHousehold.activation_code_expires;
+    
+    // Check if code is expired
+    const isExpired = expiresAt && new Date(expiresAt) < new Date();
+    
+    // Generate new code if needed
+    if (!code || isExpired) {
+      try {
+        const response = await base44.functions.invoke('generateActivationCode', {
+          household_id: currentHousehold.id
+        });
+        code = response.data.activation_code;
+        await queryClient.invalidateQueries(['households']);
+      } catch (error) {
+        alert('שגיאה ביצירת קוד הפעלה');
+        return;
+      }
+    }
+    
+    // Open WhatsApp with the activation code
+    const twilioNumber = '14155238886';
+    const message = encodeURIComponent(`Send this message to connect and start chatting!\n\nActivation code: ${code}`);
+    const url = `https://api.whatsapp.com/send/?phone=${twilioNumber}&text=${message}&type=phone_number&app_absent=0`;
+    window.open(url, '_blank');
+  };
+
   const handleExportAll = () => {
     if (!filteredIncomes.length && !filteredExpenses.length && !debts.length && !assets.length) {
       alert('אין נתונים לייצוא');
@@ -978,7 +1009,7 @@ ${JSON.stringify(financialData, null, 2)}
             </div>
             <div className="flex gap-2">
               <Button
-                onClick={() => navigate(createPageUrl('WhatsAppConnect'))}
+                onClick={handleWhatsAppConnect}
                 variant="outline"
                 className="gap-2 hidden md:flex text-green-600 hover:text-white hover:bg-green-500 border-green-500"
                 aria-label="התחבר ל-WhatsApp"
