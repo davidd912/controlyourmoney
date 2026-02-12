@@ -1,8 +1,12 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClient } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
+    // Use service role for external webhooks
+    const base44 = createClient(
+      Deno.env.get("BASE44_APP_ID") || "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""
+    );
     
     // קריאת הנתונים מ-Green API
     const payload = await req.json();
