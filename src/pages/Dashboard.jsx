@@ -847,9 +847,9 @@ ${JSON.stringify(financialData, null, 2)}
     }
     
     // Open WhatsApp with the activation code
-    const twilioNumber = '16625065179';
+    const whatsappNumber = '972559725996';
     const message = encodeURIComponent(`Send this message to connect and start chatting!\n\nActivation code: ${code}`);
-    const url = `https://api.whatsapp.com/send/?phone=${twilioNumber}&text=${message}&type=phone_number&app_absent=0`;
+    const url = `https://api.whatsapp.com/send/?phone=${whatsappNumber}&text=${message}&type=phone_number&app_absent=0`;
     window.open(url, '_blank');
   };
 
