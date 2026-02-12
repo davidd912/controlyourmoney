@@ -15,21 +15,30 @@ Deno.serve(async (req) => {
 
     const idInstance = Deno.env.get("idInstance");
     const apiTokenInstance = Deno.env.get("apiTokenInstance");
+    console.log('Secrets loaded:', { 
+      hasIdInstance: !!idInstance, 
+      hasApiToken: !!apiTokenInstance,
+      idInstance: idInstance ? `${idInstance.substring(0, 4)}...` : 'missing'
+    });
 
     const sender = payload.senderData?.chatId;
     const messageBody = payload.messageData?.textMessageData?.textMessage;
+    console.log('Message details:', { sender, messageBody });
 
     if (!sender || !messageBody) {
+      console.log('Missing sender or message body');
       return new Response("Missing data", { status: 200 });
     }
 
     const cleanFrom = sender.replace('@c.us', '').replace('+', '');
     const trimmedMessage = messageBody.trim();
+    console.log('Cleaned data:', { cleanFrom, trimmedMessage });
 
     // בדיקה מול בסיס הנתונים (Household)
     const households = await base44.asServiceRole.entities.Household.filter({
       whatsapp_number: cleanFrom
     });
+    console.log('Household search result:', { found: !!households?.[0], cleanFrom });
     
     let household = households?.[0];
     let replyText = "";
@@ -56,8 +65,9 @@ Deno.serve(async (req) => {
       replyText = `היי! קיבלתי את ההודעה: "${trimmedMessage}". הסוכן שלך ב-Base44 מחובר ומזהה אותך!`;
     }
 
-    // --- התיקון הקריטי עם ה-API URL שלך ---
+    // --- שליחת תשובה חזרה דרך Green API ---
     const greenApiUrl = `https://7103.api.greenapi.com/waInstance${idInstance}/sendMessage/${apiTokenInstance}`;
+    console.log('Sending reply:', { replyText, to: sender });
     
     const response = await fetch(greenApiUrl, {
       method: 'POST',
@@ -68,8 +78,13 @@ Deno.serve(async (req) => {
       })
     });
 
+    const responseText = await response.text();
+    console.log('Green API response:', { status: response.status, body: responseText });
+
     if (!response.ok) {
-      console.error('Green API error:', await response.text());
+      console.error('Green API error - failed to send message');
+    } else {
+      console.log('✅ Message sent successfully!');
     }
 
     return new Response("OK", { status: 200 });
