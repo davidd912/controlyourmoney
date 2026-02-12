@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
     console.log('Cleaned data:', { cleanFrom, trimmedMessage });
 
     // בדיקה מול בסיס הנתונים (Household)
-    const households = await base44.asServiceRole.entities.Household.filter({
+    const households = await base44.entities.Household.filter({
       whatsapp_number: cleanFrom
     });
     console.log('Household search result:', { found: !!households?.[0], cleanFrom });
@@ -49,12 +49,12 @@ Deno.serve(async (req) => {
 
     if (!household) {
       // לוגיקת אקטיבציה
-      const matching = await base44.asServiceRole.entities.Household.filter({
+      const matching = await base44.entities.Household.filter({
         activation_code: trimmedMessage
       });
       
       if (matching?.[0]) {
-        await base44.asServiceRole.entities.Household.update(matching[0].id, {
+        await base44.entities.Household.update(matching[0].id, {
           whatsapp_number: cleanFrom,
           activation_code: null,
           activation_code_expires: null
