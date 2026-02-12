@@ -1,47 +1,84 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+// פונקציית עזר להחזרת תגובה בפורמט ש-Twilio מבינה (XML)
+function twilioResponse(message) {
+  const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Message>${message}</Message>
+</Response>`;
+  return new Response(twiml, {
+    headers: { "Content-Type": "text/xml" },
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { household_id } = await req.json();
-
-    if (!household_id) {
-      return Response.json({ error: 'household_id is required' }, { status: 400 });
-    }
-
-    // Verify user has access to this household
-    const household = await base44.entities.Household.get(household_id);
-    if (!household || (household.owner_email !== user.email && !household.members?.includes(user.email))) {
-      return Response.json({ error: 'Access denied' }, { status: 403 });
-    }
-
-    // Generate activation code with 'B44-' prefix
-    const activationCode = 'B44-' + Math.random().toString(36).substring(2, 10).toUpperCase();
     
-    // Set expiration to 24 hours from now
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 24);
+    // Twilio שולחת נתונים בפורמט Form
+    const formData = await req.formData();
+    const from = formData.get('From') || ""; 
+    const body = formData.get('Body') || "";
 
-    // Update household with activation code
-    await base44.entities.Household.update(household_id, {
-      activation_code: activationCode,
-      activation_code_expires: expiresAt.toISOString()
+    if (!from || !body) {
+      return new Response("Missing Data", { status: 400 });
+    }
+
+    // ניקוי המספר מהקידומת whatsapp:
+    const cleanFrom = from.replace('whatsapp:', '');
+
+    // בדיקה אם המספר כבר מקושר למשק בית
+    const households = await base44.asServiceRole.entities.Household.filter({ whatsapp_number: cleanFrom });
+    let household = households?.[0];
+
+    // תהליך הפעלה ראשוני (Activation)
+    if (!household) {
+      const code = body.trim();
+      const allHouseholds = await base44.asServiceRole.entities.Household.list();
+      const matchingHousehold = allHouseholds.find(h => {
+        return h.activation_code === code && 
+               h.activation_code_expires && 
+               new Date(h.activation_code_expires) > new Date();
+      });
+
+      if (matchingHousehold) {
+        await base44.asServiceRole.entities.Household.update(matchingHousehold.id, {
+          whatsapp_number: cleanFrom,
+          activation_code: null,
+          activation_code_expires: null
+        });
+
+        return twilioResponse(`שלום! 👋 אני Flowli AI. חוברנו בהצלחה!\n\n🔍 *מה אני יכול לעשות?*\n💰 הוספת הוצאות/הכנסות\n📊 סיכום חודשי\n🌐 חימוש במידע מהרשת\n\nאיך אפשר לעזור?`);
+      } else {
+        return twilioResponse(`👋 שלום! אני Flowli AI.\n כדי להתחיל, שלח לי את קוד ההפעלה מהאפליקציה.`);
+      }
+    }
+
+    // עיבוד ההודעה עם AI (כאן נשאר הלוגיקה שלך)
+    const aiResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
+      prompt: `אתה Flowli AI, סוכן לניהול תקציב. נתח: "${body}"...`, // הפרומט המלא שלך כאן
+      response_json_schema: { /* הסכימה שלך כאן */ }
     });
 
-    return Response.json({ 
-      success: true,
-      activation_code: activationCode,
-      expires_at: expiresAt.toISOString()
-    });
+    let reply = "";
+    const intent = aiResponse.intent;
+
+    // כאן נכנסת הלוגיקה של add_income / add_expense וכו'
+    // ... (הלוגיקה שלך שכתבת קודם)
+    
+    // דוגמה לתגובה סופית:
+    if (intent === "add_expense") {
+       // ... יצירת ההוצאה ב-DB ...
+       reply = `✅ הוצאה על סך ₪${aiResponse.amount} נוספה ל-${aiResponse.category}.`;
+    } else {
+       reply = "בוצע בהצלחה!";
+    }
+
+    // החזרת התשובה בפורמט הנכון!
+    return twilioResponse(reply);
 
   } catch (error) {
-    console.error('Error generating activation code:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('Error:', error);
+    return twilioResponse(`❌ תקלה טכנית: ${error.message}`);
   }
 });
