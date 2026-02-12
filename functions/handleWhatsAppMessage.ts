@@ -66,9 +66,10 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    // במקרה של שגיאה, עדיין מחזירים XML כדי ש-Twilio לא תציג 502
-    return new Response(`<?xml version="1.0" encoding="UTF-8"?><Response><Message>Error: ${error.message}</Message></Response>`, {
-      headers: { "Content-Type": "text/xml" }
+    console.error('Error handling WhatsApp message:', error);
+    return new Response(`<?xml version="1.0" encoding="UTF-8"?><Response><Message>❌ שגיאה: ${error.message}</Message></Response>`, {
+      headers: { "Content-Type": "text/xml" },
+      status: 500
     });
   }
 });
