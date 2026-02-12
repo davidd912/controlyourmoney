@@ -26,9 +26,10 @@ Deno.serve(async (req) => {
       const code = body.trim();
       
       // Find household with this activation code
-      const allHouseholds = await base44.asServiceRole.entities.Household.list();
-      const matchingHousehold = allHouseholds.find(h => {
-        if (h.activation_code !== code) return false;
+      const matchingHouseholds = await base44.asServiceRole.entities.Household.filter({
+        activation_code: code
+      });
+      const matchingHousehold = matchingHouseholds.find(h => {
         if (!h.activation_code_expires) return false;
         const expiresAt = new Date(h.activation_code_expires);
         return expiresAt > new Date();
