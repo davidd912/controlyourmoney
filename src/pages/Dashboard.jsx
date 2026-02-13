@@ -960,13 +960,13 @@ ${JSON.stringify(financialData, null, 2)}
         <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4 min-h-[60vh]">
           <Card className="max-w-md w-full dark:bg-gray-800 dark:border-gray-700">
             <CardHeader>
-              <CardTitle className="text-center flex items-center justify-center gap-2 dark:text-white">
+              <CardTitle className="text-center flex items-center justify-center gap-2">
                 <Wallet className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 ברוכים הבאים!
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-center text-gray-600 dark:text-gray-400">
+              <p className="text-center text-muted-foreground">
                 כדי להתחיל, צור משק בית ראשון שלך
               </p>
               <Button
@@ -1005,11 +1005,11 @@ ${JSON.stringify(financialData, null, 2)}
           className="mb-8"
         >
           <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                ניהול תקציב משפחתי
-              </h1>
-              <p className="text-gray-500 dark:text-gray-400">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+              ניהול תקציב משפחתי
+            </h1>
+            <p className="text-muted-foreground">
                 תכנון ובניית תקציב חודשי מותאם אישית
               </p>
               {currentHousehold && (
@@ -1259,7 +1259,7 @@ ${JSON.stringify(financialData, null, 2)}
               
               <Card className="border-0 shadow-lg dark:bg-gray-800 dark:border-gray-700">
                 <CardHeader>
-                  <CardTitle className="text-lg dark:text-white">סיכום חובות</CardTitle>
+                  <CardTitle className="text-lg">סיכום חובות</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-950 rounded-lg">
@@ -1271,8 +1271,8 @@ ${JSON.stringify(financialData, null, 2)}
                     <span className="font-bold text-red-700 dark:text-red-400">₪{unarrangedDebts.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                    <span className="font-semibold dark:text-gray-200">סה״כ חובות</span>
-                    <span className="font-bold dark:text-white">₪{totalDebts.toLocaleString()}</span>
+                    <span className="font-semibold text-foreground">סה״כ חובות</span>
+                    <span className="font-bold text-foreground">₪{totalDebts.toLocaleString()}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -1294,7 +1294,7 @@ ${JSON.stringify(financialData, null, 2)}
           {/* Income Tab */}
           <TabsContent value="income" className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-xl font-semibold dark:text-white">הכנסות חודשיות</h2>
+              <h2 className="text-xl font-semibold text-foreground">הכנסות חודשיות</h2>
               <div className="flex gap-2">
                 <ExportButton
                   data={filteredIncomes}
@@ -1319,7 +1319,7 @@ ${JSON.stringify(financialData, null, 2)}
           {/* Expenses Tab */}
           <TabsContent value="expenses" className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-xl font-semibold dark:text-white">הוצאות חודשיות</h2>
+              <h2 className="text-xl font-semibold text-foreground">הוצאות חודשיות</h2>
               <div className="flex gap-2">
                 <ExportButton
                   data={filteredExpenses}
@@ -1356,7 +1356,7 @@ ${JSON.stringify(financialData, null, 2)}
           {/* Debts Tab */}
           <TabsContent value="debts" className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-xl font-semibold dark:text-white">פירוט חובות</h2>
+              <h2 className="text-xl font-semibold text-foreground">פירוט חובות</h2>
               <div className="flex gap-2">
                 <ExportButton
                   data={debts}
@@ -1389,7 +1389,7 @@ ${JSON.stringify(financialData, null, 2)}
           {/* Assets Tab */}
           <TabsContent value="assets" className="space-y-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-xl font-semibold dark:text-white">חסכונות ונכסים</h2>
+              <h2 className="text-xl font-semibold text-foreground">חסכונות ונכסים</h2>
               <div className="flex gap-2">
                 <ExportButton
                   data={assets}

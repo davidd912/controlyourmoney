@@ -256,26 +256,26 @@ export default function Layout({ children, currentPageName }) {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-col items-center md:items-start gap-2">
-              <p className="text-sm text-muted-foreground">
-                © {new Date().getFullYear()} ניהול תקציב משפחתי. כל הזכויות שמורות.
-              </p>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                🔒 הנתונים שלך מאובטחים ומוצפנים בטכנולוגיית SSL/TLS מתקדמת
-              </p>
-            </div>
-            <div className="flex gap-6">
-              <Link 
-                to={createPageUrl('TermsOfService')} 
-                className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                תנאי שימוש
-              </Link>
-              <Link 
-                to={createPageUrl('PrivacyPolicy')} 
-                className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                מדיניות פרטיות
-              </Link>
+                <p className="text-sm text-muted-foreground">
+                  © {new Date().getFullYear()} ניהול תקציב משפחתי. כל הזכויות שמורות.
+                </p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  🔒 הנתונים שלך מאובטחים ומוצפנים בטכנולוגיית SSL/TLS מתקדמת
+                </p>
+              </div>
+              <div className="flex gap-6">
+                <Link 
+                  to={createPageUrl('TermsOfService')} 
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  תנאי שימוש
+                </Link>
+                <Link 
+                  to={createPageUrl('PrivacyPolicy')} 
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  מדיניות פרטיות
+                </Link>
             </div>
           </div>
         </div>

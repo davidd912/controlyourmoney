@@ -56,7 +56,7 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md dark:bg-gray-800 dark:border-gray-700" dir="rtl">
         <DialogHeader>
-          <DialogTitle className="text-right dark:text-white">
+          <DialogTitle className="text-right">
             {editItem ? 'עריכת הכנסה' : 'הוספת הכנסה'}
           </DialogTitle>
         </DialogHeader>
@@ -123,7 +123,7 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
               checked={formData.is_recurring}
               onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked })}
             />
-            <Label htmlFor="recurring" className="cursor-pointer font-normal dark:text-gray-300">
+            <Label htmlFor="recurring" className="cursor-pointer font-normal text-foreground">
               הכנסה קבועה (תועתק אוטומטית לחודשים הבאים)
             </Label>
           </div>

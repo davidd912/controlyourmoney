@@ -84,7 +84,7 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto dark:bg-gray-800 dark:border-gray-700" dir="rtl">
         <DialogHeader>
-          <DialogTitle className="text-right dark:text-white">
+          <DialogTitle className="text-right">
             {editItem ? 'עריכת חוב' : 'הוספת חוב'}
           </DialogTitle>
         </DialogHeader>
@@ -213,7 +213,7 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
               checked={formData.is_recurring}
               onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked })}
             />
-            <Label htmlFor="recurring" className="cursor-pointer font-normal dark:text-gray-300">
+            <Label htmlFor="recurring" className="cursor-pointer font-normal text-foreground">
               חוב קבוע (רוב החובות קבועים)
             </Label>
           </div>

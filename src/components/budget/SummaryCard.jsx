@@ -29,12 +29,12 @@ export default function SummaryCard({ title, value, subtitle, icon: Icon, color 
         <CardContent className="p-5">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1" id={`summary-${title}`}>{title}</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white" aria-labelledby={`summary-${title}`}>
+              <p className="text-sm font-medium text-muted-foreground mb-1" id={`summary-${title}`}>{title}</p>
+              <p className="text-2xl font-bold text-foreground" aria-labelledby={`summary-${title}`}>
                 ₪{value?.toLocaleString() || 0}
               </p>
               {subtitle && (
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{subtitle}</p>
+                <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
               )}
               {trend !== undefined && (
                 <p className={`text-sm mt-2 font-medium ${trend >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>

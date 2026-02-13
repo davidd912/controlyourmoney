@@ -68,9 +68,9 @@ export default function AlertPanel({ alerts, onDismiss, onMarkRead, onRefresh, i
           <div className="flex items-center gap-3">
             <Sparkles className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             <div className="text-right">
-              <CardTitle className="text-lg dark:text-white">התראות חכמות</CardTitle>
+              <CardTitle className="text-lg">התראות חכמות</CardTitle>
               {unreadCount > 0 && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   {unreadCount} התראות שלא נקראו
                 </p>
               )}
@@ -131,9 +131,9 @@ export default function AlertPanel({ alerts, onDismiss, onMarkRead, onRefresh, i
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="text-center py-8 text-gray-500 dark:text-gray-400"
+                className="text-center py-8 text-muted-foreground"
               >
-                <Sparkles className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+                <Sparkles className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
                 <p className="text-right">אין התראות חדשות</p>
               </motion.div>
             ) : (
@@ -155,7 +155,7 @@ export default function AlertPanel({ alerts, onDismiss, onMarkRead, onRefresh, i
                         <div className="flex items-start justify-between gap-2">
                           <div className="text-right">
                             <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold text-gray-900 dark:text-white">{alert.title}</h3>
+                              <h3 className="font-semibold text-foreground">{alert.title}</h3>
                               {!alert.is_read && (
                                 <Badge className="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs">חדש</Badge>
                               )}
@@ -186,21 +186,21 @@ export default function AlertPanel({ alerts, onDismiss, onMarkRead, onRefresh, i
                           </div>
                         </div>
 
-                        <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{alert.message}</p>
+                        <p className="text-sm text-foreground mb-2">{alert.message}</p>
 
                         {alert.amount && (
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                          <p className="text-sm font-semibold text-foreground mb-2">
                             סכום: ₪{alert.amount.toLocaleString()}
                           </p>
                         )}
 
                         {alert.suggestion && (
-                          <div className="mt-3 p-3 bg-white/60 dark:bg-gray-700/60 rounded-lg border border-gray-200 dark:border-gray-600 text-right">
-                            <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center gap-2">
+                          <div className="mt-3 p-3 bg-white/60 dark:bg-gray-700/60 rounded-lg border text-right">
+                            <p className="text-sm font-medium text-foreground mb-1 flex items-center gap-2">
                               <Lightbulb className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
                               המלצה:
                             </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">{alert.suggestion}</p>
+                            <p className="text-sm text-muted-foreground">{alert.suggestion}</p>
                           </div>
                         )}
                       </div>

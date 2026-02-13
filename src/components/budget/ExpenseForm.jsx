@@ -136,7 +136,7 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto dark:bg-gray-800 dark:border-gray-700" dir="rtl">
         <DialogHeader>
-          <DialogTitle className="text-right dark:text-white">
+          <DialogTitle className="text-right">
             {editItem ? 'עריכת הוצאה' : 'הוספת הוצאה'}
           </DialogTitle>
         </DialogHeader>
@@ -288,7 +288,7 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
               checked={formData.is_recurring}
               onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked })}
             />
-            <Label htmlFor="recurring" className="cursor-pointer font-normal dark:text-gray-300">
+            <Label htmlFor="recurring" className="cursor-pointer font-normal text-foreground">
               הוצאה קבועה (תועתק אוטומטית לחודשים הבאים)
             </Label>
           </div>
