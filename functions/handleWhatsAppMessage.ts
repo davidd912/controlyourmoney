@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
 
     // 3. עיבוד AI מתקדם - זיהוי כוונה (Intent)
     console.log('🤖 Analyzing message with AI...');
-    const aiDecision = await base44.integrations.Core.InvokeLLM({
+    const aiDecision = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `אתה בנקאי אישי לניהול תקציב משפחתי. נתח את ההודעה: "${messageBody}".
       
       בחר את הכוונה המתאימה והחזר JSON עם המבנה הבא:
