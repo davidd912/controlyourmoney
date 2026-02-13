@@ -638,15 +638,16 @@ export default function Dashboard() {
   ];
 
   const expenseColumns = [
-    { key: 'category', label: 'קטגוריה', render: (val, item) => getExpenseLabel(item) },
-    { key: 'subcategory', label: 'תת-קטגוריה' },
-    { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` },
+    { key: 'category', label: 'קטגוריה', render: (val, item) => getExpenseLabel(item), width: 180 },
+    { key: 'subcategory', label: 'תת-קטגוריה', width: 150 },
+    { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}`, width: 120 },
+    { key: 'description', label: 'תיאור', width: 250 },
     { key: 'priority', label: 'עדיפות', render: (val) => {
       if (!val) return '-';
       const labels = { 1: 'קל לצמצם', 2: 'קשה אך אפשרי', 3: 'לא נוגעים' };
       const colors = { 1: 'bg-green-100 text-green-700', 2: 'bg-yellow-100 text-yellow-700', 3: 'bg-red-100 text-red-700' };
       return <Badge className={colors[val]}>{labels[val]}</Badge>;
-    }}
+    }, width: 140 }
   ];
 
   const debtColumns = [
