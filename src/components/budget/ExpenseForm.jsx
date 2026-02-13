@@ -88,6 +88,11 @@ const expenseCategories = {
     label: "פיננסים",
     icon: "🏦",
     subcategories: ["עמלות", "ביטוח חיים", "ביטוח לאומי", "אחר"]
+  },
+  other: {
+    label: "אחר",
+    icon: "📝",
+    subcategories: []
   }
 };
 

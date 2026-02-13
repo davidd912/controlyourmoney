@@ -58,13 +58,19 @@ Deno.serve(async (req) => {
 קטגוריות הוצאה זמינות: ${expenseCategories.map(c => `${c} (${categoryLabels[c]})`).join(', ')}
 קטגוריות הכנסה זמינות: ${incomeCategories.map(c => `${c} (${categoryLabels[c]})`).join(', ')}
 
+הנחיות מיוחדות לזיהוי:
+- אם ההודעה מכילה "סופר", "סופרמרקט", "שופרסל", "רמי לוי" - סווג כ-"food" (מזון ופארמה)
+- אם ההודעה מכילה "משחק", "משחקים", "צעצוע", "צעצועים" - סווג כ-"leisure" (פנאי ובילוי)
+- אם המשתמש מבקש סיכום וגם מציין קטגוריה ספציפית (לדוגמה: "הראה לי הוצאות מזון לחודש זה"), החזר את שם הקטגוריה ב-summary_category
+
 החזר JSON בפורמט הבא:
 - intent: "add_expense" (הוצאה), "add_income" (הכנסה), "get_summary_expenses" (סיכום הוצאות), "get_summary_incomes" (סיכום הכנסות)
 - amount: מספר (אם רלוונטי)
 - description: תיאור קצר
 - category: בחר מהרשימה למעלה (הכנסה/הוצאה לפי הכוונה). אם לא בטוח - השתמש ב-"other"
 - period: "today" (היום), "week" (השבוע), "month" (החודש) - רלוונטי רק לסיכומים
-- merchant: שם העסק/סוחר אם מזוהה בטקסט`,
+- merchant: שם העסק/סוחר אם מזוהה בטקסט
+- summary_category: קטגוריה ספציפית לסיכום (אם רלוונטי, אחרת null)`,
       response_json_schema: {
         type: "object",
         properties: {
@@ -73,7 +79,8 @@ Deno.serve(async (req) => {
           description: { type: "string" },
           category: { type: "string" },
           period: { type: "string" },
-          merchant: { type: "string" }
+          merchant: { type: "string" },
+          summary_category: { type: "string" }
         }
       }
     });
@@ -126,11 +133,11 @@ Deno.serve(async (req) => {
     else if (aiDecision.intent === 'get_summary_expenses' || aiDecision.intent === 'get_summary_incomes') {
       const isExpense = aiDecision.intent === 'get_summary_expenses';
       const entityName = isExpense ? 'Expense' : 'Income';
-      
+
       // חישוב טווח תאריכים
       const startDate = new Date();
       const endDate = new Date();
-      
+
       if (aiDecision.period === 'today') {
         startDate.setHours(0, 0, 0, 0);
       } else if (aiDecision.period === 'week') {
@@ -140,7 +147,7 @@ Deno.serve(async (req) => {
         startDate.setDate(1);
         startDate.setHours(0, 0, 0, 0);
       }
-      
+
       // שליפת כל הפריטים של החודש ואז סינון לפי תאריך יצירה
       const allItems = await base44.asServiceRole.entities[entityName].filter({
         household_id: household.id,
@@ -148,26 +155,68 @@ Deno.serve(async (req) => {
         year: now.getFullYear(),
         is_current: true
       });
-      
-      const filteredItems = allItems.filter(item => {
+
+      let filteredItems = allItems.filter(item => {
         const itemDate = new Date(item.created_date);
         return itemDate >= startDate && itemDate <= endDate;
       });
-      
-      const total = filteredItems.reduce((s, i) => s + (i.amount || 0), 0);
+
+      // סינון לפי קטגוריה ספציפית אם נדרש
+      if (aiDecision.summary_category) {
+        filteredItems = filteredItems.filter(item => item.category === aiDecision.summary_category);
+      }
+
       const periodLabel = aiDecision.period === 'today' ? 'היום' : aiDecision.period === 'week' ? 'השבוע' : 'החודש';
       const typeLabel = isExpense ? 'הוצאות' : 'הכנסות';
-      
+      const categoryFilter = aiDecision.summary_category ? ` בקטגוריה ${categoryLabels[aiDecision.summary_category] || aiDecision.summary_category}` : '';
+
       if (filteredItems.length === 0) {
-        finalReply = `📊 אין ${typeLabel} ${periodLabel}`;
+        finalReply = `📊 אין ${typeLabel}${categoryFilter} ${periodLabel}`;
       } else {
-        const itemsList = filteredItems.slice(0, 15).map(i => {
+        // קיבוץ לפי קטגוריות
+        const byCategory = {};
+        filteredItems.forEach(item => {
+          const catKey = item.category;
+          if (!byCategory[catKey]) {
+            byCategory[catKey] = { items: [], total: 0 };
+          }
+          byCategory[catKey].items.push(item);
+          byCategory[catKey].total += (item.amount || 0);
+        });
+
+        const total = filteredItems.reduce((s, i) => s + (i.amount || 0), 0);
+
+        // בניית הסיכום
+        let summaryText = `📊 ${typeLabel}${categoryFilter} ${periodLabel}:\n\n`;
+        summaryText += `💰 סה"כ: ₪${total.toLocaleString()}\n`;
+        summaryText += `📝 מספר פריטים: ${filteredItems.length}\n\n`;
+
+        // פירוט לפי קטגוריות
+        if (!aiDecision.summary_category && Object.keys(byCategory).length > 1) {
+          summaryText += `📑 פירוט לפי קטגוריות:\n`;
+          Object.keys(byCategory).forEach(catKey => {
+            const catLabel = categoryLabels[catKey] || catKey;
+            const catTotal = byCategory[catKey].total;
+            const catCount = byCategory[catKey].items.length;
+            summaryText += `\n${catLabel}: ₪${catTotal.toLocaleString()} (${catCount} פריטים)`;
+          });
+          summaryText += `\n\n`;
+        }
+
+        // רשימת פריטים בודדים (עד 10)
+        summaryText += `📋 פירוט פריטים:\n`;
+        const itemsList = filteredItems.slice(0, 10).map(i => {
           const cat = categoryLabels[i.category] || i.category;
-          return `• ${i.description || cat}: ₪${i.amount}`;
+          return `• ${i.description || cat}: ₪${i.amount.toLocaleString()}`;
         }).join('\n');
-        
-        const moreText = filteredItems.length > 15 ? `\n\n(ועוד ${filteredItems.length - 15} פריטים...)` : '';
-        finalReply = `📊 ${typeLabel} ${periodLabel}:\n\nסה"כ: ₪${total.toLocaleString()}\nמספר פריטים: ${filteredItems.length}\n\n${itemsList}${moreText}`;
+
+        summaryText += itemsList;
+
+        if (filteredItems.length > 10) {
+          summaryText += `\n\n(ועוד ${filteredItems.length - 10} פריטים...)`;
+        }
+
+        finalReply = summaryText;
       }
     }
 
