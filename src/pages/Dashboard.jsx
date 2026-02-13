@@ -921,17 +921,36 @@ ${JSON.stringify(financialData, null, 2)}
     await queryClient.invalidateQueries(['households']);
   }, [queryClient]);
 
-  // Auto-refresh when returning to page (for WhatsApp updates)
+  // Auto-refresh when returning to page (for WhatsApp updates) + Real-time subscriptions
   React.useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         handleRefresh();
       }
     };
-    
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [handleRefresh]);
+
+    // Subscribe to real-time income updates
+    const unsubscribeIncome = base44.entities.Income.subscribe((event) => {
+      if (selectedHouseholdId && event.data?.household_id === selectedHouseholdId) {
+        queryClient.invalidateQueries(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
+      }
+    });
+
+    // Subscribe to real-time expense updates
+    const unsubscribeExpense = base44.entities.Expense.subscribe((event) => {
+      if (selectedHouseholdId && event.data?.household_id === selectedHouseholdId) {
+        queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
+      }
+    });
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      unsubscribeIncome();
+      unsubscribeExpense();
+    };
+  }, [handleRefresh, queryClient, selectedHouseholdId, selectedMonth, selectedYear]);
 
   // No household selected - show setup screen
   if (!selectedHouseholdId && households.length === 0 && user) {
