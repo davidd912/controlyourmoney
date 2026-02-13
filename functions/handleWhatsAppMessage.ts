@@ -26,8 +26,8 @@ Deno.serve(async (req) => {
     // יצירת client עם service role credentials
     const base44 = createClient(
       Deno.env.get('BASE44_APP_ID'),
-      Deno.env.get('SUPABASE_URL'),
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      Deno.env.get('BASE44_API_URL'),
+      Deno.env.get('BASE44_SERVICE_ROLE_KEY')
     );
     const payload = await req.json();
     console.log('📨 Received webhook:', JSON.stringify(payload, null, 2));
