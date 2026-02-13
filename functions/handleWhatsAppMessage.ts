@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 // פונקציית עזר לניקוי והכנת מספר לשליחה
 const formatChatId = (number) => {
@@ -23,10 +23,7 @@ async function sendWhatsApp(chatId, text, id, token) {
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClient(
-      Deno.env.get("BASE44_APP_ID") || "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""
-    );
+    const base44 = createClientFromRequest(req);
     const payload = await req.json();
     console.log('📨 Received webhook:', JSON.stringify(payload, null, 2));
 
