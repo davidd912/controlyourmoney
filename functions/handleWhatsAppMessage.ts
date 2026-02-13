@@ -1,10 +1,11 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+
 Deno.serve(async (req) => {
   try {
     const payload = await req.json();
     if (payload.typeWebhook !== 'incomingMessageReceived') return new Response("OK");
 
-    const appId = "69628532ec7ea1d144f840c5";
-    const apiKey = "29ddbdb7bfe34e8a8272da12d544ef9e";
+    const base44 = createClientFromRequest(req);
     const idInstance = Deno.env.get("idInstance");
     const apiTokenInstance = Deno.env.get("apiTokenInstance");
 
@@ -13,24 +14,17 @@ Deno.serve(async (req) => {
     const cleanFrom = sender.replace('@c.us', '').replace('+', '');
 
     // 1. חיפוש משק בית
-    const hResponse = await fetch(`https://app.base44.com/api/apps/${appId}/entities/Household?whatsapp_number=${cleanFrom}`, {
-      headers: { 'api_key': apiKey }
-    });
-    const households = await hResponse.json();
+    const households = await base44.asServiceRole.entities.Household.filter({ whatsapp_number: cleanFrom });
     let household = households?.[0];
 
     // 2. אקטיבציה
     const extractedCode = messageBody.match(/\d{6}/)?.[0];
     if (!household && extractedCode) {
-      const matchResp = await fetch(`https://app.base44.com/api/apps/${appId}/entities/Household?activation_code=${extractedCode}`, {
-        headers: { 'api_key': apiKey }
-      });
-      const matching = await matchResp.json();
+      const matching = await base44.asServiceRole.entities.Household.filter({ activation_code: extractedCode });
       if (matching?.[0]) {
-        await fetch(`https://app.base44.com/api/apps/${appId}/entities/Household/${matching[0].id}`, {
-          method: 'PUT',
-          headers: { 'api_key': apiKey, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ whatsapp_number: cleanFrom, activation_code: null })
+        await base44.asServiceRole.entities.Household.update(matching[0].id, {
+          whatsapp_number: cleanFrom,
+          activation_code: null
         });
         await sendWhatsApp(sender, "✅ החיבור הצליח! אני הבנקאי האישי שלכם לניהול התקציב. איך אוכל לעזור?", idInstance, apiTokenInstance);
         return new Response("OK");
@@ -42,19 +36,21 @@ Deno.serve(async (req) => {
       return new Response("OK");
     }
 
-    // 3. עיבוד AI - תיקון פיונח ה-JSON
-    const aiResp = await fetch(`https://app.base44.com/api/apps/${appId}/integrations/core/invoke_llm`, {
-      method: 'POST',
-      headers: { 'api_key': apiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt: `אתה בנקאי אישי לניהול תקציב. נתח את ההודעה: "${messageBody}". 
-        החזר אך ורק JSON במבנה הבא: {"intent": "add_expense" או "add_income" או "get_summary", "amount": מספר, "description": "טקסט", "category": "קטגוריה", "period": "today" או "week"}`
-      })
+    // 3. עיבוד AI
+    const aiDecision = await base44.asServiceRole.integrations.Core.InvokeLLM({
+      prompt: `אתה בנקאי אישי לניהול תקציב. נתח את ההודעה: "${messageBody}". 
+      החזר אך ורק JSON במבנה הבא: {"intent": "add_expense" או "add_income" או "get_summary", "amount": מספר, "description": "טקסט", "category": "קטגוריה", "period": "today" או "week"}`,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          intent: { type: "string" },
+          amount: { type: "number" },
+          description: { type: "string" },
+          category: { type: "string" },
+          period: { type: "string" }
+        }
+      }
     });
-    
-    const aiResult = await aiResp.json();
-    // חילוץ האובייקט מתוך התשובה של Base44
-    const aiDecision = typeof aiResult === 'string' ? JSON.parse(aiResult) : aiResult;
 
     let finalReply = "מצטער, לא הצלחתי לעבד את הבקשה.";
     const now = new Date();
@@ -62,29 +58,33 @@ Deno.serve(async (req) => {
     // 4. לוגיקת ביצוע
     if (aiDecision.intent === 'add_expense' || aiDecision.intent === 'add_income') {
       const entityName = aiDecision.intent === 'add_expense' ? 'Expense' : 'Income';
-      await fetch(`https://app.base44.com/api/apps/${appId}/entities/${entityName}`, {
-        method: 'POST',
-        headers: { 'api_key': apiKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          household_id: household.id,
-          amount: aiDecision.amount || 0,
-          description: aiDecision.description || messageBody,
-          category: aiDecision.category || 'other',
-          month: now.getMonth() + 1,
-          year: now.getFullYear()
-        })
+      await base44.asServiceRole.entities[entityName].create({
+        household_id: household.id,
+        amount: aiDecision.amount || 0,
+        description: aiDecision.description || messageBody,
+        category: aiDecision.category || 'other',
+        month: now.getMonth() + 1,
+        year: now.getFullYear(),
+        is_current: true,
+        is_budget: false
       });
       finalReply = `✅ רשמתי ${aiDecision.intent === 'add_expense' ? 'הוצאה' : 'הכנסה'} של ₪${aiDecision.amount} עבור ${aiDecision.description}.`;
     } 
     else if (aiDecision.intent === 'get_summary') {
       const days = aiDecision.period === 'week' ? 7 : 1;
-      const startDate = new Date(now.setDate(now.getDate() - days)).toISOString();
-      const sResp = await fetch(`https://app.base44.com/api/apps/${appId}/entities/Expense?household_id=${household.id}&created_at_gte=${startDate}`, {
-        headers: { 'api_key': apiKey }
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+      
+      const expenses = await base44.asServiceRole.entities.Expense.filter({
+        household_id: household.id,
+        month: now.getMonth() + 1,
+        year: now.getFullYear(),
+        is_current: true
       });
-      const items = await sResp.json();
-      const total = items.reduce((s, i) => s + (i.amount || 0), 0);
-      finalReply = `📊 סיכום הוצאות ${aiDecision.period === 'week' ? 'שבועי' : 'מהיום'}:\nסה"כ: ₪${total}\n\n${items.map(i => `- ${i.description}: ₪${i.amount}`).join('\n')}`;
+      
+      const total = expenses.reduce((s, i) => s + (i.amount || 0), 0);
+      const itemsList = expenses.slice(0, 10).map(i => `- ${i.description}: ₪${i.amount}`).join('\n');
+      finalReply = `📊 סיכום הוצאות החודש:\nסה"כ: ₪${total}\n\n${itemsList}`;
     }
 
     await sendWhatsApp(sender, finalReply, idInstance, apiTokenInstance);
