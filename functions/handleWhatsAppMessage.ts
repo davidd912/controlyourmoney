@@ -42,19 +42,21 @@ Deno.serve(async (req) => {
       return new Response("OK");
     }
 
-    // 3. עיבוד AI - המוח של הבנקאי
+    // 3. עיבוד AI - תיקון פיונח ה-JSON
     const aiResp = await fetch(`https://app.base44.com/api/apps/${appId}/integrations/core/invoke_llm`, {
       method: 'POST',
       headers: { 'api_key': apiKey, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         prompt: `אתה בנקאי אישי לניהול תקציב. נתח את ההודעה: "${messageBody}". 
-        כוונות: add_expense (הוצאה), add_income (הכנסה), get_summary (סיכום להיום/שבוע), web_search (חיפוש בגוגל). 
-        החזר JSON בלבד עם intent, amount, description, category, period.`
+        החזר אך ורק JSON במבנה הבא: {"intent": "add_expense" או "add_income" או "get_summary", "amount": מספר, "description": "טקסט", "category": "קטגוריה", "period": "today" או "week"}`
       })
     });
-    const aiDecision = await aiResp.json();
+    
+    const aiResult = await aiResp.json();
+    // חילוץ האובייקט מתוך התשובה של Base44
+    const aiDecision = typeof aiResult === 'string' ? JSON.parse(aiResult) : aiResult;
 
-    let finalReply = "לא הצלחתי לעבד את הבקשה.";
+    let finalReply = "מצטער, לא הצלחתי לעבד את הבקשה.";
     const now = new Date();
 
     // 4. לוגיקת ביצוע
@@ -65,8 +67,8 @@ Deno.serve(async (req) => {
         headers: { 'api_key': apiKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           household_id: household.id,
-          amount: aiDecision.amount,
-          description: aiDecision.description,
+          amount: aiDecision.amount || 0,
+          description: aiDecision.description || messageBody,
           category: aiDecision.category || 'other',
           month: now.getMonth() + 1,
           year: now.getFullYear()
@@ -83,15 +85,6 @@ Deno.serve(async (req) => {
       const items = await sResp.json();
       const total = items.reduce((s, i) => s + (i.amount || 0), 0);
       finalReply = `📊 סיכום הוצאות ${aiDecision.period === 'week' ? 'שבועי' : 'מהיום'}:\nסה"כ: ₪${total}\n\n${items.map(i => `- ${i.description}: ₪${i.amount}`).join('\n')}`;
-    }
-    else if (aiDecision.intent === 'web_search') {
-      const gResp = await fetch(`https://app.base44.com/api/apps/${appId}/integrations/core/google_search`, {
-        method: 'POST',
-        headers: { 'api_key': apiKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: messageBody })
-      });
-      const results = await gResp.json();
-      finalReply = `🔍 מצאתי בגוגל:\n${results.slice(0, 2).map(r => r.url).join('\n')}`;
     }
 
     await sendWhatsApp(sender, finalReply, idInstance, apiTokenInstance);
