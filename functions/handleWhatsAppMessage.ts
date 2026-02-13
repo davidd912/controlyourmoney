@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 // פונקציית עזר לניקוי והכנת מספר לשליחה
 const formatChatId = (number) => {
@@ -23,12 +23,8 @@ async function sendWhatsApp(chatId, text, id, token) {
 
 Deno.serve(async (req) => {
   try {
-    // יצירת client עם service role credentials
-    const base44 = createClient(
-      Deno.env.get('BASE44_APP_ID'),
-      Deno.env.get('BASE44_API_URL'),
-      Deno.env.get('BASE44_SERVICE_ROLE_KEY')
-    );
+    // יצירת client מה-request ושימוש ב-service role לפעולות
+    const base44 = createClientFromRequest(req);
     const payload = await req.json();
     console.log('📨 Received webhook:', JSON.stringify(payload, null, 2));
 
@@ -52,7 +48,7 @@ Deno.serve(async (req) => {
     console.log('📞 From:', cleanFrom, '💬 Message:', messageBody);
 
     // 1. זיהוי משק בית
-    const households = await base44.entities.Household.filter({
+    const households = await base44.asServiceRole.entities.Household.filter({
       whatsapp_number: cleanFrom
     });
     let household = households?.[0];
@@ -62,10 +58,10 @@ Deno.serve(async (req) => {
     const extractedCode = messageBody.match(/\d{6}/)?.[0];
     if (!household && extractedCode) {
       console.log('🔑 Activation code detected:', extractedCode);
-      const matching = await base44.entities.Household.filter({ activation_code: extractedCode });
+      const matching = await base44.asServiceRole.entities.Household.filter({ activation_code: extractedCode });
       if (matching?.[0]) {
         console.log('✅ Matching household found, updating...');
-        await base44.entities.Household.update(matching[0].id, {
+        await base44.asServiceRole.entities.Household.update(matching[0].id, {
           whatsapp_number: cleanFrom,
           activation_code: null
         });
@@ -84,7 +80,7 @@ Deno.serve(async (req) => {
 
     // 3. עיבוד AI מתקדם - זיהוי כוונה (Intent)
     console.log('🤖 Analyzing message with AI...');
-    const aiDecision = await base44.integrations.Core.InvokeLLM({
+    const aiDecision = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `אתה בנקאי אישי לניהול תקציב משפחתי. נתח את ההודעה: "${messageBody}".
       
       בחר את הכוונה המתאימה והחזר JSON עם המבנה הבא:
@@ -125,7 +121,7 @@ Deno.serve(async (req) => {
     switch (aiDecision.intent) {
       case 'add_expense':
         if (aiDecision.amount && aiDecision.description) {
-          await base44.entities.Expense.create({
+          await base44.asServiceRole.entities.Expense.create({
             household_id: household.id,
             amount: aiDecision.amount,
             description: aiDecision.description,
@@ -145,7 +141,7 @@ Deno.serve(async (req) => {
 
       case 'add_income':
         if (aiDecision.amount && aiDecision.description) {
-          await base44.entities.Income.create({
+          await base44.asServiceRole.entities.Income.create({
             household_id: household.id,
             amount: aiDecision.amount,
             description: aiDecision.description,
@@ -167,14 +163,14 @@ Deno.serve(async (req) => {
         const currentMonth = new Date().getMonth() + 1;
         const currentYear = new Date().getFullYear();
         
-        const expenses = await base44.entities.Expense.filter({
+        const expenses = await base44.asServiceRole.entities.Expense.filter({
           household_id: household.id,
           month: currentMonth,
           year: currentYear,
           is_current: true
         });
 
-        const incomes = await base44.entities.Income.filter({
+        const incomes = await base44.asServiceRole.entities.Income.filter({
           household_id: household.id,
           month: currentMonth,
           year: currentYear,
