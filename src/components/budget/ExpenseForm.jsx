@@ -144,12 +144,16 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
           <div className="space-y-2">
             <Label htmlFor="expense-category">קטגוריה</Label>
             <Select
-              value={formData.category === 'custom' && formData.custom_category_name ? formData.custom_category_name : formData.category}
+              value={
+                formData.category === 'custom' && formData.custom_category_name 
+                  ? `custom_${formData.custom_category_name}`
+                  : formData.category || ''
+              }
               onValueChange={(value) => {
                 // Check if it's a custom category
-                const isCustom = customCategories.includes(value);
-                if (isCustom) {
-                  setFormData({ ...formData, category: 'custom', custom_category_name: value, subcategory: '' });
+                if (value.startsWith('custom_')) {
+                  const categoryName = value.replace('custom_', '');
+                  setFormData({ ...formData, category: 'custom', custom_category_name: categoryName, subcategory: '' });
                 } else {
                   setFormData({ ...formData, category: value, custom_category_name: '', subcategory: '' });
                 }
@@ -173,7 +177,7 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
                       קטגוריות מותאמות אישית
                     </div>
                     {customCategories.map((categoryName) => (
-                      <SelectItem key={`custom_${categoryName}`} value={categoryName}>
+                      <SelectItem key={`custom_${categoryName}`} value={`custom_${categoryName}`}>
                         <span className="flex items-center gap-2">
                           <span>✏️</span>
                           <span>{categoryName}</span>
@@ -186,7 +190,7 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
             </Select>
           </div>
 
-          {formData.category && formData.category !== 'custom' && customCategories.includes(formData.custom_category_name || formData.category) && (
+          {formData.category && (
             <>
               {(() => {
                 const categoryKey = formData.category === 'custom' && formData.custom_category_name 
@@ -211,34 +215,11 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
                   </div>
                 );
               })()}
-            </>
-          )}
-
-          {formData.category && formData.category !== 'custom' && (
-            <>
-              {remainingBudgetByCategory[formData.category] !== undefined && (
-                <div className={`p-3 rounded-lg ${
-                  remainingBudgetByCategory[formData.category] >= 0 
-                    ? 'bg-green-50 border border-green-200' 
-                    : 'bg-red-50 border border-red-200'
-                }`}>
-                  <p className={`text-sm font-medium ${
-                    remainingBudgetByCategory[formData.category] >= 0 
-                      ? 'text-green-700' 
-                      : 'text-red-700'
-                  }`}>
-                    {remainingBudgetByCategory[formData.category] >= 0 
-                      ? `💰 נותר בתקציב: ₪${remainingBudgetByCategory[formData.category].toLocaleString()}`
-                      : `⚠️ חריגה מהתקציב: ₪${Math.abs(remainingBudgetByCategory[formData.category]).toLocaleString()}`
-                    }
-                  </p>
-                </div>
-              )}
-              {expenseCategories[formData.category]?.subcategories?.length > 0 && (
+              {formData.category !== 'custom' && expenseCategories[formData.category]?.subcategories?.length > 0 && (
                 <div className="space-y-2">
                   <Label htmlFor="expense-subcategory">תת-קטגוריה</Label>
                   <Select
-                    value={formData.subcategory}
+                    value={formData.subcategory || ''}
                     onValueChange={(value) => setFormData({ ...formData, subcategory: value })}
                   >
                     <SelectTrigger id="expense-subcategory">
