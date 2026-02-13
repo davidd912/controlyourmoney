@@ -1,5 +1,14 @@
 import { createClient } from 'npm:@base44/sdk@0.8.6';
 
+// פונקציית עזר לניקוי והכנת המספר לשליחה
+const formatChatId = (number) => {
+  let clean = number.replace(/\D/g, ''); // מסיר הכל חוץ ממספרים
+  if (clean.startsWith('0')) {
+    clean = '972' + clean.slice(1); // הופך 054 ל-97254
+  }
+  return clean.includes('@') ? number : `${clean}@c.us`;
+};
+
 Deno.serve(async (req) => {
   try {
     // Use service role for external webhooks
@@ -34,7 +43,12 @@ Deno.serve(async (req) => {
       return new Response("Missing data", { status: 200 });
     }
 
-    const cleanFrom = sender.replace('@c.us', '').replace('+', '');
+    // ניקוי המספר לשמירה ב-DB (מחיקת @c.us ו-+, אבל שמירה על הפורמט הבינלאומי)
+    let cleanFrom = sender.replace('@c.us', '').replace('+', '');
+    // אם המספר מתחיל ב-0, המר ל-972
+    if (cleanFrom.startsWith('0')) {
+      cleanFrom = '972' + cleanFrom.slice(1);
+    }
     const trimmedMessage = messageBody.trim();
     console.log('Cleaned data:', { cleanFrom, trimmedMessage });
 
@@ -71,13 +85,14 @@ Deno.serve(async (req) => {
 
     // --- שליחת תשובה חזרה דרך Green API ---
     const greenApiUrl = `https://7103.api.greenapi.com/waInstance${idInstance}/sendMessage/${apiTokenInstance}`;
-    console.log('Sending reply:', { replyText, to: sender });
+    const formattedChatId = formatChatId(sender);
+    console.log('Sending reply:', { replyText, to: sender, formattedChatId });
     
     const response = await fetch(greenApiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        chatId: sender,
+        chatId: formattedChatId,
         message: replyText
       })
     });
