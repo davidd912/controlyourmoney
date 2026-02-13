@@ -2,16 +2,13 @@ import { createClient } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
   try {
-    // שליפת המפתחות מהכספת (Secrets) בצורה מאובטחת
-    const appId = Deno.env.get("BASE44_APP_ID");
-    const apiKey = Deno.env.get("BASE44_API_KEY");
+    // השתמשתי בערכים שהשגת מה-API קודם לכן בצורה ישירה
+    const appId = "69628532ec7ea1d144f840c5";
+    const apiKey = "29ddbdb7bfe34e8a8272da12d544ef9e";
     
-    if (!appId || !apiKey) {
-      console.error("Missing configuration secrets!");
-      return new Response("Configuration Error", { status: 500 });
-    }
-
+    // אתחול ישיר ללא הסתמכות על Secrets לזיהוי האפליקציה
     const base44 = createClient(appId, apiKey);
+    
     const payload = await req.json();
 
     if (payload.typeWebhook !== 'incomingMessageReceived') {
@@ -30,7 +27,7 @@ Deno.serve(async (req) => {
     });
     let household = households?.[0];
 
-    // 2. אקטיבציה (חילוץ 6 ספרות)
+    // 2. אקטיבציה
     const extractedCode = messageBody.match(/\d{6}/)?.[0];
     if (!household && extractedCode) {
       const matching = await base44.entities.Household.filter({ activation_code: extractedCode });
@@ -39,30 +36,31 @@ Deno.serve(async (req) => {
           whatsapp_number: cleanFrom,
           activation_code: null
         });
-        await sendWhatsApp(sender, "✅ החיבור הצליח! אני הבנקאי לניהול התקציב שלכם.", idInstance, apiTokenInstance);
+        await sendWhatsApp(sender, "✅ החיבור הצליח! אני הבנקאי לניהול התקציב המשפחתי. איך אוכל לעזור?", idInstance, apiTokenInstance);
         return new Response("OK", { status: 200 });
       }
     }
 
     if (!household) {
-      await sendWhatsApp(sender, "👋 שלום! אני הבנקאי לניהול התקציב. שלחו לי את קוד ההפעלה.", idInstance, apiTokenInstance);
+      await sendWhatsApp(sender, "👋 שלום! אני הבנקאי לניהול התקציב. שלחו לי את קוד ההפעלה מהאפליקציה.", idInstance, apiTokenInstance);
       return new Response("OK", { status: 200 });
     }
 
-    // 3. עיבוד AI וביצוע פעולות
+    // 3. עיבוד AI (הוצאות, הכנסות, סיכומים)
     const aiDecision = await base44.integrations.Core.InvokeLLM({
-      prompt: `אתה בנקאי אישי לניהול תקציב. נתח: "${messageBody}". 
-      כוונות: add_expense, add_income, get_summary (today/week), web_search. 
+      prompt: `נתח: "${messageBody}". 
+      כוונות: add_expense, add_income, get_summary (period: today/week), web_search. 
       החזר JSON בלבד.`,
     });
 
-    let finalReply = "לא הצלחתי לעבד את הבקשה.";
+    let finalReply = "מצטער, לא הצלחתי לעבד את הבקשה.";
     const now = new Date();
 
     switch (aiDecision.intent) {
       case 'add_expense':
       case 'add_income':
-        const entity = aiDecision.intent === 'add_expense' ? base44.entities.Expense : base44.entities.Income;
+        const isExpense = aiDecision.intent === 'add_expense';
+        const entity = isExpense ? base44.entities.Expense : base44.entities.Income;
         await entity.create({
           household_id: household.id,
           amount: aiDecision.amount,
@@ -71,7 +69,7 @@ Deno.serve(async (req) => {
           month: now.getMonth() + 1,
           year: now.getFullYear()
         });
-        finalReply = `✅ רשמתי ${aiDecision.amount} ש"ח עבור ${aiDecision.description}.`;
+        finalReply = `✅ רשמתי ${isExpense ? 'הוצאה' : 'הכנסה'} של ${aiDecision.amount} ש"ח עבור ${aiDecision.description}.`;
         break;
 
       case 'get_summary':
@@ -82,12 +80,12 @@ Deno.serve(async (req) => {
           created_at: { "$gte": startDate }
         });
         const total = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-        finalReply = `📊 סיכום הוצאות ${aiDecision.period === 'week' ? 'שבועי' : 'יומי'}:\n₪${total}`;
+        finalReply = `📊 סיכום הוצאות ${aiDecision.period === 'week' ? 'שבועי' : 'יומי'}:\nסך הכל: ₪${total}`;
         break;
-
+        
       case 'web_search':
         const results = await base44.integrations.Core.GoogleSearch({ query: messageBody });
-        finalReply = `🔍 מצאתי בגוגל:\n${results.slice(0, 2).map(r => r.url).join('\n')}`;
+        finalReply = `🔍 הנה מה שמצאתי בגוגל:\n${results.slice(0, 2).map(r => r.url).join('\n')}`;
         break;
     }
 
