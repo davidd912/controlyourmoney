@@ -108,23 +108,27 @@ Deno.serve(async (req) => {
     // עיבוד AI
     const aiDecision = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `אתה בנקאי אישי לניהול תקציב. נתח את ההודעה: "${messageBody}".
-      
-קטגוריות הוצאה זמינות: ${expenseCategories.map(c => `${c} (${categoryLabels[c]})`).join(', ')}
-קטגוריות הכנסה זמינות: ${incomeCategories.map(c => `${c} (${categoryLabels[c]})`).join(', ')}
 
-הנחיות מיוחדות לזיהוי:
-- אם ההודעה מכילה "סופר", "סופרמרקט", "שופרסל", "רמי לוי" - סווג כ-"food" (מזון ופארמה)
-- אם ההודעה מכילה "משחק", "משחקים", "צעצוע", "צעצועים" - סווג כ-"leisure" (פנאי ובילוי)
-- אם המשתמש מבקש סיכום וגם מציין קטגוריה ספציפית (לדוגמה: "הראה לי הוצאות מזון לחודש זה"), החזר את שם הקטגוריה ב-summary_category
+    קטגוריות הוצאה זמינות: ${expenseCategories.map(c => `${c} (${categoryLabels[c]})`).join(', ')}
+    קטגוריות הכנסה זמינות: ${incomeCategories.map(c => `${c} (${categoryLabels[c]})`).join(', ')}
 
-החזר JSON בפורמט הבא:
-- intent: "add_expense" (הוצאה), "add_income" (הכנסה), "get_summary_expenses" (סיכום הוצאות), "get_summary_incomes" (סיכום הכנסות)
-- amount: מספר (אם רלוונטי)
-- description: תיאור קצר
-- category: בחר מהרשימה למעלה (הכנסה/הוצאה לפי הכוונה). אם לא בטוח - השתמש ב-"other"
-- period: "today" (היום), "week" (השבוע), "month" (החודש) - רלוונטי רק לסיכומים
-- merchant: שם העסק/סוחר אם מזוהה בטקסט
-- summary_category: קטגוריה ספציפית לסיכום (אם רלוונטי, אחרת null)`,
+    הנחיות מיוחדות לזיהוי:
+    - אם ההודעה מכילה "סופר", "סופרמרקט", "שופרסל", "רמי לוי" - סווג כ-"food" (מזון ופארמה)
+    - אם ההודעה מכילה "משחק", "משחקים", "צעצוע", "צעצועים" - סווג כ-"leisure" (פנאי ובילוי)
+    - אם המשתמש מבקש סיכום וגם מציין קטגוריה ספציפית (לדוגמה: "הראה לי הוצאות מזון לחודש זה"), החזר את שם הקטגוריה ב-summary_category
+    - עשה מאמץ מקסימלי לשייך לקטגוריה קיימת. רק אם באמת לא בטוח - השתמש ב-"other"
+    - זיהוי תאריכים: אם ההודעה מכילה תאריך יחסי כמו "אתמול", "שלשום", "לפני 3 ימים", או תאריך ספציפי - זהה אותו והחזר אותו ב-transaction_date בפורמט ISO. אם לא - השאר ריק או null
+    - זיהוי סוחרים: נסה לזהות שם עסק או סוחר בהודעה (למשל "רמי לוי", "Yellow", "סופרפארם") והחזר אותו ב-merchant
+
+    החזר JSON בפורמט הבא:
+    - intent: "add_expense" (הוצאה), "add_income" (הכנסה), "get_summary_expenses" (סיכום הוצאות), "get_summary_incomes" (סיכום הכנסות)
+    - amount: מספר (אם רלוונטי)
+    - description: תיאור קצר
+    - category: בחר מהרשימה למעלה (הכנסה/הוצאה לפי הכוונה). אם לא בטוח - השתמש ב-"other"
+    - period: "today" (היום), "week" (השבוע), "month" (החודש) - רלוונטי רק לסיכומים
+    - merchant: שם העסק/סוחר אם מזוהה בטקסט (או null)
+    - summary_category: קטגוריה ספציפית לסיכום (אם רלוונטי, אחרת null)
+    - transaction_date: תאריך הטרנזקציה בפורמט ISO אם זוהה (או null)`,
       response_json_schema: {
         type: "object",
         properties: {
@@ -134,7 +138,8 @@ Deno.serve(async (req) => {
           category: { type: "string" },
           period: { type: "string" },
           merchant: { type: "string" },
-          summary_category: { type: "string" }
+          summary_category: { type: "string" },
+          transaction_date: { type: "string" }
         }
       }
     });
