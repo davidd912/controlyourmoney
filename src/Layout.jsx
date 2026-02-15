@@ -4,6 +4,8 @@ import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import PWASetup from '@/components/PWASetup';
 import InstallPrompt from '@/components/InstallPrompt';
+import LandingPage from '@/pages/LandingPage';
+import { base44 } from '@/api/base44Client';
 import { 
   LayoutDashboard, 
   Award,
@@ -34,6 +36,7 @@ const navigation = [
 ];
 
 export default function Layout({ children, currentPageName }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [fabMenuOpen, setFabMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
@@ -56,7 +59,28 @@ export default function Layout({ children, currentPageName }) {
     }
   }, [darkMode]);
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const authenticated = await base44.auth.isAuthenticated();
+        setIsAuthenticated(authenticated);
+      } catch (error) {
+        setIsAuthenticated(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
   const isRootRoute = currentPageName === 'Dashboard';
+
+  // Show landing page if not authenticated
+  if (isAuthenticated === null) {
+    return null; // Loading state
+  }
+
+  if (isAuthenticated === false) {
+    return <LandingPage />;
+  }
 
   // Close mobile menu on route change
   useEffect(() => {
