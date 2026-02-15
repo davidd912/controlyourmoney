@@ -71,6 +71,20 @@ export default function Layout({ children, currentPageName }) {
     checkAuth();
   }, []);
 
+  // Redirect authenticated users away from LandingPage to Dashboard
+  useEffect(() => {
+    if (isAuthenticated === true && currentPageName === 'LandingPage') {
+      navigate(createPageUrl('Dashboard'), { replace: true });
+    }
+  }, [isAuthenticated, currentPageName, navigate]);
+
+  // Redirect unauthenticated users to LandingPage
+  useEffect(() => {
+    if (isAuthenticated === false && currentPageName !== 'LandingPage') {
+      navigate(createPageUrl('LandingPage'), { replace: true });
+    }
+  }, [isAuthenticated, currentPageName, navigate]);
+
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -85,11 +99,19 @@ export default function Layout({ children, currentPageName }) {
 
   const isRootRoute = currentPageName === 'Dashboard';
 
-  // Show landing page if not authenticated
+  // Show loading state while checking authentication
   if (isAuthenticated === null) {
-    return null; // Loading state
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-gray-600 dark:text-gray-400">טוען...</p>
+        </div>
+      </div>
+    );
   }
 
+  // Show landing page for unauthenticated users
   if (isAuthenticated === false) {
     return <LandingPage />;
   }
