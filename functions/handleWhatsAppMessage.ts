@@ -152,15 +152,33 @@ Deno.serve(async (req) => {
       const entityName = aiDecision.intent === 'add_expense' ? 'Expense' : 'Income';
       const validCategories = aiDecision.intent === 'add_expense' ? expenseCategories : incomeCategories;
       
+      // קביעת תאריך הטרנזקציה
+      let transactionDate = now;
+      if (aiDecision.transaction_date) {
+        try {
+          transactionDate = new Date(aiDecision.transaction_date);
+          if (isNaN(transactionDate.getTime())) {
+            transactionDate = now;
+          }
+        } catch {
+          transactionDate = now;
+        }
+      }
+      
       // בדיקת חוק סוחר (MerchantRule)
       let finalCategory = aiDecision.category || 'other';
+      let merchantRuleExists = false;
+      
       if (aiDecision.merchant) {
         const merchantKey = aiDecision.merchant.toLowerCase().trim();
         const merchantRules = await base44.asServiceRole.entities.MerchantRule.filter({
           household_id: household.id,
           key: merchantKey
         });
+        
         if (merchantRules?.[0]) {
+          // חוק קיים - שימוש בקטגוריה המוגדרת
+          merchantRuleExists = true;
           finalCategory = merchantRules[0].default_category_id || finalCategory;
           await base44.asServiceRole.entities.MerchantRule.update(merchantRules[0].id, {
             times_used: (merchantRules[0].times_used || 0) + 1,
@@ -173,19 +191,72 @@ Deno.serve(async (req) => {
         finalCategory = 'other';
       }
       
+      // למידת סוחרים אוטומטית (Self-Learning)
+      if (aiDecision.merchant && !merchantRuleExists && finalCategory !== 'other' && aiDecision.intent === 'add_expense') {
+        const merchantKey = aiDecision.merchant.toLowerCase().trim();
+        try {
+          await base44.asServiceRole.entities.MerchantRule.create({
+            household_id: household.id,
+            key: merchantKey,
+            default_type: 'expense',
+            default_category_id: finalCategory,
+            times_used: 1,
+            last_used_at: now.toISOString()
+          });
+        } catch (e) {
+          // שגיאה שקטה - ממשיכים
+          console.log(`[WhatsApp] Could not create MerchantRule for ${merchantKey}: ${e.message}`);
+        }
+      }
+      
       await base44.asServiceRole.entities[entityName].create({
         household_id: household.id,
         amount: aiDecision.amount || 0,
         description: aiDecision.description || messageBody,
         category: finalCategory,
-        month: now.getMonth() + 1,
-        year: now.getFullYear(),
+        month: transactionDate.getMonth() + 1,
+        year: transactionDate.getFullYear(),
         is_current: true,
         is_budget: false
       });
       
       const categoryLabel = categoryLabels[finalCategory] || finalCategory;
-      finalReply = `✅ רשמתי ${aiDecision.intent === 'add_expense' ? 'הוצאה' : 'הכנסה'} של ₪${aiDecision.amount}\nקטגוריה: ${categoryLabel}\nתיאור: ${aiDecision.description}`;
+      
+      // חישוב יתרת תקציב לקטגוריה זו
+      let budgetInfo = '';
+      if (aiDecision.intent === 'add_expense') {
+        try {
+          const budgetItems = await base44.asServiceRole.entities.Expense.filter({
+            household_id: household.id,
+            category: finalCategory,
+            month: transactionDate.getMonth() + 1,
+            year: transactionDate.getFullYear(),
+            is_budget: true
+          });
+          
+          if (budgetItems?.[0]) {
+            const budgetAmount = budgetItems[0].amount || 0;
+            
+            // חישוב סך ההוצאות הנוכחיות
+            const currentExpenses = await base44.asServiceRole.entities.Expense.filter({
+              household_id: household.id,
+              category: finalCategory,
+              month: transactionDate.getMonth() + 1,
+              year: transactionDate.getFullYear(),
+              is_current: true
+            });
+            
+            const totalSpent = currentExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+            const remaining = budgetAmount - totalSpent;
+            
+            budgetInfo = `\n💰 נותרו ₪${remaining.toLocaleString()} בתקציב החודשי.`;
+          }
+        } catch (e) {
+          console.log(`[WhatsApp] Could not calculate budget: ${e.message}`);
+        }
+      }
+      
+      finalReply = `✅ רשמתי ₪${aiDecision.amount} ל-${categoryLabel}.${budgetInfo}`;
     } 
     else if (aiDecision.intent === 'get_summary_expenses' || aiDecision.intent === 'get_summary_incomes') {
       const isExpense = aiDecision.intent === 'get_summary_expenses';
