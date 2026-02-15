@@ -143,7 +143,7 @@ export default function UserSettings() {
   };
 
   const handleLogout = () => {
-    base44.auth.logout();
+    base44.auth.logout(window.location.origin);
   };
 
   const handleDeleteAccount = async () => {
