@@ -13,66 +13,63 @@ Deno.serve(async (req) => {
     const messageBody = payload.messageData?.textMessageData?.textMessage || "";
     const cleanFrom = sender.replace('@c.us', '').replace('+', '');
 
-    // 1. חיפוש משק בית
-    const households = await base44.asServiceRole.entities.Household.filter({ whatsapp_number: cleanFrom });
-    let household = households?.[0];
+    // 1. חיפוש משק בית לפי מספר וואטסאפ במערך whatsapp_numbers
+    const allHouseholds = await base44.asServiceRole.entities.Household.list();
+    let household = allHouseholds.find(h => 
+      h.whatsapp_numbers && Array.isArray(h.whatsapp_numbers) && h.whatsapp_numbers.includes(cleanFrom)
+    );
 
-    // בדיקת גישה לשירות WhatsApp לפי subscription_type
-    if (household) {
-      const subscriptionType = household.subscription_type || 'trial';
+    // 2. אם לא נמצא משק בית - נסה לזהות קוד אקטיבציה
+    if (!household) {
+      const extractedCode = messageBody.match(/\d{6}/)?.[0];
       
-      // אם manual_premium - גישה תמיד מותרת
-      if (subscriptionType === 'manual_premium') {
-        // המשך רגיל
-      } 
-      // אם unsubscribed - חסימה מוחלטת
-      else if (subscriptionType === 'unsubscribed') {
+      if (extractedCode) {
+        // בדיקה אם הקוד תקין
+        const matching = await base44.asServiceRole.entities.Household.filter({ activation_code: extractedCode });
+        if (matching?.[0]) {
+          const targetHousehold = matching[0];
+          const currentNumbers = targetHousehold.whatsapp_numbers || [];
+          
+          // הוספת המספר החדש למערך
+          await base44.asServiceRole.entities.Household.update(targetHousehold.id, {
+            whatsapp_numbers: [...currentNumbers, cleanFrom],
+            activation_code: null,
+            expires_at: targetHousehold.expires_at || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+          });
+          
+          await sendWhatsApp(sender, "✅ החיבור הצליח! אני הבנקאי האישי שלכם לניהול התקציב. איך אוכל לעזור?", idInstance, apiTokenInstance);
+          return new Response("OK");
+        }
+      }
+      
+      // אם אין קוד או הקוד לא תקין - בקש קוד הפעלה
+      await sendWhatsApp(sender, "👋 שלום! אני הבנקאי לניהול התקציב. שלחו לי את קוד ההפעלה מהאפליקציה.", idInstance, apiTokenInstance);
+      return new Response("OK");
+    }
+
+    // 3. בדיקת גישה לשירות WhatsApp לפי subscription_type ו-expires_at
+    const subscriptionType = household.subscription_type || 'trial';
+    
+    // אם manual_premium - גישה תמיד מותרת
+    if (subscriptionType === 'manual_premium') {
+      // המשך רגיל - אין חסימה
+    } else {
+      // לכל השאר - בדיקת expires_at
+      const now = new Date();
+      const expiresAt = household.expires_at ? new Date(household.expires_at) : null;
+      
+      if (!expiresAt || now > expiresAt) {
         await sendWhatsApp(
           sender,
-          '🔒 שירות הניהול בוואטסאפ זמין למנויי פרימיום בלבד.\n\nתוכלו להמשיך להזין נתונים ולנהל את התקציב באפליקציה בכל עת. רק שירות הבוט בוואטסאפ מוגבל למנויים.\n\nלמידע נוסף על שדרוג לפרימיום, פנו אלינו דרך האפליקציה.',
+          '⏰ תקופת הניסיון בשירות הוואטסאפ הסתיימה.\n\nתוכלו להמשיך להשתמש באפליקציה בצורה רגילה ולנהל את התקציב ידנית. רק שירות הבוט בוואטסאפ מוגבל למנויי פרימיום.\n\nמעוניינים לשדרג? צרו קשר דרך האפליקציה.',
           idInstance,
           apiTokenInstance
         );
         return new Response("OK");
       }
-      // אם trial - בדיקת 14 יום מיום יצירת משק הבית
-      else if (subscriptionType === 'trial') {
-        const householdCreated = new Date(household.created_date);
-        const now = new Date();
-        const daysSinceCreation = Math.floor((now - householdCreated) / (1000 * 60 * 60 * 24));
-        
-        if (daysSinceCreation > 14) {
-          await sendWhatsApp(
-            sender,
-            '⏰ תקופת הניסיון של 14 יום בשירות הוואטסאפ הסתיימה.\n\nתוכלו להמשיך להשתמש באפליקציה בצורה רגילה ולנהל את התקציב ידנית. רק שירות הבוט בוואטסאפ מוגבל למנויי פרימיום.\n\nמעוניינים לשדרג? צרו קשר דרך האפליקציה.',
-            idInstance,
-            apiTokenInstance
-          );
-          return new Response("OK");
-        }
-      }
     }
 
-    // 2. אקטיבציה
-    const extractedCode = messageBody.match(/\d{6}/)?.[0];
-    if (!household && extractedCode) {
-      const matching = await base44.asServiceRole.entities.Household.filter({ activation_code: extractedCode });
-      if (matching?.[0]) {
-        await base44.asServiceRole.entities.Household.update(matching[0].id, {
-          whatsapp_number: cleanFrom,
-          activation_code: null
-        });
-        await sendWhatsApp(sender, "✅ החיבור הצליח! אני הבנקאי האישי שלכם לניהול התקציב. איך אוכל לעזור?", idInstance, apiTokenInstance);
-        return new Response("OK");
-      }
-    }
-
-    if (!household) {
-      await sendWhatsApp(sender, "👋 שלום! אני הבנקאי לניהול התקציב. שלחו לי את קוד ההפעלה מהאפליקציה.", idInstance, apiTokenInstance);
-      return new Response("OK");
-    }
-
-    // 3. קטגוריות זמינות
+    // 4. קטגוריות זמינות
     const expenseCategories = ["food", "leisure", "clothing", "household_items", "home_maintenance", 
       "grooming", "education", "events", "health", "transportation", "family", "communication", 
       "housing", "obligations", "assets", "finance", "other"];
@@ -87,7 +84,7 @@ Deno.serve(async (req) => {
       salary: "שכר", allowance: "קצבאות", other: "אחר"
     };
 
-    // 4. עיבוד AI
+    // 5. עיבוד AI
     const aiDecision = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `אתה בנקאי אישי לניהול תקציב. נתח את ההודעה: "${messageBody}".
       
@@ -124,7 +121,7 @@ Deno.serve(async (req) => {
     let finalReply = "מצטער, לא הצלחתי לעבד את הבקשה.";
     const now = new Date();
 
-    // 5. לוגיקת ביצוע
+    // 6. לוגיקת ביצוע
     if (aiDecision.intent === 'add_expense' || aiDecision.intent === 'add_income') {
       const entityName = aiDecision.intent === 'add_expense' ? 'Expense' : 'Income';
       const validCategories = aiDecision.intent === 'add_expense' ? expenseCategories : incomeCategories;
