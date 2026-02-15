@@ -38,8 +38,21 @@ export default function LandingPage() {
     }
   }, [darkMode]);
 
-  const handleLogin = () => {
-    base44.auth.redirectToLogin();
+  const handleLogin = async () => {
+    try {
+      // First check if already authenticated
+      const isAuth = await base44.auth.isAuthenticated();
+      if (isAuth) {
+        window.location.reload();
+        return;
+      }
+      // Trigger login redirect
+      base44.auth.redirectToLogin(window.location.origin);
+    } catch (error) {
+      console.error('Login error:', error);
+      // Fallback: force redirect to login
+      window.location.href = '/api/auth/login?redirect=' + encodeURIComponent(window.location.origin);
+    }
   };
 
   const features = [
