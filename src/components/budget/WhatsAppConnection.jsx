@@ -17,7 +17,7 @@ export default function WhatsAppConnection({ household }) {
 
   // Check if code is expired
   const isExpired = expiresAt && new Date(expiresAt) < new Date();
-  const isConnected = household?.whatsapp_number;
+  const isConnected = household?.whatsapp_numbers && household.whatsapp_numbers.length > 0;
 
   const generateCode = async () => {
     setLoading(true);
@@ -63,7 +63,10 @@ export default function WhatsAppConnection({ household }) {
             <div>
               <CardTitle className="text-green-700 dark:text-green-400">מחובר לוואטסאפ</CardTitle>
               <CardDescription className="text-green-600 dark:text-green-500">
-                המספר: {household.whatsapp_number}
+                {household.whatsapp_numbers?.length === 1 
+                  ? `המספר: ${household.whatsapp_numbers[0]}`
+                  : `${household.whatsapp_numbers?.length || 0} מספרים מחוברים`
+                }
               </CardDescription>
             </div>
           </div>
