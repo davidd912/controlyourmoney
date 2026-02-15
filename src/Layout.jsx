@@ -71,17 +71,6 @@ export default function Layout({ children, currentPageName }) {
     checkAuth();
   }, []);
 
-  const isRootRoute = currentPageName === 'Dashboard';
-
-  // Show landing page if not authenticated
-  if (isAuthenticated === null) {
-    return null; // Loading state
-  }
-
-  if (isAuthenticated === false) {
-    return <LandingPage />;
-  }
-
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -93,6 +82,17 @@ export default function Layout({ children, currentPageName }) {
     window.addEventListener('openFABMenu', handleFABMenu);
     return () => window.removeEventListener('openFABMenu', handleFABMenu);
   }, []);
+
+  const isRootRoute = currentPageName === 'Dashboard';
+
+  // Show landing page if not authenticated
+  if (isAuthenticated === null) {
+    return null; // Loading state
+  }
+
+  if (isAuthenticated === false) {
+    return <LandingPage />;
+  }
 
   // Split navigation for bottom nav (2 items on each side of FAB)
   const leftNavItems = navigation.slice(0, 2);
