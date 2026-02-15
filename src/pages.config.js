@@ -51,12 +51,12 @@ import AIPlanning from './pages/AIPlanning';
 import Benefits from './pages/Benefits';
 import Dashboard from './pages/Dashboard';
 import Guide from './pages/Guide';
+import LandingPage from './pages/LandingPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import QuickChat from './pages/QuickChat';
 import TermsOfService from './pages/TermsOfService';
 import UserSettings from './pages/UserSettings';
 import WhatsAppConnect from './pages/WhatsAppConnect';
-import LandingPage from './pages/LandingPage';
 import __Layout from './Layout.jsx';
 
 
@@ -65,12 +65,12 @@ export const PAGES = {
     "Benefits": Benefits,
     "Dashboard": Dashboard,
     "Guide": Guide,
+    "LandingPage": LandingPage,
     "PrivacyPolicy": PrivacyPolicy,
     "QuickChat": QuickChat,
     "TermsOfService": TermsOfService,
     "UserSettings": UserSettings,
     "WhatsAppConnect": WhatsAppConnect,
-    "LandingPage": LandingPage,
 }
 
 export const pagesConfig = {

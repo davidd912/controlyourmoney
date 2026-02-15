@@ -386,44 +386,46 @@ export default function UserSettings() {
         </div>
 
         {/* Create New Household */}
-        {!showCreateForm ? (
-          <Button
-            onClick={() => setShowCreateForm(true)}
-            className="mb-6 bg-blue-600 hover:bg-blue-700"
-          >
-            <Plus className="w-4 h-4 ml-2" />
-            צור משק בית חדש
-          </Button>
-        ) : (
-          <Card className="mb-6 dark:bg-gray-800 dark:border-gray-700">
-            <CardContent className="pt-6">
-              <form onSubmit={handleCreateHousehold} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">שם משק הבית</label>
-                  <Input
-                    placeholder='לדוגמה: "משפחת כהן"'
-                    value={newHouseholdName}
-                    onChange={(e) => setNewHouseholdName(e.target.value)}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                    צור משק בית
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setShowCreateForm(false);
-                      setNewHouseholdName('');
-                    }}
-                  >
-                    ביטול
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+        {(user?.role === 'admin' || households.length === 0) && (
+          !showCreateForm ? (
+            <Button
+              onClick={() => setShowCreateForm(true)}
+              className="mb-6 bg-blue-600 hover:bg-blue-700"
+            >
+              <Plus className="w-4 h-4 ml-2" />
+              צור משק בית חדש
+            </Button>
+          ) : (
+            <Card className="mb-6 dark:bg-gray-800 dark:border-gray-700">
+              <CardContent className="pt-6">
+                <form onSubmit={handleCreateHousehold} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">שם משק הבית</label>
+                    <Input
+                      placeholder='לדוגמה: "משפחת כהן"'
+                      value={newHouseholdName}
+                      onChange={(e) => setNewHouseholdName(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                      צור משק בית
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setShowCreateForm(false);
+                        setNewHouseholdName('');
+                      }}
+                    >
+                      ביטול
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )
         )}
 
         {/* Existing Households */}
