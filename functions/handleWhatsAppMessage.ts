@@ -13,52 +13,73 @@ Deno.serve(async (req) => {
     const messageBody = payload.messageData?.textMessageData?.textMessage || "";
     const cleanFrom = sender.replace('@c.us', '').replace('+', '');
 
-    // 1. חיפוש משק בית לפי מספר וואטסאפ במערך whatsapp_numbers
-    const allHouseholds = await base44.asServiceRole.entities.Household.list();
-    let household = allHouseholds.find(h => 
+    console.log(`[WhatsApp] Received message from ${cleanFrom}: "${messageBody}"`);
+
+    // 1. זיהוי (Identify): חיפוש משק בית שבו המספר נמצא במערך whatsapp_numbers
+    const households = await base44.asServiceRole.entities.Household.filter({});
+    let household = households.find(h => 
       h.whatsapp_numbers && Array.isArray(h.whatsapp_numbers) && h.whatsapp_numbers.includes(cleanFrom)
     );
 
-    // 2. אם לא נמצא משק בית - נסה לזהות קוד אקטיבציה
+    // 2. טיפול במספר חדש (New Member): אם לא נמצא משק בית - בדיקת קוד אקטיבציה
     if (!household) {
+      console.log(`[WhatsApp] No household found for ${cleanFrom}. Checking for activation code.`);
       const extractedCode = messageBody.match(/\d{6}/)?.[0];
       
       if (extractedCode) {
-        // בדיקה אם הקוד תקין
         const matching = await base44.asServiceRole.entities.Household.filter({ activation_code: extractedCode });
+        
         if (matching?.[0]) {
           const targetHousehold = matching[0];
+          console.log(`[WhatsApp] Activation code ${extractedCode} found for household ${targetHousehold.id}`);
+
+          // בדיקת תוקף קוד ההפעלה
+          const activationCodeExpires = targetHousehold.activation_code_expires ? new Date(targetHousehold.activation_code_expires) : null;
+          if (!activationCodeExpires || activationCodeExpires < new Date()) {
+            console.log(`[WhatsApp] Activation code has expired for household ${targetHousehold.id}`);
+            await sendWhatsApp(sender, "⏰ קוד ההפעלה ששלחת פג תוקפו או כבר שומש. בבקשה צור קוד חדש באפליקציה ונסה שוב.", idInstance, apiTokenInstance);
+            return new Response("OK");
+          }
+
+          // הוספת המספר למערך ללא כפילויות
           const currentNumbers = targetHousehold.whatsapp_numbers || [];
+          const updatedNumbers = [...new Set([...currentNumbers, cleanFrom])];
           
-          // הוספת המספר החדש למערך
+          // עדכון expires_at ל-14 יום מהיום
+          const newExpiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+
+          // ניקוי קוד האקטיבציה אחרי שימוש מוצלח
           await base44.asServiceRole.entities.Household.update(targetHousehold.id, {
-            whatsapp_numbers: [...currentNumbers, cleanFrom],
+            whatsapp_numbers: updatedNumbers,
             activation_code: null,
-            expires_at: targetHousehold.expires_at || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+            activation_code_expires: null,
+            expires_at: newExpiresAt
           });
+
+          console.log(`[WhatsApp] Household ${targetHousehold.id} updated. Numbers: ${updatedNumbers.join(', ')}. Expires: ${newExpiresAt}`);
           
           await sendWhatsApp(sender, "✅ החיבור הצליח! אני הבנקאי האישי שלכם לניהול התקציב. איך אוכל לעזור?", idInstance, apiTokenInstance);
           return new Response("OK");
         }
       }
       
-      // אם אין קוד או הקוד לא תקין - בקש קוד הפעלה
-      await sendWhatsApp(sender, "👋 שלום! אני הבנקאי לניהול התקציב. שלחו לי את קוד ההפעלה מהאפליקציה.", idInstance, apiTokenInstance);
+      // 3. תגובה לכולם: אם אין קוד או הקוד לא תקין
+      console.log(`[WhatsApp] No valid activation code found. Prompting user ${cleanFrom} for code.`);
+      await sendWhatsApp(sender, "👋 שלום! אני לא מזהה את המספר. אנא שלח קוד אקטיבציה מהאפליקציה.", idInstance, apiTokenInstance);
       return new Response("OK");
     }
 
-    // 3. בדיקת גישה לשירות WhatsApp לפי subscription_type ו-expires_at
+    console.log(`[WhatsApp] Household ${household.id} identified for ${cleanFrom}`);
+
+    // בדיקת גישה לשירות WhatsApp לפי subscription_type ו-expires_at
     const subscriptionType = household.subscription_type || 'trial';
     
-    // אם manual_premium - גישה תמיד מותרת
-    if (subscriptionType === 'manual_premium') {
-      // המשך רגיל - אין חסימה
-    } else {
-      // לכל השאר - בדיקת expires_at
+    if (subscriptionType !== 'manual_premium') {
       const now = new Date();
       const expiresAt = household.expires_at ? new Date(household.expires_at) : null;
       
       if (!expiresAt || now > expiresAt) {
+        console.log(`[WhatsApp] Household ${household.id} WhatsApp access expired`);
         await sendWhatsApp(
           sender,
           '⏰ תקופת הניסיון בשירות הוואטסאפ הסתיימה.\n\nתוכלו להמשיך להשתמש באפליקציה בצורה רגילה ולנהל את התקציב ידנית. רק שירות הבוט בוואטסאפ מוגבל למנויי פרימיום.\n\nמעוניינים לשדרג? צרו קשר דרך האפליקציה.',
@@ -69,7 +90,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 4. קטגוריות זמינות
+    // קטגוריות זמינות
     const expenseCategories = ["food", "leisure", "clothing", "household_items", "home_maintenance", 
       "grooming", "education", "events", "health", "transportation", "family", "communication", 
       "housing", "obligations", "assets", "finance", "other"];
@@ -84,7 +105,7 @@ Deno.serve(async (req) => {
       salary: "שכר", allowance: "קצבאות", other: "אחר"
     };
 
-    // 5. עיבוד AI
+    // עיבוד AI
     const aiDecision = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `אתה בנקאי אישי לניהול תקציב. נתח את ההודעה: "${messageBody}".
       
@@ -121,7 +142,7 @@ Deno.serve(async (req) => {
     let finalReply = "מצטער, לא הצלחתי לעבד את הבקשה.";
     const now = new Date();
 
-    // 6. לוגיקת ביצוע
+    // לוגיקת ביצוע
     if (aiDecision.intent === 'add_expense' || aiDecision.intent === 'add_income') {
       const entityName = aiDecision.intent === 'add_expense' ? 'Expense' : 'Income';
       const validCategories = aiDecision.intent === 'add_expense' ? expenseCategories : incomeCategories;
@@ -136,7 +157,6 @@ Deno.serve(async (req) => {
         });
         if (merchantRules?.[0]) {
           finalCategory = merchantRules[0].default_category_id || finalCategory;
-          // עדכון שימוש
           await base44.asServiceRole.entities.MerchantRule.update(merchantRules[0].id, {
             times_used: (merchantRules[0].times_used || 0) + 1,
             last_used_at: now.toISOString()
@@ -144,7 +164,6 @@ Deno.serve(async (req) => {
         }
       }
       
-      // וידוא שהקטגוריה תקינה
       if (!validCategories.includes(finalCategory)) {
         finalCategory = 'other';
       }
@@ -167,7 +186,6 @@ Deno.serve(async (req) => {
       const isExpense = aiDecision.intent === 'get_summary_expenses';
       const entityName = isExpense ? 'Expense' : 'Income';
 
-      // חישוב טווח תאריכים
       const startDate = new Date();
       const endDate = new Date();
 
@@ -176,12 +194,10 @@ Deno.serve(async (req) => {
       } else if (aiDecision.period === 'week') {
         startDate.setDate(startDate.getDate() - 7);
       } else {
-        // חודש - מתחילת החודש
         startDate.setDate(1);
         startDate.setHours(0, 0, 0, 0);
       }
 
-      // שליפת כל הפריטים של החודש ואז סינון לפי תאריך יצירה
       const allItems = await base44.asServiceRole.entities[entityName].filter({
         household_id: household.id,
         month: now.getMonth() + 1,
@@ -194,7 +210,6 @@ Deno.serve(async (req) => {
         return itemDate >= startDate && itemDate <= endDate;
       });
 
-      // סינון לפי קטגוריה ספציפית אם נדרש
       if (aiDecision.summary_category) {
         filteredItems = filteredItems.filter(item => item.category === aiDecision.summary_category);
       }
@@ -206,7 +221,6 @@ Deno.serve(async (req) => {
       if (filteredItems.length === 0) {
         finalReply = `📊 אין ${typeLabel}${categoryFilter} ${periodLabel}`;
       } else {
-        // קיבוץ לפי קטגוריות
         const byCategory = {};
         filteredItems.forEach(item => {
           const catKey = item.category;
@@ -219,12 +233,10 @@ Deno.serve(async (req) => {
 
         const total = filteredItems.reduce((s, i) => s + (i.amount || 0), 0);
 
-        // בניית הסיכום
         let summaryText = `📊 ${typeLabel}${categoryFilter} ${periodLabel}:\n\n`;
         summaryText += `💰 סה"כ: ₪${total.toLocaleString()}\n`;
         summaryText += `📝 מספר פריטים: ${filteredItems.length}\n\n`;
 
-        // פירוט לפי קטגוריות
         if (!aiDecision.summary_category && Object.keys(byCategory).length > 1) {
           summaryText += `📑 פירוט לפי קטגוריות:\n`;
           Object.keys(byCategory).forEach(catKey => {
@@ -236,7 +248,6 @@ Deno.serve(async (req) => {
           summaryText += `\n\n`;
         }
 
-        // רשימת פריטים בודדים (עד 10)
         summaryText += `📋 פירוט פריטים:\n`;
         const itemsList = filteredItems.slice(0, 10).map(i => {
           const cat = categoryLabels[i.category] || i.category;
@@ -257,7 +268,7 @@ Deno.serve(async (req) => {
     return new Response("OK");
 
   } catch (e) {
-    console.error("Error:", e.message);
+    console.error("[WhatsApp] Error:", e.message, e.stack);
     return new Response("OK");
   }
 });
