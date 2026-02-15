@@ -4,33 +4,23 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // שליפת הנתונים מהבקשה (למשל ה-ID של משק הבית)
     const { household_id } = await req.json();
 
     if (!household_id) {
       return Response.json({ error: "Missing household_id" }, { status: 400 });
     }
 
-    // 1. יצירת קוד רנדומלי קצר (6 ספרות) - פעולה מהירה מאוד
+    // יצירת קוד רנדומלי קצר (6 ספרות)
     const activation_code = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // 2. קביעת זמן תפוגה (למשל 24 שעות מהיום)
+    // קביעת זמן תפוגה (24 שעות מהיום)
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);
 
-    /**
-     * אופטימיזציה קריטית:
-     * אנחנו לא מושכים את כל הרשימה. אנחנו פשוט מעדכנים ישירות את משק הבית הספציפי.
-     * זה חוסך המון CPU.
-     */
-    // חישוב תאריך expires_at - 14 יום מעכשיו
-    const subscriptionExpiresAt = new Date();
-    subscriptionExpiresAt.setDate(subscriptionExpiresAt.getDate() + 14);
-
+    // עדכון רק את קוד ההפעלה ותוקפו - לא נוגעים ב-expires_at
     await base44.asServiceRole.entities.Household.update(household_id, {
       activation_code: activation_code,
-      activation_code_expires: expiresAt.toISOString(),
-      expires_at: subscriptionExpiresAt.toISOString()
+      activation_code_expires: expiresAt.toISOString()
     });
 
     return Response.json({ 
