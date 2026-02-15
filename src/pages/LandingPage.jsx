@@ -43,7 +43,7 @@ export default function LandingPage() {
       // First check if already authenticated
       const isAuth = await base44.auth.isAuthenticated();
       if (isAuth) {
-        window.location.reload();
+        window.location.href = '/';
         return;
       }
       // Trigger login redirect
