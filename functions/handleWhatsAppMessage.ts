@@ -17,6 +17,42 @@ Deno.serve(async (req) => {
     const households = await base44.asServiceRole.entities.Household.filter({ whatsapp_number: cleanFrom });
     let household = households?.[0];
 
+    // בדיקת גישה לשירות WhatsApp לפי subscription_type
+    if (household) {
+      const subscriptionType = household.subscription_type || 'trial';
+      
+      // אם manual_premium - גישה תמיד מותרת
+      if (subscriptionType === 'manual_premium') {
+        // המשך רגיל
+      } 
+      // אם unsubscribed - חסימה מוחלטת
+      else if (subscriptionType === 'unsubscribed') {
+        await sendWhatsApp(
+          sender,
+          '🔒 שירות הניהול בוואטסאפ זמין למנויי פרימיום בלבד.\n\nתוכלו להמשיך להזין נתונים ולנהל את התקציב באפליקציה בכל עת. רק שירות הבוט בוואטסאפ מוגבל למנויים.\n\nלמידע נוסף על שדרוג לפרימיום, פנו אלינו דרך האפליקציה.',
+          idInstance,
+          apiTokenInstance
+        );
+        return new Response("OK");
+      }
+      // אם trial - בדיקת 14 יום מיום יצירת משק הבית
+      else if (subscriptionType === 'trial') {
+        const householdCreated = new Date(household.created_date);
+        const now = new Date();
+        const daysSinceCreation = Math.floor((now - householdCreated) / (1000 * 60 * 60 * 24));
+        
+        if (daysSinceCreation > 14) {
+          await sendWhatsApp(
+            sender,
+            '⏰ תקופת הניסיון של 14 יום בשירות הוואטסאפ הסתיימה.\n\nתוכלו להמשיך להשתמש באפליקציה בצורה רגילה ולנהל את התקציב ידנית. רק שירות הבוט בוואטסאפ מוגבל למנויי פרימיום.\n\nמעוניינים לשדרג? צרו קשר דרך האפליקציה.',
+            idInstance,
+            apiTokenInstance
+          );
+          return new Response("OK");
+        }
+      }
+    }
+
     // 2. אקטיבציה
     const extractedCode = messageBody.match(/\d{6}/)?.[0];
     if (!household && extractedCode) {
