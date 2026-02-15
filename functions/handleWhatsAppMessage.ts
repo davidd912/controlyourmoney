@@ -119,9 +119,10 @@ Deno.serve(async (req) => {
     - עשה מאמץ מקסימלי לשייך לקטגוריה קיימת. רק אם באמת לא בטוח - השתמש ב-"other"
     - זיהוי תאריכים: אם ההודעה מכילה תאריך יחסי כמו "אתמול", "שלשום", "לפני 3 ימים", או תאריך ספציפי - זהה אותו והחזר אותו ב-transaction_date בפורמט ISO. אם לא - השאר ריק או null
     - זיהוי סוחרים: נסה לזהות שם עסק או סוחר בהודעה (למשל "רמי לוי", "Yellow", "סופרפארם") והחזר אותו ב-merchant
+    - שיחה כללית: אם המשתמש אומר "תודה", "מה קורה", "שלום", "מה אתה יודע לעשות", "עזרה" או כל הודעה שלא קשורה לרישום כספים או סיכומים - זהה את זה כ-"chat" ותן תשובה חכמה ומועילה. אל תנסה לרשום הוצאה או הכנסה.
 
     החזר JSON בפורמט הבא:
-    - intent: "add_expense" (הוצאה), "add_income" (הכנסה), "get_summary_expenses" (סיכום הוצאות), "get_summary_incomes" (סיכום הכנסות)
+    - intent: "add_expense" (הוצאה), "add_income" (הכנסה), "get_summary_expenses" (סיכום הוצאות), "get_summary_incomes" (סיכום הכנסות), "chat" (שיחה כללית)
     - amount: מספר (אם רלוונטי)
     - description: תיאור קצר
     - category: בחר מהרשימה למעלה (הכנסה/הוצאה לפי הכוונה). אם לא בטוח - השתמש ב-"other"
@@ -237,7 +238,7 @@ Deno.serve(async (req) => {
           if (budgetItems?.[0]) {
             const budgetAmount = budgetItems[0].amount || 0;
             
-            // חישוב סך ההוצאות הנוכחיות
+            // חישוב סך ההוצאות הנוכחיות באותו חודש ושנה
             const currentExpenses = await base44.asServiceRole.entities.Expense.filter({
               household_id: household.id,
               category: finalCategory,
@@ -249,7 +250,11 @@ Deno.serve(async (req) => {
             const totalSpent = currentExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
             const remaining = budgetAmount - totalSpent;
             
-            budgetInfo = `\n💰 נותרו ₪${remaining.toLocaleString()} בתקציב החודשי.`;
+            if (remaining < 0) {
+              budgetInfo = `\n⚠️ חרגת ב-₪${Math.abs(remaining).toLocaleString()} מהתקציב החודשי.`;
+            } else {
+              budgetInfo = `\n💰 נותרו ₪${remaining.toLocaleString()} בתקציב החודשי.`;
+            }
           }
         } catch (e) {
           console.log(`[WhatsApp] Could not calculate budget: ${e.message}`);
@@ -257,6 +262,22 @@ Deno.serve(async (req) => {
       }
       
       finalReply = `✅ רשמתי ₪${aiDecision.amount} ל-${categoryLabel}.${budgetInfo}`;
+    } 
+    else if (aiDecision.intent === 'chat') {
+      // טיפול בשיחה כללית
+      const chatResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt: `אתה בנקאי אישי חכם ומועיל לניהול תקציב. המשתמש אמר: "${messageBody}".
+        
+        תן תשובה קצרה, חמה ומועילה. אם שאלו מה אתה יודע לעשות, הסבר בקצרה:
+        - רישום הוצאות והכנסות (למשל: "קניתי פיצה ב-80 שקל")
+        - סיכומים (למשל: "הראה לי הוצאות החודש")
+        - תמיכה בתאריכים ("אתמול קניתי...")
+        - מעקב אחרי תקציב
+        
+        השב בעברית, בצורה ידידותית וקצרה (עד 3 שורות).`
+      });
+      
+      finalReply = chatResponse || "שמח לעזור! אני יכול לעזור לך לנהל את התקציב - פשוט ספר לי על הוצאות והכנסות שלך ואני ארשום אותן.";
     } 
     else if (aiDecision.intent === 'get_summary_expenses' || aiDecision.intent === 'get_summary_incomes') {
       const isExpense = aiDecision.intent === 'get_summary_expenses';
@@ -325,7 +346,7 @@ Deno.serve(async (req) => {
         }
 
         summaryText += `📋 פירוט פריטים:\n`;
-        const itemsList = filteredItems.slice(0, 10).map(i => {
+        const itemsList = filteredItems.filter(i => (i.amount || 0) > 0).slice(0, 10).map(i => {
           const cat = categoryLabels[i.category] || i.category;
           return `• ${i.description || cat}: ₪${i.amount.toLocaleString()}`;
         }).join('\n');
