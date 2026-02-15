@@ -23,17 +23,20 @@ Deno.serve(async (req) => {
      * אנחנו לא מושכים את כל הרשימה. אנחנו פשוט מעדכנים ישירות את משק הבית הספציפי.
      * זה חוסך המון CPU.
      */
+    // חישוב תאריך expires_at - 14 יום מעכשיו
+    const subscriptionExpiresAt = new Date();
+    subscriptionExpiresAt.setDate(subscriptionExpiresAt.getDate() + 14);
+
     await base44.asServiceRole.entities.Household.update(household_id, {
       activation_code: activation_code,
       activation_code_expires: expiresAt.toISOString(),
-      // אנחנו מנקים את מספר הטלפון הישן כדי לאפשר חיבור מחדש אם צריך
-      whatsapp_number: null 
+      expires_at: subscriptionExpiresAt.toISOString()
     });
 
     return Response.json({ 
       success: true, 
       activation_code: activation_code,
-      expires: expiresAt.toISOString() 
+      expires_at: expiresAt.toISOString() 
     });
 
   } catch (error) {
