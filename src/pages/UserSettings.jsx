@@ -9,6 +9,7 @@ import { Users, Plus, Trash2, Mail, Home, UserPlus, User, LogOut, Edit, BarChart
 import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import AnnouncementManager from '@/components/announcements/AnnouncementManager';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -317,6 +318,13 @@ export default function UserSettings() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Admin Announcement Manager */}
+        {user?.role === 'admin' && (
+          <div className="mb-6">
+            <AnnouncementManager />
+          </div>
+        )}
 
         {/* Admin Stats Section */}
         {user?.role === 'admin' && stats && (
