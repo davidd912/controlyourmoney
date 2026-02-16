@@ -123,7 +123,8 @@ export default function UserSettings() {
       const now = new Date().toISOString();
       return base44.entities.Household.update(id, {
         is_deleted: true,
-        deleted_at: now
+        deleted_at: now,
+        whatsapp_numbers: []
       });
     },
     onSuccess: () => {
