@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function AnnouncementManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
-  const [formData, setFormData] = useState({ content: '', is_active: false, direction: 'ltr', speed: 3 });
+  const [formData, setFormData] = useState({ content: '', is_active: false, direction: 'ltr', speed: 60 });
   const queryClient = useQueryClient();
 
   const { data: announcements = [] } = useQuery({
@@ -49,14 +49,14 @@ export default function AnnouncementManager() {
   });
 
   const resetForm = () => {
-    setFormData({ content: '', is_active: false, direction: 'ltr', speed: 3 });
+    setFormData({ content: '', is_active: false, direction: 'ltr', speed: 60 });
     setEditingAnnouncement(null);
     setIsDialogOpen(false);
   };
 
   const handleEdit = (announcement) => {
     setEditingAnnouncement(announcement);
-    setFormData({ content: announcement.content, is_active: announcement.is_active, direction: announcement.direction || 'ltr', speed: announcement.speed || 3 });
+    setFormData({ content: announcement.content, is_active: announcement.is_active, direction: announcement.direction || 'ltr', speed: announcement.speed || 60 });
     setIsDialogOpen(true);
   };
 
@@ -172,19 +172,19 @@ export default function AnnouncementManager() {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="speed">מהירות גלילה</Label>
-                <Select value={formData.speed.toString()} onValueChange={(value) => setFormData({ ...formData, speed: parseInt(value) })}>
-                  <SelectTrigger id="speed">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 - איטי מאוד 🐌</SelectItem>
-                    <SelectItem value="2">2 - איטי</SelectItem>
-                    <SelectItem value="3">3 - בינוני</SelectItem>
-                    <SelectItem value="4">4 - מהיר</SelectItem>
-                    <SelectItem value="5">5 - מהיר מאוד 🚀</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="speed">מהירות גלילה (שניות)</Label>
+                <Input
+                  id="speed"
+                  type="number"
+                  min="5"
+                  max="300"
+                  value={formData.speed}
+                  onChange={(e) => setFormData({ ...formData, speed: parseInt(e.target.value) || 60 })}
+                  placeholder="60"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  כמה שניות לוקח למעבר מלא (5-300). ערך נמוך = מהיר, ערך גבוה = איטי
+                </p>
               </div>
               <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <Label htmlFor="is_active" className="cursor-pointer">הודעה פעילה</Label>

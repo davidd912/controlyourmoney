@@ -20,12 +20,7 @@ export default function AnnouncementTicker() {
 
   const combinedText = announcements.map(a => a.content).join(' • ');
   const direction = announcements[0]?.direction || 'ltr';
-  const speed = announcements[0]?.speed || 3;
-  
-  // Calculate duration based on speed: 1 (slowest) to 5 (fastest)
-  // Speed 1 = 150s (very slow), Speed 5 = 20s (fast but readable)
-  const speedToDuration = { 1: 150, 2: 100, 3: 60, 4: 35, 5: 20 };
-  const duration = speedToDuration[speed] || 60;
+  const duration = announcements[0]?.speed || 60;
 
   // Repeat text many times to ensure continuous loop with no gaps
   const repeatedText = Array(15).fill(combinedText).join(' • ');
