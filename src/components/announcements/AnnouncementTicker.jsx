@@ -11,7 +11,7 @@ export default function AnnouncementTicker() {
       const allAnnouncements = await base44.entities.Announcement.filter({ is_active: true });
       return allAnnouncements;
     },
-    refetchInterval: 60000, // Refresh every minute
+    refetchInterval: 60000,
   });
 
   if (!announcements || announcements.length === 0) {
@@ -26,32 +26,21 @@ export default function AnnouncementTicker() {
         <div className="flex-shrink-0">
           <Megaphone className="w-5 h-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
         </div>
-        <div className="flex-1 overflow-hidden">
-          <div className="ticker-wrapper">
-            <motion.div
-              className="ticker-content text-sm font-medium text-blue-900 dark:text-blue-100 whitespace-nowrap"
-              animate={{ x: ['0%', '-50%'] }}
-              transition={{
-                duration: 15,
-                repeat: Infinity,
-                ease: 'linear',
-              }}
-            >
-              {combinedText} • {combinedText}
-            </motion.div>
-          </div>
+        <div className="flex-1 relative overflow-hidden h-6">
+          <motion.div
+            className="absolute top-0 left-0 text-sm font-medium text-blue-900 dark:text-blue-100 whitespace-nowrap"
+            animate={{ x: ['0%', '-50%'] }}
+            transition={{
+              duration: 30,
+              repeat: Infinity,
+              ease: 'linear',
+              repeatType: 'loop',
+            }}
+          >
+            {combinedText} • {combinedText} • {combinedText} • {combinedText}
+          </motion.div>
         </div>
       </div>
-      <style>{`
-        .ticker-wrapper {
-          overflow: hidden;
-          position: relative;
-        }
-        .ticker-content {
-          display: inline-block;
-          padding-right: 100%;
-        }
-      `}</style>
     </div>
   );
 }
