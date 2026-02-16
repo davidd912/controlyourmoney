@@ -88,6 +88,7 @@ export default function Dashboard() {
   const [customCategoriesCache, setCustomCategoriesCache] = useState([]);
   const [createHouseholdOpen, setCreateHouseholdOpen] = useState(false);
   const [newHouseholdName, setNewHouseholdName] = useState('');
+  const [hasShownCreateDialog, setHasShownCreateDialog] = useState(false);
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -123,10 +124,11 @@ export default function Dashboard() {
 
   // Auto-open create household dialog if user has no households
   React.useEffect(() => {
-    if (user && !loadingHouseholds && households.length === 0 && !createHouseholdOpen) {
+    if (user && !loadingHouseholds && households.length === 0 && !createHouseholdOpen && !hasShownCreateDialog) {
       setCreateHouseholdOpen(true);
+      setHasShownCreateDialog(true);
     }
-  }, [user, households, loadingHouseholds, createHouseholdOpen]);
+  }, [user, households, loadingHouseholds, createHouseholdOpen, hasShownCreateDialog]);
 
   // Listen for FAB action events
   React.useEffect(() => {
@@ -369,6 +371,7 @@ export default function Dashboard() {
       setSelectedHouseholdId(newHousehold.id);
       setCreateHouseholdOpen(false);
       setNewHouseholdName('');
+      setHasShownCreateDialog(true);
     }
   });
 
