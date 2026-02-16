@@ -98,7 +98,7 @@ export default function Dashboard() {
   const { data: user } = useQuery({
     queryKey: ['user'],
     queryFn: () => base44.auth.me(),
-    staleTime: 5000
+    staleTime: 300000
   });
 
   const { data: households = [], isLoading: loadingHouseholds } = useQuery({
@@ -113,17 +113,17 @@ export default function Dashboard() {
       );
     },
     enabled: !!user,
-    staleTime: 5000
+    staleTime: 300000
   });
 
   const [selectedHouseholdId, setSelectedHouseholdId] = useState(null);
 
-  // Auto-select first household
+  // Auto-select first household (run only once when households load)
   React.useEffect(() => {
-    if (user && households.length > 0 && selectedHouseholdId !== households[0].id) {
+    if (user && households.length > 0 && !selectedHouseholdId) {
       setSelectedHouseholdId(households[0].id);
     }
-  }, [user, households]);
+  }, [user, households, selectedHouseholdId]);
 
   // Listen for FAB action events
   React.useEffect(() => {
@@ -192,7 +192,7 @@ export default function Dashboard() {
       });
     },
     enabled: !!user && !!selectedHouseholdId,
-    staleTime: 5000
+    staleTime: 300000
   });
 
   const { data: expenses = [], isLoading: loadingExpenses } = useQuery({
@@ -206,7 +206,7 @@ export default function Dashboard() {
       });
     },
     enabled: !!user && !!selectedHouseholdId,
-    staleTime: 5000
+    staleTime: 300000
   });
 
   const { data: budgetSettings = [] } = useQuery({
@@ -222,7 +222,7 @@ export default function Dashboard() {
       });
     },
     enabled: !!user && !!selectedHouseholdId,
-    staleTime: 5000
+    staleTime: 300000
   });
 
   // Query for all unique custom categories ever created for the household
@@ -237,7 +237,7 @@ export default function Dashboard() {
       });
     },
     enabled: !!user && !!selectedHouseholdId,
-    staleTime: 5000
+    staleTime: 300000
   });
 
   // Update custom categories cache based on allCustomBudgetItems
@@ -257,7 +257,7 @@ export default function Dashboard() {
       return base44.entities.Debt.filter({ household_id: selectedHouseholdId });
     },
     enabled: !!user && !!selectedHouseholdId,
-    staleTime: 5000
+    staleTime: 300000
   });
 
   const { data: assets = [], isLoading: loadingAssets } = useQuery({
@@ -267,7 +267,7 @@ export default function Dashboard() {
       return base44.entities.Asset.filter({ household_id: selectedHouseholdId });
     },
     enabled: !!user && !!selectedHouseholdId,
-    staleTime: 5000
+    staleTime: 300000
   });
 
   const { data: alerts = [] } = useQuery({
@@ -277,7 +277,7 @@ export default function Dashboard() {
       return base44.entities.Alert.filter({ household_id: selectedHouseholdId }, '-created_date', 50);
     },
     enabled: !!user && !!selectedHouseholdId,
-    staleTime: 5000
+    staleTime: 300000
   });
 
   // Mutations with Optimistic Updates
