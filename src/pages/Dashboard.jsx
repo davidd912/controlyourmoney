@@ -104,8 +104,9 @@ export default function Dashboard() {
       if (!user) return [];
       const all = await base44.entities.Household.list();
       return all.filter(h => 
-        h.owner_email === user.email || 
-        (h.members && h.members.includes(user.email))
+        !h.is_deleted &&
+        (h.owner_email === user.email || 
+        (h.members && h.members.includes(user.email)))
       );
     },
     enabled: !!user
