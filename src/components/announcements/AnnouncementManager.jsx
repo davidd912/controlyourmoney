@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function AnnouncementManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
-  const [formData, setFormData] = useState({ content: '', is_active: false, direction: 'ltr' });
+  const [formData, setFormData] = useState({ content: '', is_active: false, direction: 'ltr', speed: 3 });
   const queryClient = useQueryClient();
 
   const { data: announcements = [] } = useQuery({
@@ -49,14 +49,14 @@ export default function AnnouncementManager() {
   });
 
   const resetForm = () => {
-    setFormData({ content: '', is_active: false, direction: 'ltr' });
+    setFormData({ content: '', is_active: false, direction: 'ltr', speed: 3 });
     setEditingAnnouncement(null);
     setIsDialogOpen(false);
   };
 
   const handleEdit = (announcement) => {
     setEditingAnnouncement(announcement);
-    setFormData({ content: announcement.content, is_active: announcement.is_active, direction: announcement.direction || 'ltr' });
+    setFormData({ content: announcement.content, is_active: announcement.is_active, direction: announcement.direction || 'ltr', speed: announcement.speed || 3 });
     setIsDialogOpen(true);
   };
 
@@ -168,6 +168,21 @@ export default function AnnouncementManager() {
                   <SelectContent>
                     <SelectItem value="ltr">משמאל לימין (עברית) ←</SelectItem>
                     <SelectItem value="rtl">מימין לשמאל (אנגלית) →</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="speed">מהירות גלילה</Label>
+                <Select value={formData.speed.toString()} onValueChange={(value) => setFormData({ ...formData, speed: parseInt(value) })}>
+                  <SelectTrigger id="speed">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 - איטי מאוד 🐌</SelectItem>
+                    <SelectItem value="2">2 - איטי</SelectItem>
+                    <SelectItem value="3">3 - בינוני</SelectItem>
+                    <SelectItem value="4">4 - מהיר</SelectItem>
+                    <SelectItem value="5">5 - מהיר מאוד 🚀</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
