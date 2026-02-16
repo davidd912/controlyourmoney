@@ -27,6 +27,8 @@ export default function UserSettings() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [newFullName, setNewFullName] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteHouseholdDialog, setShowDeleteHouseholdDialog] = useState(false);
+  const [householdToDelete, setHouseholdToDelete] = useState(null);
   const [generatingCode, setGeneratingCode] = useState({});
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -52,8 +54,9 @@ export default function UserSettings() {
       if (!user) return [];
       const all = await base44.entities.Household.list();
       return all.filter(h => 
-        h.owner_email === user.email || 
-        (h.members && h.members.includes(user.email))
+        !h.is_deleted &&
+        (h.owner_email === user.email || 
+        (h.members && h.members.includes(user.email)))
       );
     },
     enabled: !!user
@@ -116,9 +119,17 @@ export default function UserSettings() {
   });
 
   const deleteHousehold = useMutation({
-    mutationFn: (id) => base44.entities.Household.delete(id),
+    mutationFn: async (id) => {
+      const now = new Date().toISOString();
+      return base44.entities.Household.update(id, {
+        is_deleted: true,
+        deleted_at: now
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['households']);
+      setShowDeleteHouseholdDialog(false);
+      setHouseholdToDelete(null);
     }
   });
 
@@ -484,7 +495,10 @@ export default function UserSettings() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => deleteHousehold.mutate(household.id)}
+                          onClick={() => {
+                            setHouseholdToDelete(household);
+                            setShowDeleteHouseholdDialog(true);
+                          }}
                           className="text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -626,6 +640,43 @@ export default function UserSettings() {
             })
           )}
         </div>
+
+        {/* Delete Household Dialog */}
+        <AlertDialog open={showDeleteHouseholdDialog} onOpenChange={setShowDeleteHouseholdDialog}>
+          <AlertDialogContent dir="rtl" className="bg-white dark:bg-gray-800 border-2 border-red-200 dark:border-red-800">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+                האם אתה בטוח שברצונך למחוק את משק הבית?
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300 space-y-3">
+                <p className="font-semibold text-red-600 dark:text-red-400">
+                  משק הבית "{householdToDelete?.name}" יימחק באופן זמני.
+                </p>
+                <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <p className="font-semibold text-blue-900 dark:text-blue-200 mb-2">ℹ️ מידע חשוב:</p>
+                  <ul className="text-sm space-y-1 text-blue-800 dark:text-blue-300">
+                    <li>• ניתן לשחזר את משק הבית תוך 30 יום</li>
+                    <li>• לאחר 30 יום המשק יימחק לצמיתות</li>
+                    <li>• כל הנתונים (הכנסות, הוצאות, חובות) יישמרו</li>
+                  </ul>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="gap-2">
+              <AlertDialogCancel className="border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
+                ביטול
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteHousehold.mutate(householdToDelete?.id)}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                <Trash2 className="w-4 h-4 ml-2" />
+                מחק זמנית (ניתן לשחזור)
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Delete Account Dialog */}
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
