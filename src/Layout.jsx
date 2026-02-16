@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
-import PWASetup from '@/components/PWASetup';
-import InstallPrompt from '@/components/InstallPrompt';
 import LandingPage from '@/pages/LandingPage';
 import { base44 } from '@/api/base44Client';
 import { 
@@ -131,8 +129,6 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div dir="rtl" className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900" lang="he">
-      <PWASetup />
-      <InstallPrompt />
       {/* Skip to main content link for keyboard users */}
       <a
         href="#main-content"
