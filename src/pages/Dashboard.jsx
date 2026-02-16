@@ -38,6 +38,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import CreateHouseholdDialog from "@/components/budget/CreateHouseholdDialog";
 import PullToRefresh from "@/components/PullToRefresh";
+import AnnouncementTicker from "@/components/announcements/AnnouncementTicker";
 
 import ExportButton, { convertToCSV, downloadCSV } from "@/components/budget/ExportButton";
 import HouseholdSelector from "@/components/budget/HouseholdSelector";
