@@ -327,18 +327,50 @@ export default function Layout({ children, currentPageName }) {
         </div>
       </footer>
 
-      {/* Floating QuickChat Button */}
-      <Link to={createPageUrl('QuickChat')}>
-        <motion.button
-          whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
-          whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
-          transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
-          className="fixed left-6 bottom-24 md:bottom-8 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-2xl hover:shadow-purple-500/50 transition-all"
-          aria-label="צ'אט חכם"
-        >
-          <Sparkles className="w-6 h-6" aria-hidden="true" />
-        </motion.button>
-      </Link>
+      {/* Floating WhatsApp Button */}
+      <motion.button
+        whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+        whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+        transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
+        onClick={async () => {
+          try {
+            const allHouseholds = await base44.entities.Household.list();
+            const userHouseholds = allHouseholds.filter(h => 
+              h.owner_email === user?.email || 
+              (h.members && h.members.includes(user?.email))
+            );
+
+            if (userHouseholds.length > 0) {
+              const household = userHouseholds[0];
+              let code = household.activation_code;
+              let expiresAt = household.activation_code_expires;
+
+              const isExpired = expiresAt && new Date(expiresAt) < new Date();
+
+              if (!code || isExpired) {
+                const response = await base44.functions.invoke('generateActivationCode', {
+                  household_id: household.id
+                });
+                code = response.data.activation_code;
+              }
+
+              const whatsappNumber = '972559725996';
+              const message = encodeURIComponent(`Send this message to connect and start chatting!\n\nActivation code: ${code}`);
+              const url = `https://api.whatsapp.com/send/?phone=${whatsappNumber}&text=${message}&type=phone_number&app_absent=0`;
+              window.open(url, '_blank');
+            } else {
+              alert('יש ליצור משק בית תחילה');
+            }
+          } catch (error) {
+            console.error('WhatsApp connection error:', error);
+            alert('שגיאה בחיבור ל-WhatsApp');
+          }
+        }}
+        className="fixed left-6 bottom-24 md:bottom-8 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white shadow-2xl hover:shadow-green-500/50 transition-all"
+        aria-label="פתח WhatsApp"
+      >
+        <MessageCircle className="w-6 h-6" aria-hidden="true" />
+      </motion.button>
 
       {/* Bottom Navigation for Mobile with FAB */}
       <nav 

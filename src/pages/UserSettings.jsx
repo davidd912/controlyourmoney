@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, Trash2, Mail, Home, UserPlus, User, LogOut, Edit, BarChart3, Calendar, UserX, Smartphone, Copy, RefreshCw } from "lucide-react";
+import { Users, Plus, Trash2, Mail, Home, UserPlus, User, LogOut, Edit, BarChart3, Calendar, UserX, Smartphone, Copy, RefreshCw, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -178,6 +178,30 @@ export default function UserSettings() {
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     alert('הקוד הועתק ללוח');
+  };
+
+  const handleWhatsAppConnect = async (household) => {
+    try {
+      let code = household.activation_code;
+      let expiresAt = household.activation_code_expires;
+      
+      const isExpired = expiresAt && new Date(expiresAt) < new Date();
+      
+      if (!code || isExpired) {
+        const response = await base44.functions.invoke('generateActivationCode', {
+          household_id: household.id
+        });
+        code = response.data.activation_code;
+        await queryClient.invalidateQueries(['households']);
+      }
+      
+      const whatsappNumber = '972559725996';
+      const message = encodeURIComponent(`Send this message to connect and start chatting!\n\nActivation code: ${code}`);
+      const url = `https://api.whatsapp.com/send/?phone=${whatsappNumber}&text=${message}&type=phone_number&app_absent=0`;
+      window.open(url, '_blank');
+    } catch (error) {
+      alert('שגיאה בחיבור ל-WhatsApp: ' + error.message);
+    }
   };
 
   return (
@@ -510,6 +534,14 @@ export default function UserSettings() {
                           <Smartphone className="w-4 h-4 text-green-600" />
                           חיבור WhatsApp
                         </h3>
+
+                        <Button
+                          onClick={() => handleWhatsAppConnect(household)}
+                          className="w-full mb-3 bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <Smartphone className="w-4 h-4 ml-2" />
+                          פתח WhatsApp
+                        </Button>
                         
                         {household.whatsapp_number ? (
                           <div className="space-y-2">
