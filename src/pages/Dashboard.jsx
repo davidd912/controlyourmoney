@@ -972,8 +972,7 @@ ${JSON.stringify(financialData, null, 2)}
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-center text-muted-foreground">
-                כדי להתחיל, צור משק בית ראשון שלך.
-                במקרה ויש לך משק בית, בצע רענון (משוך למטה).
+                כדי להתחיל, צור משק בית ראשון שלך. במקרה ויש לך משק בית, בצע רענון או (משוך למטה). ולחכות לפעמיים למידע לקוח 1 -2 דקות להתעדכן אין ליצור משק בית נוסף האם יש לך כבר אחד (אתה עלול לאבד מידע)
               </p>
               <Button
                 onClick={() => setCreateHouseholdOpen(true)}
