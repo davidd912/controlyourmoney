@@ -46,12 +46,7 @@ export default function Layout({ children, currentPageName }) {
     }
     return false;
   });
-  const [showWhatsappButton, setShowWhatsappButton] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('hideWhatsappButton') !== 'true';
-    }
-    return true;
-  });
+  const [showWhatsappButton, setShowWhatsappButton] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const prefersReducedMotion = useReducedMotion();
@@ -109,7 +104,7 @@ export default function Layout({ children, currentPageName }) {
   const handleDismissWhatsapp = () => {
     setShowWhatsappButton(false);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('hideWhatsappButton', 'true');
+      sessionStorage.setItem('hideWhatsappButton', 'true');
     }
   };
 
