@@ -1150,7 +1150,7 @@ ${JSON.stringify(financialData, null, 2)}
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="bg-white dark:bg-gray-800 shadow-sm p-1.5 rounded-xl overflow-x-auto">
-            <TabsList className="inline-flex min-w-full sm:min-w-0 gap-1 bg-transparent p-0" role="tablist" aria-label="ניווט בין קטגוריות">
+            <TabsList className="inline-flex min-w-full sm:min-w-0 gap-1 bg-transparent p-0 flex-nowrap" role="tablist" aria-label="ניווט בין קטגוריות">
               <TabsTrigger 
                 value="overview" 
                 className="animated-tab whitespace-nowrap"
