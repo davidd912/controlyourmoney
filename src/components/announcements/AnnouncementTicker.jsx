@@ -28,8 +28,8 @@ export default function AnnouncementTicker() {
         </div>
         <div className="flex-1 relative overflow-hidden h-6">
           <motion.div
-            className="absolute top-0 left-0 text-sm font-medium text-blue-900 dark:text-blue-100 whitespace-nowrap"
-            animate={{ x: ['-50%', '0%'] }}
+            className="absolute top-0 right-0 text-sm font-medium text-blue-900 dark:text-blue-100 whitespace-nowrap"
+            animate={{ x: ['100%', '-100%'] }}
             transition={{
               duration: 60,
               repeat: Infinity,
