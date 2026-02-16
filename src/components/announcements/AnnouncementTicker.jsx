@@ -32,7 +32,7 @@ export default function AnnouncementTicker() {
               className="ticker-content text-sm font-medium text-blue-900 dark:text-blue-100 whitespace-nowrap"
               animate={{ x: ['0%', '-50%'] }}
               transition={{
-                duration: 30,
+                duration: 15,
                 repeat: Infinity,
                 ease: 'linear',
               }}
