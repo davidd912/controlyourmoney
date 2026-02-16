@@ -987,7 +987,7 @@ ${JSON.stringify(financialData, null, 2)}
             </CardContent>
           </Card>
         </div>
-        
+
         <CreateHouseholdDialog
           open={createHouseholdOpen}
           onOpenChange={setCreateHouseholdOpen}
@@ -997,6 +997,18 @@ ${JSON.stringify(financialData, null, 2)}
           isCreating={createHousehold.isPending}
         />
       </>
+    );
+  }
+
+  // Wait for household to be selected before showing dashboard
+  if (loadingHouseholds || (households.length > 0 && !selectedHouseholdId)) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh] bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-gray-600 dark:text-gray-400">טוען נתוני משק בית...</p>
+        </div>
+      </div>
     );
   }
 
