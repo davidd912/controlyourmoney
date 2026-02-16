@@ -643,42 +643,42 @@ export default function Dashboard() {
   };
 
   const incomeColumns = [
-    { key: 'category', label: 'קטגוריה', render: (val) => incomeLabels[val] || val },
-    { key: 'subcategory', label: 'תת-קטגוריה' },
-    { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` },
-    { key: 'description', label: 'תיאור' }
+    { key: 'category', label: 'קטגוריה', render: (val) => incomeLabels[val] || val, minWidth: 120 },
+    { key: 'subcategory', label: 'תת-קטגוריה', minWidth: 120 },
+    { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}`, minWidth: 100 },
+    { key: 'description', label: 'תיאור', minWidth: 150 }
   ];
 
   const expenseColumns = [
-    { key: 'category', label: 'קטגוריה', render: (val, item) => getExpenseLabel(item), width: 180 },
-    { key: 'subcategory', label: 'תת-קטגוריה', width: 150 },
-    { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}`, width: 120 },
-    { key: 'description', label: 'תיאור', width: 250 },
+    { key: 'category', label: 'קטגוריה', render: (val, item) => getExpenseLabel(item), minWidth: 120 },
+    { key: 'subcategory', label: 'תת-קטגוריה', minWidth: 120 },
+    { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}`, minWidth: 100 },
+    { key: 'description', label: 'תיאור', minWidth: 150 },
     { key: 'priority', label: 'עדיפות', render: (val) => {
       if (!val) return '-';
       const labels = { 1: 'קל לצמצם', 2: 'קשה אך אפשרי', 3: 'לא נוגעים' };
       const colors = { 1: 'bg-green-100 text-green-700', 2: 'bg-yellow-100 text-yellow-700', 3: 'bg-red-100 text-red-700' };
       return <Badge className={colors[val]}>{labels[val]}</Badge>;
-    }, width: 140 }
+    }, minWidth: 100 }
   ];
 
   const debtColumns = [
-    { key: 'creditor_name', label: 'נושה' },
-    { key: 'debt_type', label: 'סוג', render: (val) => debtLabels[val] || val },
-    { key: 'total_amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` },
-    { key: 'monthly_payment', label: 'החזר חודשי', render: (val) => val ? `₪${val.toLocaleString()}` : '-' },
+    { key: 'creditor_name', label: 'נושה', minWidth: 100 },
+    { key: 'debt_type', label: 'סוג', render: (val) => debtLabels[val] || val, minWidth: 100 },
+    { key: 'total_amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}`, minWidth: 100 },
+    { key: 'monthly_payment', label: 'החזר חודשי', render: (val) => val ? `₪${val.toLocaleString()}` : '-', minWidth: 120 },
     { key: 'is_arranged', label: 'סטטוס', render: (val) => (
       <Badge className={val ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>
         {val ? 'בהסדר' : 'לא בהסדר'}
       </Badge>
-    )}
+    ), minWidth: 100 }
   ];
 
   const assetColumns = [
-    { key: 'asset_type', label: 'סוג', render: (val) => assetLabels[val] || val },
-    { key: 'name', label: 'שם' },
-    { key: 'monthly_deposit', label: 'הפקדה חודשית', render: (val) => val ? `₪${val.toLocaleString()}` : '-' },
-    { key: 'current_value', label: 'שווי נוכחי', render: (val) => `₪${(val || 0).toLocaleString()}` }
+    { key: 'asset_type', label: 'סוג', render: (val) => assetLabels[val] || val, minWidth: 100 },
+    { key: 'name', label: 'שם', minWidth: 100 },
+    { key: 'monthly_deposit', label: 'הפקדה חודשית', render: (val) => val ? `₪${val.toLocaleString()}` : '-', minWidth: 120 },
+    { key: 'current_value', label: 'שווי נוכחי', render: (val) => `₪${(val || 0).toLocaleString()}`, minWidth: 120 }
   ];
 
   const generateSmartAlerts = async () => {
@@ -1331,13 +1331,15 @@ ${JSON.stringify(financialData, null, 2)}
                 </Button>
               </div>
             </div>
-            <DataTable
-              data={filteredIncomes}
-              columns={incomeColumns}
-              onEdit={(item) => { setEditItem(item); setIncomeFormOpen(true); }}
-              onDelete={(item) => deleteIncome.mutate(item.id)}
-              emptyMessage="לא הוזנו הכנסות עדיין"
-            />
+            <div className="overflow-x-auto">
+              <DataTable
+                data={filteredIncomes}
+                columns={incomeColumns}
+                onEdit={(item) => { setEditItem(item); setIncomeFormOpen(true); }}
+                onDelete={(item) => deleteIncome.mutate(item.id)}
+                emptyMessage="לא הוזנו הכנסות עדיין"
+              />
+            </div>
           </TabsContent>
 
           {/* Expenses Tab */}
@@ -1368,13 +1370,15 @@ ${JSON.stringify(financialData, null, 2)}
                 </Button>
               </div>
             </div>
-            <DataTable
-              data={filteredExpenses}
-              columns={expenseColumns}
-              onEdit={(item) => { setEditItem(item); setExpenseFormOpen(true); }}
-              onDelete={(item) => deleteExpense.mutate(item.id)}
-              emptyMessage="לא הוזנו הוצאות עדיין"
-            />
+            <div className="overflow-x-auto">
+              <DataTable
+                data={filteredExpenses}
+                columns={expenseColumns}
+                onEdit={(item) => { setEditItem(item); setExpenseFormOpen(true); }}
+                onDelete={(item) => deleteExpense.mutate(item.id)}
+                emptyMessage="לא הוזנו הוצאות עדיין"
+              />
+            </div>
           </TabsContent>
 
           {/* Debts Tab */}
@@ -1401,13 +1405,15 @@ ${JSON.stringify(financialData, null, 2)}
                 </Button>
               </div>
             </div>
-            <DataTable
-              data={adjustedDebts.map(d => ({ ...d, total_amount: d.adjusted_remaining_balance }))}
-              columns={debtColumns}
-              onEdit={(item) => { setEditItem(item); setDebtFormOpen(true); }}
-              onDelete={(item) => deleteDebt.mutate(item.id)}
-              emptyMessage="לא הוזנו חובות"
-            />
+            <div className="overflow-x-auto">
+              <DataTable
+                data={adjustedDebts.map(d => ({ ...d, total_amount: d.adjusted_remaining_balance }))}
+                columns={debtColumns}
+                onEdit={(item) => { setEditItem(item); setDebtFormOpen(true); }}
+                onDelete={(item) => deleteDebt.mutate(item.id)}
+                emptyMessage="לא הוזנו חובות"
+              />
+            </div>
           </TabsContent>
 
           {/* Assets Tab */}
@@ -1426,13 +1432,15 @@ ${JSON.stringify(financialData, null, 2)}
                 </Button>
               </div>
             </div>
-            <DataTable
-              data={assets}
-              columns={assetColumns}
-              onEdit={(item) => { setEditItem(item); setAssetFormOpen(true); }}
-              onDelete={(item) => deleteAsset.mutate(item.id)}
-              emptyMessage="לא הוזנו נכסים או חסכונות"
-            />
+            <div className="overflow-x-auto">
+              <DataTable
+                data={assets}
+                columns={assetColumns}
+                onEdit={(item) => { setEditItem(item); setAssetFormOpen(true); }}
+                onDelete={(item) => deleteAsset.mutate(item.id)}
+                emptyMessage="לא הוזנו נכסים או חסכונות"
+              />
+            </div>
           </TabsContent>
         </Tabs>
 
