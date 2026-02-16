@@ -123,14 +123,6 @@ export default function Dashboard() {
     }
   }, [user, households, selectedHouseholdId]);
 
-  // Auto-open create household dialog if user has no households
-  React.useEffect(() => {
-    if (user && !loadingHouseholds && households.length === 0 && !createHouseholdOpen && !hasShownCreateDialog) {
-      setCreateHouseholdOpen(true);
-      setHasShownCreateDialog(true);
-    }
-  }, [user, households, loadingHouseholds, createHouseholdOpen, hasShownCreateDialog]);
-
   // Listen for FAB action events
   React.useEffect(() => {
     const handleFABAction = (e) => {
@@ -980,7 +972,8 @@ ${JSON.stringify(financialData, null, 2)}
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-center text-muted-foreground">
-                כדי להתחיל, צור משק בית ראשון שלך
+                כדי להתחיל, צור משק בית ראשון שלך.
+                במקרה ויש לך משק בית, בצע רענון (משוך למטה).
               </p>
               <Button
                 onClick={() => setCreateHouseholdOpen(true)}
