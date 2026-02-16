@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Megaphone, Plus, Edit, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,7 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function AnnouncementManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
-  const [formData, setFormData] = useState({ content: '', is_active: false });
+  const [formData, setFormData] = useState({ content: '', is_active: false, direction: 'ltr' });
   const queryClient = useQueryClient();
 
   const { data: announcements = [] } = useQuery({
@@ -48,14 +49,14 @@ export default function AnnouncementManager() {
   });
 
   const resetForm = () => {
-    setFormData({ content: '', is_active: false });
+    setFormData({ content: '', is_active: false, direction: 'ltr' });
     setEditingAnnouncement(null);
     setIsDialogOpen(false);
   };
 
   const handleEdit = (announcement) => {
     setEditingAnnouncement(announcement);
-    setFormData({ content: announcement.content, is_active: announcement.is_active });
+    setFormData({ content: announcement.content, is_active: announcement.is_active, direction: announcement.direction || 'ltr' });
     setIsDialogOpen(true);
   };
 
@@ -157,6 +158,18 @@ export default function AnnouncementManager() {
                   placeholder="הכנס את תוכן ההודעה..."
                   required
                 />
+              </div>
+              <div>
+                <Label htmlFor="direction">כיוון גלילה</Label>
+                <Select value={formData.direction} onValueChange={(value) => setFormData({ ...formData, direction: value })}>
+                  <SelectTrigger id="direction">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ltr">משמאל לימין (עברית) ←</SelectItem>
+                    <SelectItem value="rtl">מימין לשמאל (אנגלית) →</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <Label htmlFor="is_active" className="cursor-pointer">הודעה פעילה</Label>

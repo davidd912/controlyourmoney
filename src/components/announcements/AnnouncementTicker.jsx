@@ -19,6 +19,7 @@ export default function AnnouncementTicker() {
   }
 
   const combinedText = announcements.map(a => a.content).join(' • ');
+  const direction = announcements[0]?.direction || 'ltr';
 
   return (
     <div className="bg-gradient-to-l from-blue-50 via-indigo-50 to-blue-50 dark:from-blue-950 dark:via-indigo-950 dark:to-blue-950 border-b border-blue-200 dark:border-blue-800 overflow-hidden">
@@ -29,7 +30,7 @@ export default function AnnouncementTicker() {
         <div className="flex-1 relative overflow-hidden h-6">
           <motion.div
             className="absolute top-0 left-0 text-sm font-medium text-blue-900 dark:text-blue-100 whitespace-nowrap"
-            animate={{ x: ['-100%', '100%'] }}
+            animate={{ x: direction === 'ltr' ? ['-100%', '100%'] : ['100%', '-100%'] }}
             transition={{
               duration: 60,
               repeat: Infinity,
