@@ -97,7 +97,8 @@ export default function Dashboard() {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 5000
   });
 
   const { data: households = [], isLoading: loadingHouseholds } = useQuery({
@@ -111,17 +112,18 @@ export default function Dashboard() {
         (h.members && h.members.includes(user.email)))
       );
     },
-    enabled: !!user
+    enabled: !!user,
+    staleTime: 5000
   });
 
   const [selectedHouseholdId, setSelectedHouseholdId] = useState(null);
 
   // Auto-select first household
   React.useEffect(() => {
-    if (user && households.length > 0 && !selectedHouseholdId) {
+    if (user && households.length > 0 && selectedHouseholdId !== households[0].id) {
       setSelectedHouseholdId(households[0].id);
     }
-  }, [user, households, selectedHouseholdId]);
+  }, [user, households]);
 
   // Listen for FAB action events
   React.useEffect(() => {
@@ -189,7 +191,8 @@ export default function Dashboard() {
         year: selectedYear
       });
     },
-    enabled: !!user && !!selectedHouseholdId
+    enabled: !!user && !!selectedHouseholdId,
+    staleTime: 5000
   });
 
   const { data: expenses = [], isLoading: loadingExpenses } = useQuery({
@@ -202,7 +205,8 @@ export default function Dashboard() {
         year: selectedYear
       });
     },
-    enabled: !!user && !!selectedHouseholdId
+    enabled: !!user && !!selectedHouseholdId,
+    staleTime: 5000
   });
 
   const { data: budgetSettings = [] } = useQuery({
@@ -217,7 +221,8 @@ export default function Dashboard() {
         is_current: false
       });
     },
-    enabled: !!user && !!selectedHouseholdId
+    enabled: !!user && !!selectedHouseholdId,
+    staleTime: 5000
   });
 
   // Query for all unique custom categories ever created for the household
@@ -231,7 +236,8 @@ export default function Dashboard() {
         is_budget: true
       });
     },
-    enabled: !!user && !!selectedHouseholdId
+    enabled: !!user && !!selectedHouseholdId,
+    staleTime: 5000
   });
 
   // Update custom categories cache based on allCustomBudgetItems
@@ -250,7 +256,8 @@ export default function Dashboard() {
       if (!user || !selectedHouseholdId) return [];
       return base44.entities.Debt.filter({ household_id: selectedHouseholdId });
     },
-    enabled: !!user && !!selectedHouseholdId
+    enabled: !!user && !!selectedHouseholdId,
+    staleTime: 5000
   });
 
   const { data: assets = [], isLoading: loadingAssets } = useQuery({
@@ -259,7 +266,8 @@ export default function Dashboard() {
       if (!user || !selectedHouseholdId) return [];
       return base44.entities.Asset.filter({ household_id: selectedHouseholdId });
     },
-    enabled: !!user && !!selectedHouseholdId
+    enabled: !!user && !!selectedHouseholdId,
+    staleTime: 5000
   });
 
   const { data: alerts = [] } = useQuery({
@@ -268,7 +276,8 @@ export default function Dashboard() {
       if (!user || !selectedHouseholdId) return [];
       return base44.entities.Alert.filter({ household_id: selectedHouseholdId }, '-created_date', 50);
     },
-    enabled: !!user && !!selectedHouseholdId
+    enabled: !!user && !!selectedHouseholdId,
+    staleTime: 5000
   });
 
   // Mutations with Optimistic Updates

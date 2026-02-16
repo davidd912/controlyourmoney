@@ -6,12 +6,13 @@ import { Megaphone } from 'lucide-react';
 
 export default function AnnouncementTicker() {
   const { data: announcements = [] } = useQuery({
-    queryKey: ['announcements'],
+    queryKey: ['announcements', 'active'],
     queryFn: async () => {
       const allAnnouncements = await base44.entities.Announcement.filter({ is_active: true });
       return allAnnouncements;
     },
     refetchInterval: 60000,
+    staleTime: 30000
   });
 
   if (!announcements || announcements.length === 0) {
