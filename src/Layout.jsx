@@ -338,10 +338,11 @@ export default function Layout({ children, currentPageName }) {
             e.preventDefault();
             navigate(createPageUrl('Dashboard'), { state: { action: 'whatsapp' } });
           }}
-          className="fixed left-6 bottom-24 md:bottom-8 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white shadow-2xl hover:shadow-green-500/50 transition-all"
+          className="fixed left-6 bottom-24 md:bottom-8 z-40 flex items-center gap-2 px-4 py-3 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white shadow-2xl hover:shadow-green-500/50 transition-all"
           aria-label="פתח WhatsApp"
         >
-          <MessageCircle className="w-6 h-6" aria-hidden="true" />
+          <MessageCircle className="w-5 h-5" aria-hidden="true" />
+          <span className="text-xs font-semibold">WHATSAPP</span>
         </motion.button>
       </Link>
 
