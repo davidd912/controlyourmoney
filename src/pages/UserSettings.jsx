@@ -207,7 +207,7 @@ export default function UserSettings() {
       }
       
       const whatsappNumber = '972559725996';
-      const message = encodeURIComponent(`Send this message to connect and start chatting!\n\nActivation code: ${code}`);
+      const message = encodeURIComponent(code);
       const url = `https://api.whatsapp.com/send/?phone=${whatsappNumber}&text=${message}&type=phone_number&app_absent=0`;
       window.open(url, '_blank');
     } catch (error) {
