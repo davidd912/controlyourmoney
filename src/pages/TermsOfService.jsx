@@ -85,13 +85,13 @@ export default function TermsOfService() {
               <p className="text-gray-700 leading-relaxed">
                 לשאלות או הבהרות בנוגע לתנאי השימוש, ניתן לפנות אלינו בכתובת:
               </p>
-              <a href="mailto:davidd9@gmail.com" className="text-blue-600 hover:text-blue-800 font-semibold">
-                davidd9@gmail.com
+              <a href="mailto:davidd9@gmail.com" className="text-blue-600 hover:text-blue-800 font-semibold">task2gether@gmail.com
+
               </a>
             </section>
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>);
+
 }
