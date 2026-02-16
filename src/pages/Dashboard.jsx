@@ -1021,6 +1021,7 @@ ${JSON.stringify(financialData, null, 2)}
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <AnnouncementTicker />
         <div className="max-w-7xl mx-auto p-4 md:p-6 pb-8">
         {/* Header */}
         <motion.div 
