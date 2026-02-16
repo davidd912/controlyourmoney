@@ -23,7 +23,8 @@ import {
   PiggyBank,
   ArrowRight,
   Moon,
-  Sun
+  Sun,
+  MessageCircle
 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
