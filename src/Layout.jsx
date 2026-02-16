@@ -336,7 +336,13 @@ export default function Layout({ children, currentPageName }) {
                 >
                   מדיניות פרטיות
                 </Link>
-            </div>
+                <Link 
+                  to={createPageUrl('AccessibilityStatement')} 
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  הצהרת נגישות
+                </Link>
+              </div>
           </div>
         </div>
       </footer>

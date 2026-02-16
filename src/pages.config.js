@@ -57,6 +57,7 @@ import QuickChat from './pages/QuickChat';
 import TermsOfService from './pages/TermsOfService';
 import UserSettings from './pages/UserSettings';
 import WhatsAppConnect from './pages/WhatsAppConnect';
+import AccessibilityStatement from './pages/AccessibilityStatement';
 import __Layout from './Layout.jsx';
 
 
@@ -71,6 +72,7 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "UserSettings": UserSettings,
     "WhatsAppConnect": WhatsAppConnect,
+    "AccessibilityStatement": AccessibilityStatement,
 }
 
 export const pagesConfig = {
