@@ -103,28 +103,12 @@ export default function Dashboard() {
     queryKey: ['households'],
     queryFn: async () => {
       if (!user) return [];
-      
-      // Fetch households where user is owner
-      const ownedHouseholds = await base44.entities.Household.filter({
-        owner_email: user.email,
-        is_deleted: false
-      });
-      
-      // Fetch all households to check membership
-      const allHouseholds = await base44.entities.Household.filter({
-        is_deleted: false
-      });
-      
-      // Filter households where user is a member
-      const memberHouseholds = allHouseholds.filter(h => 
-        h.members && h.members.includes(user.email) && h.owner_email !== user.email
+      const all = await base44.entities.Household.list();
+      return all.filter(h => 
+        !h.is_deleted &&
+        (h.owner_email === user.email || 
+        (h.members && h.members.includes(user.email)))
       );
-      
-      // Combine and deduplicate
-      const combined = [...ownedHouseholds, ...memberHouseholds];
-      const uniqueHouseholds = Array.from(new Map(combined.map(h => [h.id, h])).values());
-      
-      return uniqueHouseholds;
     },
     enabled: !!user
   });
