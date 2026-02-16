@@ -170,8 +170,16 @@ export default function Dashboard() {
       }
       // Clear the state so it doesn't reopen on refresh
       navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location.state]);
+      }
+      }, [location.state]);
+
+      // Handle WhatsApp action from floating button
+      React.useEffect(() => {
+      if (location.state?.action === 'whatsapp') {
+      handleWhatsAppConnect();
+      navigate(location.pathname, { replace: true, state: {} });
+      }
+      }, [location.state]);
 
 
 
