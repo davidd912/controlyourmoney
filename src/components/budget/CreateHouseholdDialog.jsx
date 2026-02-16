@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,12 @@ export default function CreateHouseholdDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" dir="rtl">
+      <DialogContent className="sm:max-w-md" dir="rtl" aria-describedby="create-household-description">
         <DialogHeader>
           <DialogTitle>צור משק בית חדש</DialogTitle>
+          <DialogDescription id="create-household-description">
+            הזן את שם משק הבית שלך כדי להתחיל לנהל את התקציב המשפחתי
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div>

@@ -103,12 +103,10 @@ export default function Dashboard() {
     queryKey: ['households'],
     queryFn: async () => {
       if (!user) return [];
-      const all = await base44.entities.Household.list();
-      return all.filter(h => 
-        !h.is_deleted &&
-        (h.owner_email === user.email || 
-        (h.members && h.members.includes(user.email)))
-      );
+      return base44.entities.Household.filter({
+        owner_email: user.email,
+        is_deleted: false
+      });
     },
     enabled: !!user
   });
