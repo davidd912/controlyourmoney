@@ -122,10 +122,10 @@ export default function Dashboard() {
 
   // Auto-open create household dialog if user has no households
   React.useEffect(() => {
-    if (user && !loadingHouseholds && households.length === 0) {
+    if (user && !loadingHouseholds && households.length === 0 && !createHouseholdOpen) {
       setCreateHouseholdOpen(true);
     }
-  }, [user, households, loadingHouseholds]);
+  }, [user, households, loadingHouseholds, createHouseholdOpen]);
 
   // Listen for FAB action events
   React.useEffect(() => {
@@ -962,7 +962,7 @@ ${JSON.stringify(financialData, null, 2)}
   }, [handleRefresh, queryClient, selectedHouseholdId, selectedMonth, selectedYear]);
 
   // No household selected - show setup screen
-  if (!selectedHouseholdId && households.length === 0 && user) {
+  if (user && !loadingHouseholds && households.length === 0) {
     return (
       <>
         <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4 min-h-[60vh]">
