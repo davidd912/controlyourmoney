@@ -4,6 +4,7 @@ import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import LandingPage from '@/pages/LandingPage';
 import { base44 } from '@/api/base44Client';
+import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { 
   LayoutDashboard, 
   Award,
@@ -26,6 +27,17 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
+// Global QueryClient configuration
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 300000, // 5 דקות
+      cacheTime: 600000, // 10 דקות
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 const navigation = [
   { name: 'דשבורד', page: 'Dashboard', icon: LayoutDashboard },
   { name: 'תכנון AI', page: 'AIPlanning', icon: Sparkles },
@@ -34,7 +46,7 @@ const navigation = [
   { name: 'מדריך', page: 'Guide', icon: BookOpen },
 ];
 
-export default function Layout({ children, currentPageName }) {
+function LayoutContent({ children, currentPageName }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [fabMenuOpen, setFabMenuOpen] = useState(false);
@@ -115,8 +127,16 @@ export default function Layout({ children, currentPageName }) {
           <p className="text-gray-600 dark:text-gray-400">טוען...</p>
         </div>
       </div>
-    );
-  }
+      );
+      }
+
+      export default function Layout({ children, currentPageName }) {
+      return (
+      <QueryClientProvider client={queryClient}>
+      <LayoutContent children={children} currentPageName={currentPageName} />
+      </QueryClientProvider>
+      );
+      }
 
   // Show landing page for unauthenticated users
   if (isAuthenticated === false) {
