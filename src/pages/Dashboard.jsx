@@ -927,7 +927,7 @@ ${JSON.stringify(financialData, null, 2)}
     await queryClient.invalidateQueries(['households']);
   }, [queryClient]);
 
-  // Auto-refresh when returning to page (for WhatsApp updates) + Real-time subscriptions
+  // Auto-refresh when returning to page (for WhatsApp updates) + Real-time subscriptions with debounce
   React.useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -937,22 +937,37 @@ ${JSON.stringify(financialData, null, 2)}
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
+    // Debounce mechanism: only refresh once every 10 seconds
+    let incomeRefreshTimer = null;
+    let expenseRefreshTimer = null;
+
     // Subscribe to real-time income updates
     const unsubscribeIncome = base44.entities.Income.subscribe((event) => {
       if (selectedHouseholdId && event.data?.household_id === selectedHouseholdId) {
-        queryClient.invalidateQueries(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
+        // Clear existing timer and set a new one
+        if (incomeRefreshTimer) clearTimeout(incomeRefreshTimer);
+        incomeRefreshTimer = setTimeout(() => {
+          queryClient.invalidateQueries(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
+        }, 10000); // 10 seconds debounce
       }
     });
 
     // Subscribe to real-time expense updates
     const unsubscribeExpense = base44.entities.Expense.subscribe((event) => {
       if (selectedHouseholdId && event.data?.household_id === selectedHouseholdId) {
-        queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
+        // Clear existing timer and set a new one
+        if (expenseRefreshTimer) clearTimeout(expenseRefreshTimer);
+        expenseRefreshTimer = setTimeout(() => {
+          queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
+          queryClient.invalidateQueries(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
+        }, 10000); // 10 seconds debounce
       }
     });
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (incomeRefreshTimer) clearTimeout(incomeRefreshTimer);
+      if (expenseRefreshTimer) clearTimeout(expenseRefreshTimer);
       unsubscribeIncome();
       unsubscribeExpense();
     };

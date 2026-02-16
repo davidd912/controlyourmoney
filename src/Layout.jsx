@@ -34,6 +34,8 @@ const queryClient = new QueryClient({
       staleTime: 300000, // 5 דקות
       cacheTime: 600000, // 10 דקות
       refetchOnWindowFocus: false,
+      retry: 2,
+      retryDelay: (attemptIndex) => Math.min(5000 * 2 ** attemptIndex, 30000), // 5s, 10s, 30s
     },
   },
 });
