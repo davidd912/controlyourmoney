@@ -27,15 +27,17 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
-// Global QueryClient configuration
+// Global QueryClient configuration with aggressive rate limiting
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 300000, // 5 דקות
       cacheTime: 600000, // 10 דקות
       refetchOnWindowFocus: false,
-      retry: 2,
-      retryDelay: (attemptIndex) => Math.min(5000 * 2 ** attemptIndex, 30000), // 5s, 10s, 30s
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      retry: 1,
+      retryDelay: (attemptIndex) => Math.min(10000 * 2 ** attemptIndex, 60000), // 10s, 20s, 60s
     },
   },
 });
