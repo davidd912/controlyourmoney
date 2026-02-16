@@ -46,6 +46,12 @@ export default function Layout({ children, currentPageName }) {
     }
     return false;
   });
+  const [showWhatsappButton, setShowWhatsappButton] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('hideWhatsappButton') !== 'true';
+    }
+    return true;
+  });
   const location = useLocation();
   const navigate = useNavigate();
   const prefersReducedMotion = useReducedMotion();
@@ -99,6 +105,13 @@ export default function Layout({ children, currentPageName }) {
   }, []);
 
   const isRootRoute = currentPageName === 'Dashboard';
+
+  const handleDismissWhatsapp = () => {
+    setShowWhatsappButton(false);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('hideWhatsappButton', 'true');
+    }
+  };
 
   // Show loading state while checking authentication
   if (isAuthenticated === null) {
@@ -329,22 +342,33 @@ export default function Layout({ children, currentPageName }) {
       </footer>
 
       {/* Floating WhatsApp Button */}
-      <Link to={createPageUrl('Dashboard')}>
-        <motion.button
-          whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
-          whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
-          transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
-          onClick={(e) => {
-            e.preventDefault();
-            navigate(createPageUrl('Dashboard'), { state: { action: 'whatsapp' } });
-          }}
-          className="fixed left-6 bottom-24 md:bottom-8 z-40 flex items-center gap-2 px-4 py-3 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white shadow-2xl hover:shadow-green-500/50 transition-all"
-          aria-label="פתח WhatsApp"
-        >
-          <MessageCircle className="w-5 h-5" aria-hidden="true" />
-          <span className="text-xs font-semibold">WHATSAPP</span>
-        </motion.button>
-      </Link>
+      {showWhatsappButton && (
+        <div className="fixed left-6 bottom-24 md:bottom-8 z-40 flex items-center gap-2">
+          <Link to={createPageUrl('Dashboard')}>
+            <motion.button
+              whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+              whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 17 }}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(createPageUrl('Dashboard'), { state: { action: 'whatsapp' } });
+              }}
+              className="flex items-center gap-2 px-4 py-3 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white shadow-2xl hover:shadow-green-500/50 transition-all"
+              aria-label="פתח WhatsApp"
+            >
+              <MessageCircle className="w-5 h-5" aria-hidden="true" />
+              <span className="text-xs font-semibold">WHATSAPP</span>
+            </motion.button>
+          </Link>
+          <button
+            onClick={handleDismissWhatsapp}
+            className="p-1.5 rounded-full bg-gray-700 text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 shadow-lg"
+            aria-label="הסתר כפתור WhatsApp"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Bottom Navigation for Mobile with FAB */}
       <nav 
