@@ -127,16 +127,8 @@ function LayoutContent({ children, currentPageName }) {
           <p className="text-gray-600 dark:text-gray-400">טוען...</p>
         </div>
       </div>
-      );
-      }
-
-      export default function Layout({ children, currentPageName }) {
-      return (
-      <QueryClientProvider client={queryClient}>
-      <LayoutContent children={children} currentPageName={currentPageName} />
-      </QueryClientProvider>
-      );
-      }
+    );
+  }
 
   // Show landing page for unauthenticated users
   if (isAuthenticated === false) {
@@ -552,5 +544,13 @@ function LayoutContent({ children, currentPageName }) {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function Layout({ children, currentPageName }) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <LayoutContent children={children} currentPageName={currentPageName} />
+    </QueryClientProvider>
   );
 }
