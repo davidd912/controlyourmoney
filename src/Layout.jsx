@@ -33,8 +33,8 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 300000, // 5 דקות
       gcTime: 600000, // 10 דקות
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
       refetchOnReconnect: false,
       retry: (failureCount, error) => {
         if (error?.response?.status === 429) return false;
@@ -134,6 +134,12 @@ function LayoutContent({ children, currentPageName }) {
 
     const unsubscribers = [];
 
+    // User subscription - sync identity changes
+    const unsubUser = base44.auth.subscribe(() => {
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    });
+    unsubscribers.push(unsubUser);
+
     // Income subscription - refresh all incomes for this household
     const unsubIncome = base44.entities.Income.subscribe((event) => {
       if (event.data?.household_id === selectedHouseholdId) {
@@ -195,14 +201,21 @@ function LayoutContent({ children, currentPageName }) {
 
   // Load last selected household from user profile
   useEffect(() => {
-    if (user && households.length > 0 && !selectedHouseholdId) {
-      const savedId = user.last_selected_household_id;
-      const householdExists = savedId && households.find(h => h.id === savedId);
-      setSelectedHouseholdId(householdExists ? savedId : households[0].id);
+    if (user && households.length > 0) {
+      const serverSelectedId = user.last_selected_household_id;
+      // If server ID differs from local ID - update local to match server
+      if (serverSelectedId && serverSelectedId !== selectedHouseholdId) {
+        const householdExists = households.find(h => h.id === serverSelectedId);
+        if (householdExists) {
+          setSelectedHouseholdId(serverSelectedId);
+        }
+      } else if (!selectedHouseholdId) {
+        setSelectedHouseholdId(households[0].id);
+      }
     } else if (user && households.length === 0 && selectedHouseholdId) {
       setSelectedHouseholdId(null);
     }
-  }, [user, households, selectedHouseholdId]);
+  }, [user?.last_selected_household_id, households, selectedHouseholdId]);
 
   // Persist selectedHouseholdId to database only
   useEffect(() => {
