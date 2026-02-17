@@ -64,12 +64,7 @@ function LayoutContent({ children, currentPageName }) {
     return false;
   });
   const [showWhatsappButton, setShowWhatsappButton] = useState(true);
-  const [selectedHouseholdId, setSelectedHouseholdId] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('selectedHouseholdId') || null;
-    }
-    return null;
-  });
+  const [selectedHouseholdId, setSelectedHouseholdId] = useState(null);
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -177,23 +172,29 @@ function LayoutContent({ children, currentPageName }) {
     };
   }, [selectedHouseholdId, user?.email]);
 
-  // Auto-select first household if none is selected
+  // Load last selected household from user profile, or auto-select first
   useEffect(() => {
-    if (user && households.length > 0 && !selectedHouseholdId) {
-      setSelectedHouseholdId(households[0].id);
+    if (user && households.length > 0) {
+      if (!selectedHouseholdId) {
+        // Try to load from user profile first, fallback to first household
+        const savedId = user.last_selected_household_id;
+        const householdExists = savedId && households.find(h => h.id === savedId);
+        setSelectedHouseholdId(householdExists ? savedId : households[0].id);
+      }
     } else if (user && households.length === 0 && selectedHouseholdId) {
       setSelectedHouseholdId(null);
     }
   }, [user, households, selectedHouseholdId]);
 
-  // Persist selectedHouseholdId to localStorage
+  // Persist selectedHouseholdId to database and localStorage
   useEffect(() => {
-    if (selectedHouseholdId) {
+    if (selectedHouseholdId && user) {
       localStorage.setItem('selectedHouseholdId', selectedHouseholdId);
-    } else {
+      base44.auth.updateMe({ last_selected_household_id: selectedHouseholdId });
+    } else if (!selectedHouseholdId) {
       localStorage.removeItem('selectedHouseholdId');
     }
-  }, [selectedHouseholdId]);
+  }, [selectedHouseholdId, user]);
 
   useEffect(() => {
     if (darkMode) {
