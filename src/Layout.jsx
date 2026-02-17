@@ -122,12 +122,6 @@ function LayoutContent({ children, currentPageName }) {
 
     const unsubscribers = [];
 
-    // מאזין לשינויים בפרטי המשתמש (כמו בחירת משק בית במכשיר אחר)
-    const unsubUser = base44.auth.subscribe(() => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-    });
-    unsubscribers.push(unsubUser);
-
     const unsubIncome = base44.entities.Income.subscribe((event) => {
       if (event.data?.household_id === selectedHouseholdId) {
         debouncedInvalidate(['incomes', selectedHouseholdId]);
