@@ -36,7 +36,10 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
-      retry: false, // NO RETRIES - especially for 429
+      retry: (failureCount, error) => {
+        if (error?.response?.status === 429) return false;
+        return failureCount < 3;
+      }
     },
   },
 });
@@ -82,6 +85,7 @@ function LayoutContent({ children, currentPageName }) {
     }
     
     invalidateTimeoutRef.current[key] = setTimeout(() => {
+      queryClient.cancelQueries({ queryKey }); // Kill any ongoing fetches
       queryClient.invalidateQueries({ queryKey });
       delete invalidateTimeoutRef.current[key];
     }, 5000);
