@@ -14,6 +14,7 @@ import {
   Users,
   BookOpen,
   Sparkles,
+  Plus,
   TrendingUp,
   TrendingDown,
   CreditCard,
