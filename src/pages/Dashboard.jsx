@@ -285,15 +285,25 @@ export default function Dashboard() {
     onError: (err, newIncome, context) => {
       queryClient.setQueryData(['incomes', selectedHouseholdId, selectedMonth, selectedYear], context.previousIncomes);
     },
-    onSuccess: () => { queryClient.invalidateQueries(['incomes']); setIncomeFormOpen(false); setEditItem(null); }
+    onSuccess: () => { 
+      queryClient.invalidateQueries(['incomes', selectedHouseholdId, selectedMonth, selectedYear]); 
+      setIncomeFormOpen(false); 
+      setEditItem(null); 
+    }
   });
   const updateIncome = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Income.update(id, data),
-    onSuccess: () => { queryClient.invalidateQueries(['incomes']); setIncomeFormOpen(false); setEditItem(null); }
+    onSuccess: () => { 
+      queryClient.invalidateQueries(['incomes', selectedHouseholdId, selectedMonth, selectedYear]); 
+      setIncomeFormOpen(false); 
+      setEditItem(null); 
+    }
   });
   const deleteIncome = useMutation({
     mutationFn: (id) => base44.entities.Income.delete(id),
-    onSuccess: () => queryClient.invalidateQueries(['incomes'])
+    onSuccess: () => {
+      queryClient.invalidateQueries(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
+    }
   });
 
   const createExpense = useMutation({
@@ -309,15 +319,28 @@ export default function Dashboard() {
     onError: (err, newExpense, context) => {
       queryClient.setQueryData(['expenses', selectedHouseholdId, selectedMonth, selectedYear], context.previousExpenses);
     },
-    onSuccess: () => { queryClient.invalidateQueries(['expenses']); setExpenseFormOpen(false); setEditItem(null); }
+    onSuccess: () => { 
+      queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]); 
+      queryClient.invalidateQueries(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
+      setExpenseFormOpen(false); 
+      setEditItem(null); 
+    }
   });
   const updateExpense = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Expense.update(id, data),
-    onSuccess: () => { queryClient.invalidateQueries(['expenses']); setExpenseFormOpen(false); setEditItem(null); }
+    onSuccess: () => { 
+      queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]); 
+      queryClient.invalidateQueries(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
+      setExpenseFormOpen(false); 
+      setEditItem(null); 
+    }
   });
   const deleteExpense = useMutation({
     mutationFn: (id) => base44.entities.Expense.delete(id),
-    onSuccess: () => queryClient.invalidateQueries(['expenses'])
+    onSuccess: () => {
+      queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
+      queryClient.invalidateQueries(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
+    }
   });
 
   const createDebt = useMutation({
@@ -333,28 +356,48 @@ export default function Dashboard() {
     onError: (err, newDebt, context) => {
       queryClient.setQueryData(['debts', selectedHouseholdId], context.previousDebts);
     },
-    onSuccess: () => { queryClient.invalidateQueries(['debts']); setDebtFormOpen(false); setEditItem(null); }
+    onSuccess: () => { 
+      queryClient.invalidateQueries(['debts', selectedHouseholdId]); 
+      setDebtFormOpen(false); 
+      setEditItem(null); 
+    }
   });
   const updateDebt = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Debt.update(id, data),
-    onSuccess: () => { queryClient.invalidateQueries(['debts']); setDebtFormOpen(false); setEditItem(null); }
+    onSuccess: () => { 
+      queryClient.invalidateQueries(['debts', selectedHouseholdId]); 
+      setDebtFormOpen(false); 
+      setEditItem(null); 
+    }
   });
   const deleteDebt = useMutation({
     mutationFn: (id) => base44.entities.Debt.delete(id),
-    onSuccess: () => queryClient.invalidateQueries(['debts'])
+    onSuccess: () => {
+      queryClient.invalidateQueries(['debts', selectedHouseholdId]);
+    }
   });
 
   const createAsset = useMutation({
     mutationFn: (data) => base44.entities.Asset.create(data),
-    onSuccess: () => { queryClient.invalidateQueries(['assets']); setAssetFormOpen(false); setEditItem(null); }
+    onSuccess: () => { 
+      queryClient.invalidateQueries(['assets', selectedHouseholdId]); 
+      setAssetFormOpen(false); 
+      setEditItem(null); 
+    }
   });
   const updateAsset = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Asset.update(id, data),
-    onSuccess: () => { queryClient.invalidateQueries(['assets']); setAssetFormOpen(false); setEditItem(null); }
+    onSuccess: () => { 
+      queryClient.invalidateQueries(['assets', selectedHouseholdId]); 
+      setAssetFormOpen(false); 
+      setEditItem(null); 
+    }
   });
   const deleteAsset = useMutation({
     mutationFn: (id) => base44.entities.Asset.delete(id),
-    onSuccess: () => queryClient.invalidateQueries(['assets'])
+    onSuccess: () => {
+      queryClient.invalidateQueries(['assets', selectedHouseholdId]);
+    }
   });
 
   const createHousehold = useMutation({
@@ -370,7 +413,9 @@ export default function Dashboard() {
 
   const updateAlert = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Alert.update(id, data),
-    onSuccess: () => queryClient.invalidateQueries(['alerts'])
+    onSuccess: () => {
+      queryClient.invalidateQueries(['alerts', selectedHouseholdId]);
+    }
   });
 
   // Separate actual expenses from budget settings
@@ -477,7 +522,7 @@ export default function Dashboard() {
         
         if (futureIncomes.length > 0) {
           await base44.entities.Income.bulkCreate(futureIncomes);
-          queryClient.invalidateQueries(['incomes']);
+          // No need to invalidate here - will be handled by subscription
         }
       }
     }
@@ -520,7 +565,7 @@ export default function Dashboard() {
         
         if (futureExpenses.length > 0) {
           await base44.entities.Expense.bulkCreate(futureExpenses);
-          queryClient.invalidateQueries(['expenses']);
+          // No need to invalidate here - will be handled by subscription
         }
       }
     }
@@ -782,7 +827,7 @@ ${JSON.stringify(financialData, null, 2)}
             is_dismissed: false
           }))
         );
-        queryClient.invalidateQueries(['alerts']);
+        queryClient.invalidateQueries(['alerts', selectedHouseholdId]);
       }
     } catch (error) {
       console.error('Error generating alerts:', error);
@@ -845,7 +890,7 @@ ${JSON.stringify(financialData, null, 2)}
           household_id: currentHousehold.id
         });
         code = response.data.activation_code;
-        await queryClient.invalidateQueries(['households']);
+        queryClient.invalidateQueries(['households']);
       } catch (error) {
         alert('שגיאה ביצירת קוד הפעלה');
         return;
@@ -919,13 +964,16 @@ ${JSON.stringify(financialData, null, 2)}
   };
 
   const handleRefresh = React.useCallback(async () => {
-    await queryClient.invalidateQueries(['incomes']);
-    await queryClient.invalidateQueries(['expenses']);
-    await queryClient.invalidateQueries(['debts']);
-    await queryClient.invalidateQueries(['assets']);
-    await queryClient.invalidateQueries(['alerts']);
-    await queryClient.invalidateQueries(['households']);
-  }, [queryClient]);
+    // Only invalidate specific household data, not all queries
+    queryClient.invalidateQueries(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
+    queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
+    queryClient.invalidateQueries(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
+    queryClient.invalidateQueries(['allCustomBudgetItems', selectedHouseholdId]);
+    queryClient.invalidateQueries(['debts', selectedHouseholdId]);
+    queryClient.invalidateQueries(['assets', selectedHouseholdId]);
+    queryClient.invalidateQueries(['alerts', selectedHouseholdId]);
+    queryClient.invalidateQueries(['households']);
+  }, [queryClient, selectedHouseholdId, selectedMonth, selectedYear]);
 
   // Auto-refresh when returning to page (for WhatsApp updates) + Real-time subscriptions with debounce
   React.useEffect(() => {
@@ -937,7 +985,7 @@ ${JSON.stringify(financialData, null, 2)}
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Debounce mechanism: only refresh once every 10 seconds
+    // Debounce mechanism: only refresh once every 2 seconds
     let incomeRefreshTimer = null;
     let expenseRefreshTimer = null;
 
@@ -947,8 +995,11 @@ ${JSON.stringify(financialData, null, 2)}
         // Clear existing timer and set a new one
         if (incomeRefreshTimer) clearTimeout(incomeRefreshTimer);
         incomeRefreshTimer = setTimeout(() => {
+          // Check if query is already fetching before invalidating
+          const queryState = queryClient.getQueryState(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
+          if (queryState?.isFetching) return;
           queryClient.invalidateQueries(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
-        }, 10000); // 10 seconds debounce
+        }, 2000); // 2 seconds debounce
       }
     });
 
@@ -958,9 +1009,13 @@ ${JSON.stringify(financialData, null, 2)}
         // Clear existing timer and set a new one
         if (expenseRefreshTimer) clearTimeout(expenseRefreshTimer);
         expenseRefreshTimer = setTimeout(() => {
+          // Check if queries are already fetching before invalidating
+          const expenseQueryState = queryClient.getQueryState(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
+          const budgetQueryState = queryClient.getQueryState(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
+          if (expenseQueryState?.isFetching || budgetQueryState?.isFetching) return;
           queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
           queryClient.invalidateQueries(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
-        }, 10000); // 10 seconds debounce
+        }, 2000); // 2 seconds debounce
       }
     });
 

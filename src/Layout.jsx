@@ -40,6 +40,7 @@ const queryClient = new QueryClient({
       retryDelay: (attemptIndex) => Math.min(10000 * 2 ** attemptIndex, 60000), // 10s, 20s, 60s
     },
   },
+  maxParallelQueries: 3, // Limit concurrent queries to prevent server overload
 });
 
 const navigation = [
