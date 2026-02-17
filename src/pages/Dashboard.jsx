@@ -975,7 +975,7 @@ ${JSON.stringify(financialData, null, 2)}
     queryClient.invalidateQueries(['households']);
   }, [queryClient, selectedHouseholdId, selectedMonth, selectedYear]);
 
-  // Auto-refresh when returning to page (for WhatsApp updates) + Real-time subscriptions with debounce
+  // Auto-refresh when returning to page (for WhatsApp updates) - DISABLED real-time subscriptions temporarily
   React.useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -985,48 +985,10 @@ ${JSON.stringify(financialData, null, 2)}
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Debounce mechanism: only refresh once every 2 seconds
-    let incomeRefreshTimer = null;
-    let expenseRefreshTimer = null;
-
-    // Subscribe to real-time income updates
-    const unsubscribeIncome = base44.entities.Income.subscribe((event) => {
-      if (selectedHouseholdId && event.data?.household_id === selectedHouseholdId) {
-        // Clear existing timer and set a new one
-        if (incomeRefreshTimer) clearTimeout(incomeRefreshTimer);
-        incomeRefreshTimer = setTimeout(() => {
-          // Check if query is already fetching before invalidating
-          const queryState = queryClient.getQueryState(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
-          if (queryState?.isFetching) return;
-          queryClient.invalidateQueries(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
-        }, 2000); // 2 seconds debounce
-      }
-    });
-
-    // Subscribe to real-time expense updates
-    const unsubscribeExpense = base44.entities.Expense.subscribe((event) => {
-      if (selectedHouseholdId && event.data?.household_id === selectedHouseholdId) {
-        // Clear existing timer and set a new one
-        if (expenseRefreshTimer) clearTimeout(expenseRefreshTimer);
-        expenseRefreshTimer = setTimeout(() => {
-          // Check if queries are already fetching before invalidating
-          const expenseQueryState = queryClient.getQueryState(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
-          const budgetQueryState = queryClient.getQueryState(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
-          if (expenseQueryState?.isFetching || budgetQueryState?.isFetching) return;
-          queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
-          queryClient.invalidateQueries(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
-        }, 2000); // 2 seconds debounce
-      }
-    });
-
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      if (incomeRefreshTimer) clearTimeout(incomeRefreshTimer);
-      if (expenseRefreshTimer) clearTimeout(expenseRefreshTimer);
-      unsubscribeIncome();
-      unsubscribeExpense();
     };
-  }, [handleRefresh, queryClient, selectedHouseholdId, selectedMonth, selectedYear]);
+  }, [handleRefresh]);
 
   // No household selected - show setup screen
   if (user && !loadingHouseholds && households.length === 0) {
