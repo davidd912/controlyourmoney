@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -164,7 +165,6 @@ export default function Dashboard() {
           setAssetFormOpen(true);
           break;
       }
-      // Clear the state so it doesn't reopen on refresh
       navigate(location.pathname, { replace: true, state: {} });
       }
       }, [location.state]);
@@ -234,14 +234,19 @@ export default function Dashboard() {
     enabled: !!user && !!selectedHouseholdId
   });
 
-  // Update custom categories cache based on allCustomBudgetItems
+  // Update custom categories cache - with deep comparison to prevent infinite loop
   React.useEffect(() => {
     const customCats = allCustomBudgetItems
       .filter(b => b.custom_category_name)
       .map(b => b.custom_category_name)
       .filter((name, index, self) => self.indexOf(name) === index);
     
-    setCustomCategoriesCache(customCats); 
+    const stringifiedNew = JSON.stringify(customCats.sort());
+    const stringifiedOld = JSON.stringify([...customCategoriesCache].sort());
+    
+    if (stringifiedNew !== stringifiedOld) {
+      setCustomCategoriesCache(customCats); 
+    }
   }, [allCustomBudgetItems]);
 
   const { data: debts = [], isLoading: loadingDebts } = useQuery({
@@ -275,7 +280,7 @@ export default function Dashboard() {
   const createIncome = useMutation({
     mutationFn: (data) => base44.entities.Income.create(data),
     onMutate: async (newIncome) => {
-      await queryClient.cancelQueries(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
+      await queryClient.cancelQueries({ queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear] });
       const previousIncomes = queryClient.getQueryData(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
       queryClient.setQueryData(['incomes', selectedHouseholdId, selectedMonth, selectedYear], old => 
         [...(old || []), { ...newIncome, id: 'temp-' + Date.now() }]
@@ -286,30 +291,48 @@ export default function Dashboard() {
       queryClient.setQueryData(['incomes', selectedHouseholdId, selectedMonth, selectedYear], context.previousIncomes);
     },
     onSuccess: () => { 
-      queryClient.invalidateQueries(['incomes', selectedHouseholdId, selectedMonth, selectedYear]); 
+      queryClient.invalidateQueries({ queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear] }); 
       setIncomeFormOpen(false); 
       setEditItem(null); 
     }
   });
+  
   const updateIncome = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Income.update(id, data),
     onSuccess: () => { 
-      queryClient.invalidateQueries(['incomes', selectedHouseholdId, selectedMonth, selectedYear]); 
+      queryClient.invalidateQueries({ queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear] }); 
       setIncomeFormOpen(false); 
       setEditItem(null); 
     }
   });
+  
   const deleteIncome = useMutation({
     mutationFn: (id) => base44.entities.Income.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
-    }
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear] });
+      const previousIncomes = queryClient.getQueryData(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
+      queryClient.setQueryData(
+        ['incomes', selectedHouseholdId, selectedMonth, selectedYear],
+        (old) => (old || []).filter((item) => item.id !== id)
+      );
+      return { previousIncomes };
+    },
+    onError: (err, id, context) => {
+      // Only rollback if it's not a 404 (item already deleted)
+      if (err.response?.status !== 404 && context?.previousIncomes) {
+        queryClient.setQueryData(
+          ['incomes', selectedHouseholdId, selectedMonth, selectedYear],
+          context.previousIncomes
+        );
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear] }),
   });
 
   const createExpense = useMutation({
     mutationFn: (data) => base44.entities.Expense.create(data),
     onMutate: async (newExpense) => {
-      await queryClient.cancelQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
+      await queryClient.cancelQueries({ queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear] });
       const previousExpenses = queryClient.getQueryData(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
       queryClient.setQueryData(['expenses', selectedHouseholdId, selectedMonth, selectedYear], old => 
         [...(old || []), { ...newExpense, id: 'temp-' + Date.now() }]
@@ -320,33 +343,69 @@ export default function Dashboard() {
       queryClient.setQueryData(['expenses', selectedHouseholdId, selectedMonth, selectedYear], context.previousExpenses);
     },
     onSuccess: () => { 
-      queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]); 
-      queryClient.invalidateQueries(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
+      queryClient.invalidateQueries({ queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear] }); 
+      queryClient.invalidateQueries({ queryKey: ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear] });
       setExpenseFormOpen(false); 
       setEditItem(null); 
     }
   });
+  
   const updateExpense = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Expense.update(id, data),
     onSuccess: () => { 
-      queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]); 
-      queryClient.invalidateQueries(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
+      queryClient.invalidateQueries({ queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear] }); 
+      queryClient.invalidateQueries({ queryKey: ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear] });
       setExpenseFormOpen(false); 
       setEditItem(null); 
     }
   });
+  
   const deleteExpense = useMutation({
     mutationFn: (id) => base44.entities.Expense.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
-      queryClient.invalidateQueries(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
-    }
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear] });
+      await queryClient.cancelQueries({ queryKey: ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear] });
+      const previousExpenses = queryClient.getQueryData(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
+      const previousBudgetSettings = queryClient.getQueryData(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
+      
+      queryClient.setQueryData(
+        ['expenses', selectedHouseholdId, selectedMonth, selectedYear],
+        (old) => (old || []).filter((item) => item.id !== id)
+      );
+      queryClient.setQueryData(
+        ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear],
+        (old) => (old || []).filter((item) => item.id !== id)
+      );
+      
+      return { previousExpenses, previousBudgetSettings };
+    },
+    onError: (err, id, context) => {
+      // Only rollback if it's not a 404 (item already deleted)
+      if (err.response?.status !== 404) {
+        if (context?.previousExpenses) {
+          queryClient.setQueryData(
+            ['expenses', selectedHouseholdId, selectedMonth, selectedYear],
+            context.previousExpenses
+          );
+        }
+        if (context?.previousBudgetSettings) {
+          queryClient.setQueryData(
+            ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear],
+            context.previousBudgetSettings
+          );
+        }
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear] });
+      queryClient.invalidateQueries({ queryKey: ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear] });
+    },
   });
 
   const createDebt = useMutation({
     mutationFn: (data) => base44.entities.Debt.create(data),
     onMutate: async (newDebt) => {
-      await queryClient.cancelQueries(['debts', selectedHouseholdId]);
+      await queryClient.cancelQueries({ queryKey: ['debts', selectedHouseholdId] });
       const previousDebts = queryClient.getQueryData(['debts', selectedHouseholdId]);
       queryClient.setQueryData(['debts', selectedHouseholdId], old => 
         [...(old || []), { ...newDebt, id: 'temp-' + Date.now() }]
@@ -357,53 +416,89 @@ export default function Dashboard() {
       queryClient.setQueryData(['debts', selectedHouseholdId], context.previousDebts);
     },
     onSuccess: () => { 
-      queryClient.invalidateQueries(['debts', selectedHouseholdId]); 
+      queryClient.invalidateQueries({ queryKey: ['debts', selectedHouseholdId] }); 
       setDebtFormOpen(false); 
       setEditItem(null); 
     }
   });
+  
   const updateDebt = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Debt.update(id, data),
     onSuccess: () => { 
-      queryClient.invalidateQueries(['debts', selectedHouseholdId]); 
+      queryClient.invalidateQueries({ queryKey: ['debts', selectedHouseholdId] }); 
       setDebtFormOpen(false); 
       setEditItem(null); 
     }
   });
+  
   const deleteDebt = useMutation({
     mutationFn: (id) => base44.entities.Debt.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['debts', selectedHouseholdId]);
-    }
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['debts', selectedHouseholdId] });
+      const previousDebts = queryClient.getQueryData(['debts', selectedHouseholdId]);
+      queryClient.setQueryData(
+        ['debts', selectedHouseholdId],
+        (old) => (old || []).filter((item) => item.id !== id)
+      );
+      return { previousDebts };
+    },
+    onError: (err, id, context) => {
+      // Only rollback if it's not a 404 (item already deleted)
+      if (err.response?.status !== 404 && context?.previousDebts) {
+        queryClient.setQueryData(
+          ['debts', selectedHouseholdId],
+          context.previousDebts
+        );
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['debts', selectedHouseholdId] }),
   });
 
   const createAsset = useMutation({
     mutationFn: (data) => base44.entities.Asset.create(data),
     onSuccess: () => { 
-      queryClient.invalidateQueries(['assets', selectedHouseholdId]); 
+      queryClient.invalidateQueries({ queryKey: ['assets', selectedHouseholdId] }); 
       setAssetFormOpen(false); 
       setEditItem(null); 
     }
   });
+  
   const updateAsset = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Asset.update(id, data),
     onSuccess: () => { 
-      queryClient.invalidateQueries(['assets', selectedHouseholdId]); 
+      queryClient.invalidateQueries({ queryKey: ['assets', selectedHouseholdId] }); 
       setAssetFormOpen(false); 
       setEditItem(null); 
     }
   });
+  
   const deleteAsset = useMutation({
     mutationFn: (id) => base44.entities.Asset.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['assets', selectedHouseholdId]);
-    }
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['assets', selectedHouseholdId] });
+      const previousAssets = queryClient.getQueryData(['assets', selectedHouseholdId]);
+      queryClient.setQueryData(
+        ['assets', selectedHouseholdId],
+        (old) => (old || []).filter((item) => item.id !== id)
+      );
+      return { previousAssets };
+    },
+    onError: (err, id, context) => {
+      // Only rollback if it's not a 404 (item already deleted)
+      if (err.response?.status !== 404 && context?.previousAssets) {
+        queryClient.setQueryData(
+          ['assets', selectedHouseholdId],
+          context.previousAssets
+        );
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['assets', selectedHouseholdId] }),
   });
 
   const createHousehold = useMutation({
     mutationFn: (data) => base44.entities.Household.create(data),
     onSuccess: (newHousehold) => {
-      queryClient.invalidateQueries(['households']);
+      queryClient.invalidateQueries({ queryKey: ['households'] });
       setSelectedHouseholdId(newHousehold.id);
       setCreateHouseholdOpen(false);
       setNewHouseholdName('');
@@ -414,11 +509,10 @@ export default function Dashboard() {
   const updateAlert = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Alert.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['alerts', selectedHouseholdId]);
+      queryClient.invalidateQueries({ queryKey: ['alerts', selectedHouseholdId] });
     }
   });
 
-  // Separate actual expenses from budget settings
   const filteredIncomes = incomes;
   const actualExpenses = expenses.filter(e => !e.is_budget || e.is_current);
   const filteredExpenses = actualExpenses;
@@ -672,9 +766,9 @@ export default function Dashboard() {
       }
 
       // Invalidate queries
-      await queryClient.invalidateQueries(['allCustomBudgetItems', selectedHouseholdId]);
-      await queryClient.invalidateQueries(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
-      await queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
+      queryClient.invalidateQueries({ queryKey: ['allCustomBudgetItems', selectedHouseholdId] });
+      queryClient.invalidateQueries({ queryKey: ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear] });
+      queryClient.invalidateQueries({ queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear] });
     } catch (error) {
       console.error('Error saving budget settings:', error);
     }
@@ -827,7 +921,7 @@ ${JSON.stringify(financialData, null, 2)}
             is_dismissed: false
           }))
         );
-        queryClient.invalidateQueries(['alerts', selectedHouseholdId]);
+        queryClient.invalidateQueries({ queryKey: ['alerts', selectedHouseholdId] });
       }
     } catch (error) {
       console.error('Error generating alerts:', error);
@@ -890,7 +984,7 @@ ${JSON.stringify(financialData, null, 2)}
           household_id: currentHousehold.id
         });
         code = response.data.activation_code;
-        queryClient.invalidateQueries(['households']);
+        queryClient.invalidateQueries({ queryKey: ['households'] });
       } catch (error) {
         alert('שגיאה ביצירת קוד הפעלה');
         return;
@@ -965,17 +1059,17 @@ ${JSON.stringify(financialData, null, 2)}
 
   const handleRefresh = React.useCallback(async () => {
     // Only invalidate specific household data, not all queries
-    queryClient.invalidateQueries(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
-    queryClient.invalidateQueries(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
-    queryClient.invalidateQueries(['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear]);
-    queryClient.invalidateQueries(['allCustomBudgetItems', selectedHouseholdId]);
-    queryClient.invalidateQueries(['debts', selectedHouseholdId]);
-    queryClient.invalidateQueries(['assets', selectedHouseholdId]);
-    queryClient.invalidateQueries(['alerts', selectedHouseholdId]);
-    queryClient.invalidateQueries(['households']);
+    queryClient.invalidateQueries({ queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear] });
+    queryClient.invalidateQueries({ queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear] });
+    queryClient.invalidateQueries({ queryKey: ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear] });
+    queryClient.invalidateQueries({ queryKey: ['allCustomBudgetItems', selectedHouseholdId] });
+    queryClient.invalidateQueries({ queryKey: ['debts', selectedHouseholdId] });
+    queryClient.invalidateQueries({ queryKey: ['assets', selectedHouseholdId] });
+    queryClient.invalidateQueries({ queryKey: ['alerts', selectedHouseholdId] });
+    queryClient.invalidateQueries({ queryKey: ['households'] });
   }, [queryClient, selectedHouseholdId, selectedMonth, selectedYear]);
 
-  // Auto-refresh when returning to page (for WhatsApp updates) - DISABLED real-time subscriptions temporarily
+  // Auto-refresh when returning to page (for WhatsApp updates)
   React.useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
