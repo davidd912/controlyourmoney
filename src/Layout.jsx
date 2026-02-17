@@ -111,6 +111,7 @@ function LayoutContent({ children, currentPageName }) {
   const { data: user, isLoading: loadingUser, isError: userError } = useQuery({
     queryKey: ['user'],
     queryFn: () => base44.auth.me(),
+    refetchOnWindowFocus: true,
   });
 
   const { data: households = [], isLoading: loadingHouseholds } = useQuery({
@@ -179,6 +180,7 @@ function LayoutContent({ children, currentPageName }) {
     const unsubHousehold = base44.entities.Household.subscribe((event) => {
       if (event.id === selectedHouseholdId || event.data?.owner_email === user?.email || event.data?.members?.includes(user?.email)) {
         debouncedInvalidate(['households']);
+        queryClient.invalidateQueries({ queryKey: ['user'] });
       }
     });
     unsubscribers.push(unsubHousehold);
@@ -189,7 +191,7 @@ function LayoutContent({ children, currentPageName }) {
       Object.values(invalidateTimeoutRef.current).forEach(timeout => clearTimeout(timeout));
       invalidateTimeoutRef.current = {};
     };
-  }, [selectedHouseholdId, user?.email]);
+    }, [selectedHouseholdId, user?.email, user]);
 
   // Load last selected household from user profile
   useEffect(() => {

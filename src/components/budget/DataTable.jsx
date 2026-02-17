@@ -113,7 +113,10 @@ export default function DataTable({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onDelete(item)}
+                      onClick={async () => {
+                        await onDelete(item);
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                      }}
                       className="text-destructive hover:bg-destructive/10"
                     >
                       <Trash2 className="h-4 w-4 ml-1" />
@@ -190,7 +193,10 @@ export default function DataTable({
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => onDelete(item)}
+                        onClick={async () => {
+                          await onDelete(item);
+                          await new Promise(resolve => setTimeout(resolve, 200));
+                        }}
                         className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                       >
                         <Trash2 className="h-4 w-4" />
