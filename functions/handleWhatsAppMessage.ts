@@ -3,7 +3,20 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const payload = await req.json();
-    if (payload.typeWebhook !== 'incomingMessageReceived') return new Response("OK");
+    
+    // 1. חסימת כל מה שאינו הודעה נכנסת ממשתמש
+    if (payload.typeWebhook !== 'incomingMessageReceived') {
+      return new Response("OK"); 
+    }
+
+    // 2. מניעת לולאה: האם השולח הוא הבוט עצמו?
+    const botNumber = payload.instanceData?.wid;
+    const senderNumber = payload.senderData?.sender;
+
+    if (senderNumber === botNumber) {
+      console.log(`[WhatsApp] Ignoring self-sent message from ${senderNumber}`);
+      return new Response("OK");
+    }
 
     const base44 = createClientFromRequest(req);
     const idInstance = Deno.env.get("idInstance");

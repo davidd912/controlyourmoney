@@ -250,7 +250,7 @@ export default function Dashboard() {
     enabled: !!user && !!selectedHouseholdId
   });
 
-  // Mutations - NO invalidateQueries inside, rely on subscriptions in Layout
+  // Mutations - with Optimistic UI for deletions
   const createIncome = useMutation({
     mutationFn: (data) => base44.entities.Income.create(data),
     onSuccess: () => { 
@@ -269,6 +269,17 @@ export default function Dashboard() {
   
   const deleteIncome = useMutation({
     mutationFn: (id) => base44.entities.Income.delete(id),
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries({ queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear] });
+      const previousIncomes = queryClient.getQueryData(['incomes', selectedHouseholdId, selectedMonth, selectedYear]);
+      queryClient.setQueryData(['incomes', selectedHouseholdId, selectedMonth, selectedYear], (old) => 
+        old?.filter(income => income.id !== deletedId)
+      );
+      return { previousIncomes };
+    },
+    onError: (err, deletedId, context) => {
+      queryClient.setQueryData(['incomes', selectedHouseholdId, selectedMonth, selectedYear], context.previousIncomes);
+    }
   });
 
   const createExpense = useMutation({
@@ -289,6 +300,17 @@ export default function Dashboard() {
   
   const deleteExpense = useMutation({
     mutationFn: (id) => base44.entities.Expense.delete(id),
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries({ queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear] });
+      const previousExpenses = queryClient.getQueryData(['expenses', selectedHouseholdId, selectedMonth, selectedYear]);
+      queryClient.setQueryData(['expenses', selectedHouseholdId, selectedMonth, selectedYear], (old) => 
+        old?.filter(expense => expense.id !== deletedId)
+      );
+      return { previousExpenses };
+    },
+    onError: (err, deletedId, context) => {
+      queryClient.setQueryData(['expenses', selectedHouseholdId, selectedMonth, selectedYear], context.previousExpenses);
+    }
   });
 
   const createDebt = useMutation({
@@ -309,6 +331,17 @@ export default function Dashboard() {
   
   const deleteDebt = useMutation({
     mutationFn: (id) => base44.entities.Debt.delete(id),
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries({ queryKey: ['debts', selectedHouseholdId] });
+      const previousDebts = queryClient.getQueryData(['debts', selectedHouseholdId]);
+      queryClient.setQueryData(['debts', selectedHouseholdId], (old) => 
+        old?.filter(debt => debt.id !== deletedId)
+      );
+      return { previousDebts };
+    },
+    onError: (err, deletedId, context) => {
+      queryClient.setQueryData(['debts', selectedHouseholdId], context.previousDebts);
+    }
   });
 
   const createAsset = useMutation({
@@ -329,6 +362,17 @@ export default function Dashboard() {
   
   const deleteAsset = useMutation({
     mutationFn: (id) => base44.entities.Asset.delete(id),
+    onMutate: async (deletedId) => {
+      await queryClient.cancelQueries({ queryKey: ['assets', selectedHouseholdId] });
+      const previousAssets = queryClient.getQueryData(['assets', selectedHouseholdId]);
+      queryClient.setQueryData(['assets', selectedHouseholdId], (old) => 
+        old?.filter(asset => asset.id !== deletedId)
+      );
+      return { previousAssets };
+    },
+    onError: (err, deletedId, context) => {
+      queryClient.setQueryData(['assets', selectedHouseholdId], context.previousAssets);
+    }
   });
 
   const createHousehold = useMutation({

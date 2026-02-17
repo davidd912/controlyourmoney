@@ -41,6 +41,25 @@ const queryClient = new QueryClient({
         return failureCount < 3;
       }
     },
+    mutations: {
+      retry: (failureCount, error) => {
+        if (error?.response?.status === 429) {
+          // במקרה של 429, נסה שוב רק פעם אחת לאחר 2 שניות
+          if (failureCount === 0) {
+            return true;
+          }
+          return false;
+        }
+        return failureCount < 3; // עבור שגיאות אחרות, נסה עד 3 פעמים
+      },
+      retryDelay: (failureCount, error) => {
+        if (error?.response?.status === 429 && failureCount === 0) {
+          return 2000; // 2 שניות עיכוב עבור 429 בניסיון הראשון
+        }
+        // עבור שגיאות אחרות, backoff אקספוננציאלי
+        return Math.min(1000 * Math.pow(2, failureCount), 30000); // 30 שניות מקסימום
+      },
+    },
   },
 });
 
@@ -172,27 +191,21 @@ function LayoutContent({ children, currentPageName }) {
     };
   }, [selectedHouseholdId, user?.email]);
 
-  // Load last selected household from user profile, or auto-select first
+  // Load last selected household from user profile
   useEffect(() => {
-    if (user && households.length > 0) {
-      if (!selectedHouseholdId) {
-        // Try to load from user profile first, fallback to first household
-        const savedId = user.last_selected_household_id;
-        const householdExists = savedId && households.find(h => h.id === savedId);
-        setSelectedHouseholdId(householdExists ? savedId : households[0].id);
-      }
+    if (user && households.length > 0 && !selectedHouseholdId) {
+      const savedId = user.last_selected_household_id;
+      const householdExists = savedId && households.find(h => h.id === savedId);
+      setSelectedHouseholdId(householdExists ? savedId : households[0].id);
     } else if (user && households.length === 0 && selectedHouseholdId) {
       setSelectedHouseholdId(null);
     }
   }, [user, households, selectedHouseholdId]);
 
-  // Persist selectedHouseholdId to database and localStorage
+  // Persist selectedHouseholdId to database only
   useEffect(() => {
     if (selectedHouseholdId && user) {
-      localStorage.setItem('selectedHouseholdId', selectedHouseholdId);
       base44.auth.updateMe({ last_selected_household_id: selectedHouseholdId });
-    } else if (!selectedHouseholdId) {
-      localStorage.removeItem('selectedHouseholdId');
     }
   }, [selectedHouseholdId, user]);
 
