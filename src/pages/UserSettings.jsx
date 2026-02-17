@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import AnnouncementManager from '@/components/announcements/AnnouncementManager';
-import { HouseholdContext } from '../layout';
+import { HouseholdContext } from '../Layout';
 import { 
   AlertDialog,
   AlertDialogAction,

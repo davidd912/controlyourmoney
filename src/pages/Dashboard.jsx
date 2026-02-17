@@ -23,7 +23,7 @@ import { motion } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import moment from 'moment';
-import { HouseholdContext } from '../layout';
+import { HouseholdContext } from '../Layout';
 
 import SummaryCard from "@/components/budget/SummaryCard";
 import WhatsAppConnection from "@/components/budget/WhatsAppConnection";
