@@ -76,17 +76,20 @@ function LayoutContent({ children, currentPageName }) {
   const prefersReducedMotion = useReducedMotion();
   const invalidateTimeoutRef = useRef({});
 
-  // Debounced invalidateQueries - 5 second debounce
-  const debouncedInvalidate = useRef((queryKey) => {
-    const key = JSON.stringify(queryKey);
-    
+  // Debounced invalidateQueries - 5 second debounce with general keys
+  const debouncedInvalidate = useRef((queryKeyPrefix) => {
+    // Use only the first part of the key (e.g., 'expenses') to unify all requests
+    const key = queryKeyPrefix[0];
+
     if (invalidateTimeoutRef.current[key]) {
       clearTimeout(invalidateTimeoutRef.current[key]);
     }
-    
-    invalidateTimeoutRef.current[key] = setTimeout(() => {
-      queryClient.cancelQueries({ queryKey }); // Kill any ongoing fetches
-      queryClient.invalidateQueries({ queryKey });
+
+    invalidateTimeoutRef.current[key] = setTimeout(async () => {
+      // Cancel previous requests for this data type
+      await queryClient.cancelQueries({ queryKey: queryKeyPrefix });
+      // Refresh everything that starts with this key
+      queryClient.invalidateQueries({ queryKey: queryKeyPrefix });
       delete invalidateTimeoutRef.current[key];
     }, 5000);
   }).current;
@@ -116,19 +119,19 @@ function LayoutContent({ children, currentPageName }) {
 
     const unsubscribers = [];
 
-    // Income subscription
+    // Income subscription - refresh all incomes for this household
     const unsubIncome = base44.entities.Income.subscribe((event) => {
       if (event.data?.household_id === selectedHouseholdId) {
-        debouncedInvalidate(['incomes', selectedHouseholdId, event.data?.month, event.data?.year]);
+        debouncedInvalidate(['incomes', selectedHouseholdId]);
       }
     });
     unsubscribers.push(unsubIncome);
 
-    // Expense subscription
+    // Expense subscription - refresh all expenses for this household
     const unsubExpense = base44.entities.Expense.subscribe((event) => {
       if (event.data?.household_id === selectedHouseholdId) {
-        debouncedInvalidate(['expenses', selectedHouseholdId, event.data?.month, event.data?.year]);
-        debouncedInvalidate(['budgetSettings', selectedHouseholdId, event.data?.month, event.data?.year]);
+        debouncedInvalidate(['expenses', selectedHouseholdId]);
+        debouncedInvalidate(['budgetSettings', selectedHouseholdId]);
         debouncedInvalidate(['allCustomBudgetItems', selectedHouseholdId]);
       }
     });
