@@ -5,14 +5,23 @@ import { motion } from 'framer-motion';
 import { Megaphone } from 'lucide-react';
 
 export default function AnnouncementTicker() {
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 600000,
+    refetchOnMount: false
+  });
+
   const { data: announcements = [] } = useQuery({
     queryKey: ['announcements', 'active'],
     queryFn: async () => {
       const allAnnouncements = await base44.entities.Announcement.filter({ is_active: true });
       return allAnnouncements;
     },
-    refetchInterval: 60000,
-    staleTime: 30000
+    enabled: !!user,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false
   });
 
   if (!announcements || announcements.length === 0) {
@@ -23,7 +32,6 @@ export default function AnnouncementTicker() {
   const direction = announcements[0]?.direction || 'ltr';
   const duration = announcements[0]?.speed || 60;
 
-  // Repeat text many times to ensure continuous loop with no gaps
   const repeatedText = Array(15).fill(combinedText).join(' • ');
 
   return (

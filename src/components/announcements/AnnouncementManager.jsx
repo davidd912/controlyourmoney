@@ -19,14 +19,16 @@ export default function AnnouncementManager() {
 
   const { data: announcements = [] } = useQuery({
     queryKey: ['announcements-admin'],
-    queryFn: () => base44.entities.Announcement.list('-created_date')
+    queryFn: () => base44.entities.Announcement.list('-created_date'),
+    staleTime: 600000,
+    refetchOnMount: false
   });
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Announcement.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['announcements-admin']);
-      queryClient.invalidateQueries(['announcements']);
+      queryClient.invalidateQueries({ queryKey: ['announcements-admin'] });
+      queryClient.invalidateQueries({ queryKey: ['announcements'] });
       resetForm();
     }
   });
@@ -34,8 +36,8 @@ export default function AnnouncementManager() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Announcement.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['announcements-admin']);
-      queryClient.invalidateQueries(['announcements']);
+      queryClient.invalidateQueries({ queryKey: ['announcements-admin'] });
+      queryClient.invalidateQueries({ queryKey: ['announcements'] });
       resetForm();
     }
   });
@@ -43,8 +45,8 @@ export default function AnnouncementManager() {
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Announcement.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(['announcements-admin']);
-      queryClient.invalidateQueries(['announcements']);
+      queryClient.invalidateQueries({ queryKey: ['announcements-admin'] });
+      queryClient.invalidateQueries({ queryKey: ['announcements'] });
     }
   });
 

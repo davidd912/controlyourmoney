@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
-// Global QueryClient configuration with aggressive rate limiting
+// Global QueryClient with aggressive rate limiting and retry prevention
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -36,11 +36,17 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
-      retry: 1,
-      retryDelay: (attemptIndex) => Math.min(10000 * 2 ** attemptIndex, 60000), // 10s, 20s, 60s
+      retry: (failureCount, error) => {
+        // Don't retry on 429 (Too Many Requests) or 404
+        if (error?.response?.status === 429 || error?.response?.status === 404) {
+          return false;
+        }
+        // Only retry once for other errors
+        return failureCount < 1;
+      },
+      retryDelay: (attemptIndex) => Math.min(15000 * 2 ** attemptIndex, 60000),
     },
   },
-  maxParallelQueries: 3, // Limit concurrent queries to prevent server overload
 });
 
 const navigation = [

@@ -36,7 +36,9 @@ export default function UserSettings() {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 600000,
+    refetchOnMount: false
   });
 
   const { data: stats } = useQuery({
@@ -46,7 +48,9 @@ export default function UserSettings() {
       const result = await base44.functions.invoke('getTodayStats');
       return result.data;
     },
-    enabled: !!user && user.role === 'admin'
+    enabled: !!user && user.role === 'admin',
+    staleTime: 600000,
+    refetchOnMount: false
   });
 
   const { data: households = [] } = useQuery({
@@ -60,7 +64,9 @@ export default function UserSettings() {
         (h.members && h.members.includes(user.email)))
       );
     },
-    enabled: !!user
+    enabled: !!user,
+    staleTime: 600000,
+    refetchOnMount: false
   });
 
   const updateUserName = useMutation({
@@ -68,7 +74,7 @@ export default function UserSettings() {
       return base44.auth.updateMe({ full_name: fullName });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['user']);
+      queryClient.invalidateQueries({ queryKey: ['user'] });
       setIsEditingName(false);
       setNewFullName('');
     }
@@ -83,7 +89,7 @@ export default function UserSettings() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['households']);
+      queryClient.invalidateQueries({ queryKey: ['households'] });
       setNewHouseholdName('');
       setShowCreateForm(false);
       navigate(createPageUrl('Dashboard'));
@@ -100,7 +106,7 @@ export default function UserSettings() {
       await base44.users.inviteUser(email, 'user');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['households']);
+      queryClient.invalidateQueries({ queryKey: ['households'] });
       setInviteEmail('');
       alert('ההזמנה נשלחה בהצלחה! נא לבקש מהמוזמן לבדוק גם בתיקיית הספאם/דואר זבל.');
     }
@@ -115,7 +121,7 @@ export default function UserSettings() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['households']);
+      queryClient.invalidateQueries({ queryKey: ['households'] });
     }
   });
 
@@ -129,7 +135,7 @@ export default function UserSettings() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['households']);
+      queryClient.invalidateQueries({ queryKey: ['households'] });
       setShowDeleteHouseholdDialog(false);
       setHouseholdToDelete(null);
     }
@@ -161,13 +167,11 @@ export default function UserSettings() {
 
   const handleDeleteAccount = async () => {
     try {
-      // Delete all user's data first
       const userHouseholds = households.filter(h => h.owner_email === user.email);
       for (const household of userHouseholds) {
         await base44.entities.Household.delete(household.id);
       }
       
-      // Then logout (account deletion would need backend support)
       alert('נתוני המשתמש נמחקו. אנא פנה לתמיכה למחיקת החשבון המלאה.');
       base44.auth.logout();
     } catch (error) {
@@ -179,7 +183,7 @@ export default function UserSettings() {
     try {
       setGeneratingCode({ ...generatingCode, [householdId]: true });
       const response = await base44.functions.invoke('generateActivationCode', { household_id: householdId });
-      queryClient.invalidateQueries(['households']);
+      queryClient.invalidateQueries({ queryKey: ['households'] });
       alert(`קוד ההפעלה שלך: ${response.data.activation_code}\n\nתוקף: 24 שעות`);
     } catch (error) {
       alert('שגיאה ביצירת קוד הפעלה: ' + error.message);
@@ -205,7 +209,7 @@ export default function UserSettings() {
           household_id: household.id
         });
         code = response.data.activation_code;
-        await queryClient.invalidateQueries(['households']);
+        await queryClient.invalidateQueries({ queryKey: ['households'] });
       }
       
       const whatsappNumber = '972559725996';
@@ -243,7 +247,6 @@ export default function UserSettings() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Display Name */}
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">שם מלא</label>
               {!isEditingName ? (
@@ -288,7 +291,6 @@ export default function UserSettings() {
               )}
             </div>
 
-            {/* Email (read-only) */}
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">אימייל</label>
               <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center gap-2">
@@ -297,7 +299,6 @@ export default function UserSettings() {
               </div>
             </div>
 
-            {/* Logout Button */}
             <div className="pt-4 border-t space-y-2">
               <Button
                 onClick={handleLogout}
@@ -337,7 +338,6 @@ export default function UserSettings() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Today's Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 bg-white rounded-lg border-2 border-blue-200">
                     <div className="flex items-center gap-2 mb-2">
@@ -357,7 +357,6 @@ export default function UserSettings() {
                   </div>
                 </div>
 
-                {/* Users by Date */}
                 <div>
                   <h3 className="font-semibold mb-3 flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-purple-600" />
@@ -386,7 +385,6 @@ export default function UserSettings() {
                   </div>
                 </div>
 
-                {/* Households by Date */}
                 <div>
                   <h3 className="font-semibold mb-3 flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-green-600" />
@@ -516,7 +514,6 @@ export default function UserSettings() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* Members List */}
                     <div>
                       <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
                         <Users className="w-4 h-4" />
@@ -550,7 +547,6 @@ export default function UserSettings() {
                       </div>
                     </div>
 
-                    {/* WhatsApp Integration */}
                     {isOwner && (
                       <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-lg border-2 border-green-200 dark:border-green-800">
                         <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
@@ -617,7 +613,6 @@ export default function UserSettings() {
                       </div>
                     )}
 
-                    {/* Invite Member */}
                     {isOwner && (
                       <div>
                         <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
@@ -709,5 +704,13 @@ export default function UserSettings() {
         </AlertDialog>
       </div>
     </div>
+  );
+}
+
+export default function Layout({ children, currentPageName }) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <LayoutContent children={children} currentPageName={currentPageName} />
+    </QueryClientProvider>
   );
 }
