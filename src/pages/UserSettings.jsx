@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import AnnouncementManager from '@/components/announcements/AnnouncementManager';
+import { HouseholdContext } from '../layout';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -34,12 +35,7 @@ export default function UserSettings() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { data: user } = useQuery({
-    queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
-    staleTime: 600000,
-    refetchOnMount: false
-  });
+  const { user, households, setSelectedHouseholdId } = useContext(HouseholdContext);
 
   const { data: stats } = useQuery({
     queryKey: ['todayStats'],
@@ -49,24 +45,6 @@ export default function UserSettings() {
       return result.data;
     },
     enabled: !!user && user.role === 'admin',
-    staleTime: 600000,
-    refetchOnMount: false
-  });
-
-  const { data: households = [] } = useQuery({
-    queryKey: ['households'],
-    queryFn: async () => {
-      if (!user) return [];
-      const all = await base44.entities.Household.list();
-      return all.filter(h => 
-        !h.is_deleted &&
-        (h.owner_email === user.email || 
-        (h.members && h.members.includes(user.email)))
-      );
-    },
-    enabled: !!user,
-    staleTime: 600000,
-    refetchOnMount: false
   });
 
   const updateUserName = useMutation({
@@ -89,7 +67,6 @@ export default function UserSettings() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['households'] });
       setNewHouseholdName('');
       setShowCreateForm(false);
       navigate(createPageUrl('Dashboard'));
@@ -106,7 +83,6 @@ export default function UserSettings() {
       await base44.users.inviteUser(email, 'user');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['households'] });
       setInviteEmail('');
       alert('ההזמנה נשלחה בהצלחה! נא לבקש מהמוזמן לבדוק גם בתיקיית הספאם/דואר זבל.');
     }
@@ -120,9 +96,6 @@ export default function UserSettings() {
         members: updatedMembers
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['households'] });
-    }
   });
 
   const deleteHousehold = useMutation({
@@ -135,7 +108,6 @@ export default function UserSettings() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['households'] });
       setShowDeleteHouseholdDialog(false);
       setHouseholdToDelete(null);
     }
@@ -166,30 +138,20 @@ export default function UserSettings() {
   };
 
   const handleDeleteAccount = async () => {
-    try {
-      const userHouseholds = households.filter(h => h.owner_email === user.email);
-      for (const household of userHouseholds) {
-        await base44.entities.Household.delete(household.id);
-      }
-      
-      alert('נתוני המשתמש נמחקו. אנא פנה לתמיכה למחיקת החשבון המלאה.');
-      base44.auth.logout();
-    } catch (error) {
-      alert('שגיאה במחיקת החשבון: ' + error.message);
+    const userHouseholds = households.filter(h => h.owner_email === user.email);
+    for (const household of userHouseholds) {
+      await base44.entities.Household.delete(household.id);
     }
+    
+    alert('נתוני המשתמש נמחקו. אנא פנה לתמיכה למחיקת החשבון המלאה.');
+    base44.auth.logout();
   };
 
   const handleGenerateActivationCode = async (householdId) => {
-    try {
-      setGeneratingCode({ ...generatingCode, [householdId]: true });
-      const response = await base44.functions.invoke('generateActivationCode', { household_id: householdId });
-      queryClient.invalidateQueries({ queryKey: ['households'] });
-      alert(`קוד ההפעלה שלך: ${response.data.activation_code}\n\nתוקף: 24 שעות`);
-    } catch (error) {
-      alert('שגיאה ביצירת קוד הפעלה: ' + error.message);
-    } finally {
-      setGeneratingCode({ ...generatingCode, [householdId]: false });
-    }
+    setGeneratingCode({ ...generatingCode, [householdId]: true });
+    const response = await base44.functions.invoke('generateActivationCode', { household_id: householdId });
+    alert(`קוד ההפעלה שלך: ${response.data.activation_code}\n\nתוקף: 24 שעות`);
+    setGeneratingCode({ ...generatingCode, [householdId]: false });
   };
 
   const copyToClipboard = (text) => {
@@ -198,27 +160,22 @@ export default function UserSettings() {
   };
 
   const handleWhatsAppConnect = async (household) => {
-    try {
-      let code = household.activation_code;
-      let expiresAt = household.activation_code_expires;
-      
-      const isExpired = expiresAt && new Date(expiresAt) < new Date();
-      
-      if (!code || isExpired) {
-        const response = await base44.functions.invoke('generateActivationCode', {
-          household_id: household.id
-        });
-        code = response.data.activation_code;
-        await queryClient.invalidateQueries({ queryKey: ['households'] });
-      }
-      
-      const whatsappNumber = '972559725996';
-      const message = encodeURIComponent(code);
-      const url = `https://api.whatsapp.com/send/?phone=${whatsappNumber}&text=${message}&type=phone_number&app_absent=0`;
-      window.open(url, '_blank');
-    } catch (error) {
-      alert('שגיאה בחיבור ל-WhatsApp: ' + error.message);
+    let code = household.activation_code;
+    let expiresAt = household.activation_code_expires;
+    
+    const isExpired = expiresAt && new Date(expiresAt) < new Date();
+    
+    if (!code || isExpired) {
+      const response = await base44.functions.invoke('generateActivationCode', {
+        household_id: household.id
+      });
+      code = response.data.activation_code;
     }
+    
+    const whatsappNumber = '972559725996';
+    const message = encodeURIComponent(code);
+    const url = `https://api.whatsapp.com/send/?phone=${whatsappNumber}&text=${message}&type=phone_number&app_absent=0`;
+    window.open(url, '_blank');
   };
 
   return (
