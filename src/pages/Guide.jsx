@@ -13,8 +13,9 @@ import {
   AlertCircle,
   Download,
   UserPlus,
-  Award } from
-"lucide-react";
+  Award,
+  MessageCircle
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Guide() {
@@ -527,6 +528,164 @@ export default function Guide() {
                 <p className="text-sm text-indigo-800 dark:text-indigo-200">
                   <strong>💡 טיפ:</strong> בדקו זכאות באופן תקופתי - זכויות והטבות משתנות 
                   ועשויות להיות רלוונטיות למצב החדש שלכם.
+                </p>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* ניהול דרך WhatsApp */}
+          <AccordionItem value="whatsapp" className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm">
+            <AccordionTrigger className="px-6 hover:no-underline text-gray-900 dark:text-white">
+              <div className="flex items-center gap-3">
+                <MessageCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <span className="font-semibold">ניהול תקציב חכם באמצעות WhatsApp</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
+              <p className="text-gray-700 dark:text-gray-300">
+                נהלו את התקציב שלכם בצורה הכי נוחה - ישירות דרך WhatsApp! רשמו הוצאות והכנסות, 
+                קבלו סיכומים ושאלו שאלות בכל זמן, בלי צורך להיכנס לאפליקציה.
+              </p>
+
+              <div>
+                <h4 className="font-semibold mb-2 flex items-center gap-2 text-gray-900 dark:text-white">
+                  <span className="text-green-600 dark:text-green-400">🔗</span>
+                  איך מתחברים?
+                </h4>
+                <p className="text-gray-700 dark:text-gray-300 mb-3">
+                  החיבור לשירות ה-WhatsApp זמין בכמה דרכים:
+                </p>
+                <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 mr-4">
+                  <li><strong>באמצעות כפתור בדאשבורד:</strong> בחרו באפשרות 'WhatsApp' ישירות מלוח הבקרה (Dashboard)</li>
+                  <li><strong>בדף הגדרות המשתמש:</strong> ניתן למצוא את אפשרות החיבור גם בדף הגדרות המשתמש</li>
+                </ul>
+                <p className="text-gray-700 dark:text-gray-300 mt-3">
+                  לאחר לחיצה על הכפתור המתאים, המערכת תציג קוד אקטיבציה ייחודי. עליכם לשלוח את הקוד הזה 
+                  ישירות למספר ה-WhatsApp של הבוט שלנו. המערכת תזהה אתכם ותקשר את מספר הטלפון שלכם 
+                  למשק הבית שבחרתם.
+                </p>
+                <div className="bg-yellow-50 dark:bg-yellow-950 p-3 rounded-lg mt-3">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    <strong>⚠️ שימו לב:</strong> קוד האקטיבציה תקף לזמן מוגבל בלבד. 
+                    אם הוא פג תוקפו, יהיה עליכם ליצור קוד חדש באפליקציה.
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-2 flex items-center gap-2 text-gray-900 dark:text-white">
+                  <span className="text-blue-600 dark:text-blue-400">💬</span>
+                  מה ניתן לשאול ולבקש מהבוט?
+                </h4>
+                <div className="space-y-3">
+                  <div className="p-3 border dark:border-gray-700 rounded-lg">
+                    <p className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">📝 רישום הוצאות והכנסות</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      דווחו על הוצאות והכנסות בקלות ובמהירות. לדוגמה:
+                    </p>
+                    <ul className="text-xs text-gray-500 dark:text-gray-400 mr-4 space-y-1">
+                      <li>"קניתי בגדים ב-250 ש"ח"</li>
+                      <li>"הפקדתי משכורת 8000 ש"ח"</li>
+                      <li>"שילמתי חשבון אינטרנט 120"</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="p-3 border dark:border-gray-700 rounded-lg">
+                    <p className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">📊 שאלות סיכום</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      קבלו סיכומים מפורטים על ההוצאות או ההכנסות שלכם. לדוגמה:
+                    </p>
+                    <ul className="text-xs text-gray-500 dark:text-gray-400 mr-4 space-y-1">
+                      <li>"מה היו הוצאות המזון החודש?"</li>
+                      <li>"כמה הכנסות היו לי השבוע?"</li>
+                      <li>"סיכום הוצאות אתמול"</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-3 border dark:border-gray-700 rounded-lg">
+                    <p className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">💭 שיחות כלליות</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      הבוט יכול לענות גם על שאלות כלליות בנוגע ליכולותיו או לניהול התקציב. לדוגמה:
+                    </p>
+                    <ul className="text-xs text-gray-500 dark:text-gray-400 mr-4 space-y-1">
+                      <li>"מה אתה יודע לעשות?"</li>
+                      <li>"עזרה"</li>
+                      <li>"תודה"</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-2 flex items-center gap-2 text-gray-900 dark:text-white">
+                  <span className="text-purple-600 dark:text-purple-400">⚙️</span>
+                  איך זה עובד ומהן המגבלות?
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg shrink-0">🤖</span>
+                    <div>
+                      <p className="font-semibold text-sm text-gray-900 dark:text-white">זיהוי חכם</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        הבוט משתמש בבינה מלאכותית מתקדמת כדי לנתח את ההודעות שלכם, 
+                        לזהות את כוונתכם (הוספת הוצאה, בקשת סיכום וכו') ולשייך אותה 
+                        לקטגוריה המתאימה ביותר.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg shrink-0">🔔</span>
+                    <div>
+                      <p className="font-semibold text-sm text-gray-900 dark:text-white">התראות תקציב</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        כאשר אתם רושמים הוצאה, הבוט יבדוק אוטומטית אם חרגתם מהתקציב 
+                        שהגדרתם לקטגוריה זו ויודיע לכם בהתאם.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg shrink-0">📚</span>
+                    <div>
+                      <p className="font-semibold text-sm text-gray-900 dark:text-white">למידה עצמית</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        המערכת לומדת ומשתפרת עם כל אינטראקציה, ועם הזמן תהפוך למדויקת 
+                        יותר בזיהוי קטגוריות וסוחרים ספציפיים.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg shrink-0">⚠️</span>
+                    <div>
+                      <p className="font-semibold text-sm text-gray-900 dark:text-white">מגבלות</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        שירות ה-WhatsApp עשוי להיות כפוף למגבלות שימוש (לדוגמה, למנויי 
+                        פרימיום בלבד או לתקופת ניסיון). כמו כן, ייתכנו הגבלות על אורך 
+                        ההודעות או מורכבות השאלות שהבוט יכול לעבד.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg shrink-0">🔒</span>
+                    <div>
+                      <p className="font-semibold text-sm text-gray-900 dark:text-white">פרטיות ואבטחה</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        הפרטיות שלכם חשובה לנו. הבוט ניגש רק להודעות שנשלחות אליו באופן 
+                        ישיר ואינו יכול לצפות בשיחותיכם האישיות.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
+                <p className="text-sm text-green-800 dark:text-green-200">
+                  <strong>💡 טיפ:</strong> השתמשו בשירות WhatsApp לרישום מהיר בזמן אמת - 
+                  למשל, מיד אחרי קניה בסופרמרקט או תשלום חשבון. כך לא תשכחו לתעד הוצאות 
+                  ותקבלו תמונה מדויקת של המצב הפיננסי שלכם.
                 </p>
               </div>
             </AccordionContent>
