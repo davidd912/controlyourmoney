@@ -505,69 +505,81 @@ export default function UserSettings() {
                     </div>
 
                     {isOwner && (
-                      <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-lg border-2 border-green-200 dark:border-green-800">
-                        <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                          <Smartphone className="w-4 h-4 text-green-600" />
-                          חיבור WhatsApp
-                        </h3>
+                      user?.role === 'admin' ? (
+                        <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-lg border-2 border-green-200 dark:border-green-800">
+                          <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                            <Smartphone className="w-4 h-4 text-green-600" />
+                            חיבור WhatsApp
+                          </h3>
 
-                        <Button
-                          onClick={() => handleWhatsAppConnect(household)}
-                          className="w-full mb-3 bg-green-600 hover:bg-green-700 text-white"
-                        >
-                          <Smartphone className="w-4 h-4 ml-2" />
-                          פתח WhatsApp
-                        </Button>
-                        
-                        {household.whatsapp_number ? (
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                              <Smartphone className="w-4 h-4 text-green-600" />
-                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">מחובר: {household.whatsapp_number}</span>
+                          <Button
+                            onClick={() => handleWhatsAppConnect(household)}
+                            className="w-full mb-3 bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            <Smartphone className="w-4 h-4 ml-2" />
+                            פתח WhatsApp
+                          </Button>
+                          
+                          {household.whatsapp_number ? (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2 p-3 bg-white dark:bg-gray-800 rounded-lg">
+                                <Smartphone className="w-4 h-4 text-green-600" />
+                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">מחובר: {household.whatsapp_number}</span>
+                              </div>
+                              <p className="text-xs text-gray-600 dark:text-gray-300">
+                                💬 כעת ניתן לשלוח הודעות חופשיות לניהול התקציב דרך WhatsApp
+                              </p>
                             </div>
-                            <p className="text-xs text-gray-600 dark:text-gray-300">
-                              💬 כעת ניתן לשלוח הודעות חופשיות לניהול התקציב דרך WhatsApp
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="space-y-3">
-                            {household.activation_code && new Date(household.activation_code_expires) > new Date() ? (
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                  <span className="text-2xl font-bold text-green-600">{household.activation_code}</span>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => copyToClipboard(household.activation_code)}
-                                  >
-                                    <Copy className="w-4 h-4" />
-                                  </Button>
+                          ) : (
+                            <div className="space-y-3">
+                              {household.activation_code && new Date(household.activation_code_expires) > new Date() ? (
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2 p-3 bg-white dark:bg-gray-800 rounded-lg">
+                                    <span className="text-2xl font-bold text-green-600">{household.activation_code}</span>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => copyToClipboard(household.activation_code)}
+                                    >
+                                      <Copy className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                  <p className="text-xs text-gray-600 dark:text-gray-300">
+                                    ⏰ הקוד תקף עד: {new Date(household.activation_code_expires).toLocaleString('he-IL')}
+                                  </p>
+                                  <p className="text-xs text-gray-600 dark:text-gray-300">
+                                    📱 שלח קוד זה בהודעה ראשונה ל-WhatsApp כדי לקשר את החשבון
+                                  </p>
                                 </div>
-                                <p className="text-xs text-gray-600 dark:text-gray-300">
-                                  ⏰ הקוד תקף עד: {new Date(household.activation_code_expires).toLocaleString('he-IL')}
-                                </p>
-                                <p className="text-xs text-gray-600 dark:text-gray-300">
-                                  📱 שלח קוד זה בהודעה ראשונה ל-WhatsApp כדי לקשר את החשבון
-                                </p>
-                              </div>
-                            ) : (
-                              <div>
-                                <Button
-                                  onClick={() => handleGenerateActivationCode(household.id)}
-                                  disabled={generatingCode[household.id]}
-                                  className="w-full bg-green-600 hover:bg-green-700"
-                                >
-                                  <RefreshCw className={`w-4 h-4 ml-2 ${generatingCode[household.id] ? 'animate-spin' : ''}`} />
-                                  צור קוד הפעלה
-                                </Button>
-                                <p className="text-xs text-gray-600 dark:text-gray-300 mt-2">
-                                  🔐 קוד ההפעלה יאפשר לך לקשר את מספר ה-WhatsApp שלך למשק בית זה
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
+                              ) : (
+                                <div>
+                                  <Button
+                                    onClick={() => handleGenerateActivationCode(household.id)}
+                                    disabled={generatingCode[household.id]}
+                                    className="w-full bg-green-600 hover:bg-green-700"
+                                  >
+                                    <RefreshCw className={`w-4 h-4 ml-2 ${generatingCode[household.id] ? 'animate-spin' : ''}`} />
+                                    צור קוד הפעלה
+                                  </Button>
+                                  <p className="text-xs text-gray-600 dark:text-gray-300 mt-2">
+                                    🔐 קוד ההפעלה יאפשר לך לקשר את מספר ה-WhatsApp שלך למשק בית זה
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+                          <h3 className="font-semibold mb-2 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                            <MessageCircle className="w-4 h-4 text-blue-600" />
+                            חיבור WhatsApp
+                          </h3>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            🚀 התכונה תהיה זמינה בקרוב!
+                          </p>
+                        </div>
+                      )
                     )}
 
                     {isOwner && (
