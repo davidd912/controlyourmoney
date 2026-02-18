@@ -261,7 +261,7 @@ function LayoutContent({ children, currentPageName }) {
         </main>
 
         {/* WhatsApp Floating Button */}
-        {showWhatsappButton && (
+        {user?.role === 'admin' && showWhatsappButton && (
           <div className="fixed left-6 bottom-24 md:bottom-8 z-40 flex items-center gap-2">
             <Button onClick={() => navigate(createPageUrl('Dashboard'), { state: { action: 'whatsapp' } })} className="rounded-full bg-green-500 hover:bg-green-600 text-white shadow-lg">
               <MessageCircle className="w-5 h-5 mr-2" /> WHATSAPP

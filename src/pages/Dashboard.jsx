@@ -1005,15 +1005,17 @@ ${JSON.stringify(financialData, null, 2)}
               )}
             </div>
             <div className="flex gap-2">
-              <Button
-                onClick={handleWhatsAppConnect}
-                variant="outline"
-                className="gap-2 hidden md:flex text-green-600 hover:text-white hover:bg-green-500 border-green-500"
-                aria-label="התחבר ל-WhatsApp"
-              >
-                <MessageCircle className="w-4 h-4" aria-hidden="true" />
-                WhatsApp
-              </Button>
+              {user?.role === 'admin' && (
+                <Button
+                  onClick={handleWhatsAppConnect}
+                  variant="outline"
+                  className="gap-2 hidden md:flex text-green-600 hover:text-white hover:bg-green-500 border-green-500"
+                  aria-label="התחבר ל-WhatsApp"
+                >
+                  <MessageCircle className="w-4 h-4" aria-hidden="true" />
+                  WhatsApp
+                </Button>
+              )}
               <Button
                 onClick={handleExportAll}
                 variant="outline"
