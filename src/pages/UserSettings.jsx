@@ -505,7 +505,7 @@ export default function UserSettings() {
                     </div>
 
                     {isOwner && (
-                      (user?.role === 'admin' || user?.whatsapp_beta_access) ? (
+                      (user?.role === 'admin' || user?.role === 'POC' || user?.data?.whatsapp_beta_access) ? (
                         <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-lg border-2 border-green-200 dark:border-green-800">
                           <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
                             <Smartphone className="w-4 h-4 text-green-600" />
