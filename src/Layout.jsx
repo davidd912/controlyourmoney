@@ -295,10 +295,32 @@ function LayoutContent({ children, currentPageName }) {
             </div>
           )}
         </AnimatePresence>
-      </div>
-    </HouseholdContext.Provider>
-  );
-}
+
+        {/* Footer */}
+        <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-6 mt-8">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex flex-col md:flex-row justify-center items-center gap-4 text-sm text-muted-foreground">
+              <Link to={createPageUrl('TermsOfService')} className="hover:text-primary transition-colors">
+                תנאי שימוש
+              </Link>
+              <span className="hidden md:inline">•</span>
+              <Link to={createPageUrl('PrivacyPolicy')} className="hover:text-primary transition-colors">
+                מדיניות פרטיות
+              </Link>
+              <span className="hidden md:inline">•</span>
+              <Link to={createPageUrl('AccessibilityStatement')} className="hover:text-primary transition-colors">
+                הצהרת נגישות
+              </Link>
+            </div>
+            <div className="text-center mt-4 text-xs text-muted-foreground">
+              © {new Date().getFullYear()} ניהול תקציב משפחתי. כל הזכויות שמורות.
+            </div>
+          </div>
+        </footer>
+        </div>
+        </HouseholdContext.Provider>
+        );
+        }
 
 export default function Layout({ children, currentPageName }) {
   return (
