@@ -1005,7 +1005,7 @@ ${JSON.stringify(financialData, null, 2)}
               )}
             </div>
             <div className="flex gap-2">
-              {(user?.role === 'admin' || user?.data?.whatsapp_beta_access) && (
+              {user?.data?.whatsapp_beta_access && (
                 <Button
                   onClick={handleWhatsAppConnect}
                   variant="outline"
