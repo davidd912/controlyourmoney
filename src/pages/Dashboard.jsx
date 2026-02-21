@@ -91,6 +91,7 @@ export default function Dashboard() {
   const [createHouseholdOpen, setCreateHouseholdOpen] = useState(false);
   const [newHouseholdName, setNewHouseholdName] = useState('');
   const [hasShownCreateDialog, setHasShownCreateDialog] = useState(false);
+  const [isPollingForHousehold, setIsPollingForHousehold] = useState(false);
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -382,6 +383,7 @@ export default function Dashboard() {
       setCreateHouseholdOpen(false);
       setNewHouseholdName('');
       setHasShownCreateDialog(true);
+      setIsPollingForHousehold(true);
     }
   });
 
@@ -919,6 +921,24 @@ ${JSON.stringify(financialData, null, 2)}
 
   // No household selected - show setup screen
   if (user && !loadingHouseholds && households.length === 0 && !createHouseholdOpen) {
+    // מצב polling - מחכים ליצירת משק הבית
+    if (isPollingForHousehold) {
+      return (
+        <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4 min-h-[60vh]">
+          <Card className="max-w-md w-full dark:bg-gray-800 dark:border-gray-700">
+            <CardContent className="p-8 flex flex-col items-center gap-6">
+              <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              <div className="text-center space-y-2">
+                <h3 className="text-xl font-semibold text-foreground">אנחנו מכינים את משק הבית שלכם...</h3>
+                <p className="text-muted-foreground">זה לוקח רגע, אנא המתינו</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+    
+    // מסך ברירת המחדל - יצירת משק בית
     return (
       <>
         <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4 min-h-[60vh]">
@@ -931,7 +951,7 @@ ${JSON.stringify(financialData, null, 2)}
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-center text-muted-foreground">
-                כדי להתחיל, צור משק בית ראשון שלך. במקרה ויש לך משק בית, בצע רענון או (משוך למטה). ולחכות לפעמיים למידע לקוח 1 -2 דקות להתעדכן אין ליצור משק בית נוסף האם יש לך כבר אחד (אתה עלול לאבד מידע)
+                כדי להתחיל, צור משק בית ראשון שלך
               </p>
               <Button
                 onClick={() => setCreateHouseholdOpen(true)}
