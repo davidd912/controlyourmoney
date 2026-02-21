@@ -114,6 +114,7 @@ function LayoutContent({ children, currentPageName }) {
       );
     },
     enabled: !!user,
+    refetchInterval: 2500,
   });
 
   // WebSocket Subscriptions עם סנכרון משתמש
