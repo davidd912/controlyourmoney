@@ -115,7 +115,7 @@ export default function LandingPage() {
                 <Wallet className="w-6 h-6 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900 dark:text-white">
-                ניהול תקציב
+                controlyourmoney
               </span>
             </div>
 
@@ -154,10 +154,13 @@ export default function LandingPage() {
                   למשק הבית שלך
                 </span>
               </h1>
-              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+              <p className="text-xl text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
                 קח שליטה מלאה על הכסף שלך עם הפלטפורמה המקיפה ביותר. 
                 עקוב אחר הכנסות והוצאות, נהל חובות ונכסים, הגדר תקציבים חכמים 
                 וקבל תובנות מבוססות AI – הכל במקום אחד.
+              </p>
+              <p className="text-base text-gray-500 dark:text-gray-400 mb-8 italic" lang="en">
+                controlyourmoney is a comprehensive household budget management platform that helps you track income, expenses, debts, and assets. Set smart budgets, get AI-powered insights, and take full control of your family finances in one secure place.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
@@ -346,10 +349,13 @@ export default function LandingPage() {
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
                   <Wallet className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-xl font-bold">ניהול תקציב</span>
+                <span className="text-xl font-bold">controlyourmoney</span>
               </div>
-              <p className="text-gray-400">
+              <p className="text-gray-400 mb-3">
                 הפלטפורמה המקיפה ביותר לניהול פיננסי חכם של משק הבית
+              </p>
+              <p className="text-xs text-gray-500" lang="en">
+                controlyourmoney - Smart household budget management platform
               </p>
             </div>
             <div>
@@ -363,8 +369,9 @@ export default function LandingPage() {
             <div>
               <h3 className="font-bold mb-4">משפטי</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">תנאי שימוש</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">מדיניות פרטיות</a></li>
+                <li><a href="/TermsOfService" className="hover:text-white transition-colors">תנאי שימוש</a></li>
+                <li><a href="/PrivacyPolicy" className="hover:text-white transition-colors">מדיניות פרטיות</a></li>
+                <li><a href="/AccessibilityStatement" className="hover:text-white transition-colors">הצהרת נגישות</a></li>
               </ul>
             </div>
           </div>
