@@ -637,7 +637,6 @@ export default function Dashboard() {
   };
 
   const incomeColumns = [
-    { key: 'income_date', label: 'תאריך', render: (val) => val ? new Date(val).toLocaleDateString('he-IL') : '-', minWidth: 100 },
     { key: 'category', label: 'קטגוריה', render: (val) => incomeLabels[val] || val, minWidth: 120 },
     { key: 'subcategory', label: 'תת-קטגוריה', minWidth: 120 },
     { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}`, minWidth: 100 },
@@ -645,7 +644,6 @@ export default function Dashboard() {
   ];
 
   const expenseColumns = [
-    { key: 'expense_date', label: 'תאריך', render: (val) => val ? new Date(val).toLocaleDateString('he-IL') : '-', minWidth: 100 },
     { key: 'category', label: 'קטגוריה', render: (val, item) => getExpenseLabel(item), minWidth: 120 },
     { key: 'subcategory', label: 'תת-קטגוריה', minWidth: 120 },
     { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}`, minWidth: 100 },
@@ -673,7 +671,6 @@ export default function Dashboard() {
   const assetColumns = [
     { key: 'asset_type', label: 'סוג', render: (val) => assetLabels[val] || val, minWidth: 100 },
     { key: 'name', label: 'שם', minWidth: 100 },
-    { key: 'valuation_date', label: 'תאריך השערה', render: (val) => val ? new Date(val).toLocaleDateString('he-IL') : '-', minWidth: 110 },
     { key: 'monthly_deposit', label: 'הפקדה חודשית', render: (val) => val ? `₪${val.toLocaleString()}` : '-', minWidth: 120 },
     { key: 'current_value', label: 'שווי נוכחי', render: (val) => `₪${(val || 0).toLocaleString()}`, minWidth: 120 }
   ];

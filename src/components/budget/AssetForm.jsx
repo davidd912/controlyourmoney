@@ -116,18 +116,6 @@ export default function AssetForm({ open, onClose, onSave, editItem }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="valuation-date">תאריך השערה</Label>
-            <Input
-              id="valuation-date"
-              type="date"
-              value={formData.valuation_date}
-              onChange={(e) => setFormData({ ...formData, valuation_date: e.target.value })}
-              className="text-left"
-              dir="ltr"
-            />
-          </div>
-
-          <div className="space-y-2">
             <Label>הערות</Label>
             <Textarea
               value={formData.notes || ''}
