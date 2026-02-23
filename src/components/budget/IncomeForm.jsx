@@ -26,6 +26,7 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
     category: '',
     subcategory: '',
     amount: '',
+    income_date: new Date().toISOString().split('T')[0],
     description: '',
     is_recurring: false
   });
@@ -38,6 +39,7 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
         category: '',
         subcategory: '',
         amount: '',
+        income_date: new Date().toISOString().split('T')[0],
         description: '',
         is_recurring: false
       });
@@ -93,18 +95,32 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="income-amount">סכום חודשי (₪)</Label>
-            <Input
-              id="income-amount"
-              type="number"
-              value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-              placeholder="0"
-              className="text-left"
-              dir="ltr"
-              aria-required="true"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="income-date">תאריך</Label>
+              <Input
+                id="income-date"
+                type="date"
+                value={formData.income_date}
+                onChange={(e) => setFormData({ ...formData, income_date: e.target.value })}
+                className="text-left"
+                dir="ltr"
+                aria-required="true"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="income-amount">סכום (₪)</Label>
+              <Input
+                id="income-amount"
+                type="number"
+                value={formData.amount}
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                placeholder="0"
+                className="text-left"
+                dir="ltr"
+                aria-required="true"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

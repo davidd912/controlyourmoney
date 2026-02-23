@@ -102,6 +102,7 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
     custom_category_name: '',
     subcategory: '',
     amount: '',
+    expense_date: new Date().toISOString().split('T')[0],
     priority: null,
     description: '',
     is_recurring: false
@@ -116,6 +117,7 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
         custom_category_name: '',
         subcategory: '',
         amount: '',
+        expense_date: new Date().toISOString().split('T')[0],
         priority: null,
         description: '',
         is_recurring: false
@@ -236,18 +238,32 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
             </>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="expense-amount">סכום חודשי (₪)</Label>
-            <Input
-              id="expense-amount"
-              type="number"
-              value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-              placeholder="0"
-              className="text-left"
-              dir="ltr"
-              aria-required="true"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="expense-date">תאריך</Label>
+              <Input
+                id="expense-date"
+                type="date"
+                value={formData.expense_date}
+                onChange={(e) => setFormData({ ...formData, expense_date: e.target.value })}
+                className="text-left"
+                dir="ltr"
+                aria-required="true"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="expense-amount">סכום (₪)</Label>
+              <Input
+                id="expense-amount"
+                type="number"
+                value={formData.amount}
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                placeholder="0"
+                className="text-left"
+                dir="ltr"
+                aria-required="true"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

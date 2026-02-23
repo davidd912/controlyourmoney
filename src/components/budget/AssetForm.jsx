@@ -24,6 +24,7 @@ export default function AssetForm({ open, onClose, onSave, editItem }) {
     name: '',
     monthly_deposit: '',
     current_value: '',
+    valuation_date: new Date().toISOString().split('T')[0],
     notes: '',
     is_recurring: true
   });
@@ -40,6 +41,7 @@ export default function AssetForm({ open, onClose, onSave, editItem }) {
         name: '',
         monthly_deposit: '',
         current_value: '',
+        valuation_date: new Date().toISOString().split('T')[0],
         notes: '',
         is_recurring: true
       });
@@ -111,6 +113,18 @@ export default function AssetForm({ open, onClose, onSave, editItem }) {
                 dir="ltr"
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="valuation-date">תאריך השערה</Label>
+            <Input
+              id="valuation-date"
+              type="date"
+              value={formData.valuation_date}
+              onChange={(e) => setFormData({ ...formData, valuation_date: e.target.value })}
+              className="text-left"
+              dir="ltr"
+            />
           </div>
 
           <div className="space-y-2">
