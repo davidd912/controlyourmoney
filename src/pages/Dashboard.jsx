@@ -7,8 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { 
   Plus, TrendingUp, TrendingDown, Wallet, CreditCard, PiggyBank,
-  AlertCircle, Users, MessageCircle, Send, Zap, Activity,
-  CheckCircle, Settings
+  AlertCircle, MessageCircle, Send, Zap, CheckCircle, Settings
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -37,7 +36,6 @@ const expenseLabels = {
   housing: "דיור", obligations: "התחייבויות", assets: "נכסים", finance: "פיננסים", 
   custom: "קטגוריה מותאמת אישית", other: "אחר"
 };
-const debtLabels = { gmach: "גמ\"ח", friends: "חברים", bank_loan: "בנק הלוואה", family: "משפחה", other: "אחר" };
 
 export default function Dashboard() {
   const currentDate = new Date();
@@ -50,19 +48,18 @@ export default function Dashboard() {
   const [debtFormOpen, setDebtFormOpen] = useState(false);
   const [assetFormOpen, setAssetFormOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [isFabMenuOpen, setIsFabMenuOpen] = useState(false);
   const [toast, setToast] = useState(null);
   
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user, households, selectedHouseholdId, setSelectedHouseholdId, loadingHouseholds } = useContext(HouseholdContext);
 
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
+  const showToast = (message) => {
+    setToast(message);
     setTimeout(() => setToast(null), 3000);
   };
 
-  // Queries (אותה לוגיקה עובדת)
+  // Queries
   const { data: incomes = [] } = useQuery({
     queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear],
     queryFn: () => base44.entities.Income.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear }),
@@ -110,7 +107,7 @@ export default function Dashboard() {
     }));
     if (toCreate.length > 0) await base44.entities.Expense.bulkCreate(toCreate);
     queryClient.invalidateQueries({ queryKey: ['budgetSettings'] });
-    showToast('התקציב החודשי עודכן בהצלחה!', 'success');
+    showToast('התקציב עודכן בהצלחה!');
   };
 
   const handleWhatsAppConnect = async () => {
@@ -128,39 +125,39 @@ export default function Dashboard() {
   };
 
   const totalIncome = incomes.reduce((sum, i) => sum + (i.amount || 0), 0);
-  const actualExpenses = expenses.filter(e => !e.is_budget || e.is_current);
-  const totalExpenses = actualExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+  const totalExpenses = expenses.filter(e => !e.is_budget || e.is_current).reduce((sum, e) => sum + (e.amount || 0), 0);
   const monthlyBalance = totalIncome - totalExpenses;
 
   const handleRefresh = async () => queryClient.invalidateQueries();
-  const openForm = (type) => { setEditItem(null); setIsFabMenuOpen(false); if (type === 'income') setIncomeFormOpen(true); if (type === 'expense') setExpenseFormOpen(true); if (type === 'debt') setDebtFormOpen(true); };
 
-  if (loadingHouseholds || !selectedHouseholdId) return <div className="p-10 text-center text-gray-500">טוען נתונים...</div>;
+  if (loadingHouseholds || !selectedHouseholdId) return <div className="p-10 text-center">טוען...</div>;
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      {/* pb-32 מבטיח שהתוכן לא יוסתר על ידי התפריט התחתון של המערכת */}
-      <div dir="rtl" className="min-h-screen bg-[#f8fafc] dark:bg-gray-950 pb-32 relative overflow-x-hidden">
+      {/* pb-40 מבטיח שכל התוכן יהיה מעל התפריט התחתון של המערכת שלך */}
+      <div dir="rtl" className="min-h-screen bg-[#f8fafc] dark:bg-gray-950 pb-40 relative overflow-x-hidden">
         <AnnouncementTicker />
         
         {/* Header - כפתורים למעלה בלבד */}
         <div className="bg-white/90 dark:bg-gray-900/90 border-b border-gray-100 sticky top-0 z-40 backdrop-blur-md px-4 py-3">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">ControlYourMoney</h1>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Button onClick={handleWhatsAppConnect} variant="ghost" size="icon" className="text-green-600"><MessageCircle className="w-5 h-5" /></Button>
               <Button onClick={handleTelegramConnect} variant="ghost" size="icon" className="text-blue-600"><Send className="w-5 h-5" /></Button>
-              <Button onClick={() => navigate('/user-settings')} variant="ghost" size="icon" className="text-gray-500"><Settings className="w-5 h-5" /></Button>
+              <Button onClick={() => navigate('/user-settings')} variant="ghost" size="icon" className="text-gray-400"><Settings className="w-5 h-5" /></Button>
             </div>
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-6">
+          {/* בוררים */}
           <div className="flex flex-col sm:flex-row gap-3 bg-white dark:bg-gray-900 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
              <HouseholdSelector households={households} selectedId={selectedHouseholdId} onSelect={setSelectedHouseholdId} />
              <MonthYearSelector month={selectedMonth} year={selectedYear} onMonthChange={setSelectedMonth} onYearChange={setSelectedYear} />
           </div>
 
+          {/* קלפי סיכום */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <SummaryCard title="הכנסות" value={totalIncome} icon={TrendingUp} color="green" />
             <SummaryCard title="הוצאות" value={totalExpenses} icon={TrendingDown} color="orange" />
@@ -168,6 +165,7 @@ export default function Dashboard() {
             <SummaryCard title="נכסים" value={0} icon={PiggyBank} color="purple" />
           </div>
 
+          {/* AI Insight */}
           <Card className="bg-indigo-600 text-white border-none shadow-md">
             <CardContent className="p-4 flex items-center gap-3">
               <Zap className="w-5 h-5 text-yellow-300 shrink-0" />
@@ -175,6 +173,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
+          {/* טאבים */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <div className="sticky top-16 z-30 bg-[#f8fafc]/80 dark:bg-gray-950/80 backdrop-blur-sm py-2">
               <TabsList className="w-full justify-start bg-white dark:bg-gray-900 border border-gray-100 rounded-full h-11 overflow-x-auto no-scrollbar">
@@ -188,53 +187,65 @@ export default function Dashboard() {
 
             <AnimatePresence mode="wait">
               <motion.div key={activeTab} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.2 }}>
+                
                 <TabsContent value="overview" className="space-y-4">
-                    <CategoryBreakdown expenses={actualExpenses} budgets={budgetSettings} />
+                    <CategoryBreakdown expenses={expenses.filter(e => !e.is_budget || e.is_current)} budgets={budgetSettings} />
                     <AlertPanel alerts={alerts} onDismiss={() => {}} onMarkRead={() => {}} onRefresh={() => {}} />
                 </TabsContent>
+
                 <TabsContent value="budget" className="space-y-4">
                    <BudgetSettingsTab householdId={selectedHouseholdId} month={selectedMonth} year={selectedYear} existingBudgets={budgetSettings} allCustomCategories={[]} onSave={handleSaveBudgetSettings} />
                 </TabsContent>
+
                 <TabsContent value="income" className="space-y-4">
-                  <div className="flex justify-between items-center"><h2 className="text-lg font-bold">הכנסות</h2><Button onClick={() => openForm('income')} className="bg-blue-600 rounded-full"><Plus className="w-4 h-4 ml-2"/>הוסף</Button></div>
-                  <DataTable data={incomes} columns={[{ key: 'category', label: 'קטגוריה', render: (val) => incomeLabels[val] || val }, { key: 'amount', label: 'סכום', render: (val) => `₪${val.toLocaleString()}` }]} onDelete={(i) => base44.entities.Income.delete(i.id).then(handleRefresh)} />
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-bold text-gray-800 dark:text-white">פירוט הכנסות</h2>
+                    <Button onClick={() => { setEditItem(null); setIncomeFormOpen(true); }} className="bg-green-600 hover:bg-green-700 rounded-xl h-10 px-4 gap-2">
+                      <Plus className="w-4 h-4" /> הוסף הכנסה
+                    </Button>
+                  </div>
+                  <DataTable data={incomes} columns={[{ key: 'category', label: 'קטגוריה', render: (val) => incomeLabels[val] || val }, { key: 'amount', label: 'סכום', render: (val) => `₪${val.toLocaleString()}` }]} onDelete={(i) => base44.entities.Income.delete(i.id).then(handleRefresh)} onEdit={(i) => {setEditItem(i); setIncomeFormOpen(true);}} />
                 </TabsContent>
+
                 <TabsContent value="expenses" className="space-y-4">
-                  <div className="flex justify-between items-center"><h2 className="text-lg font-bold">הוצאות</h2><Button onClick={() => openForm('expense')} className="bg-orange-500 rounded-full"><Plus className="w-4 h-4 ml-2"/>הוסף</Button></div>
-                  <DataTable data={actualExpenses} columns={[{ key: 'category', label: 'קטגוריה', render: (val, item) => (item.category === 'custom' ? item.custom_category_name : expenseLabels[val] || val) }, { key: 'amount', label: 'סכום', render: (val) => `₪${val.toLocaleString()}` }]} onDelete={(e) => base44.entities.Expense.delete(e.id).then(handleRefresh)} />
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-bold text-gray-800 dark:text-white">פירוט הוצאות</h2>
+                    <Button onClick={() => { setEditItem(null); setExpenseFormOpen(true); }} className="bg-orange-500 hover:bg-orange-600 rounded-xl h-10 px-4 gap-2">
+                      <Plus className="w-4 h-4" /> הוסף הוצאה
+                    </Button>
+                  </div>
+                  <DataTable data={expenses.filter(e => !e.is_budget || e.is_current)} columns={[{ key: 'category', label: 'קטגוריה', render: (val, item) => (item.category === 'custom' ? item.custom_category_name : expenseLabels[val] || val) }, { key: 'amount', label: 'סכום', render: (val) => `₪${val.toLocaleString()}` }]} onDelete={(e) => base44.entities.Expense.delete(e.id).then(handleRefresh)} onEdit={(e) => {setEditItem(e); setExpenseFormOpen(true);}} />
                 </TabsContent>
+
                 <TabsContent value="debts" className="space-y-4">
-                  <div className="flex justify-between items-center"><h2 className="text-lg font-bold">חובות</h2><Button onClick={() => openForm('debt')} className="bg-red-500 rounded-full"><Plus className="w-4 h-4 ml-2"/>הוסף</Button></div>
-                  <DataTable data={debts} columns={[{ key: 'creditor_name', label: 'נושה' }, { key: 'total_amount', label: 'סכום', render: (val) => `₪${val.toLocaleString()}` }]} onDelete={(d) => base44.entities.Debt.delete(d.id).then(handleRefresh)} />
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-bold text-gray-800 dark:text-white">פירוט חובות</h2>
+                    <Button onClick={() => { setEditItem(null); setDebtFormOpen(true); }} className="bg-red-500 hover:bg-red-600 rounded-xl h-10 px-4 gap-2">
+                      <Plus className="w-4 h-4" /> הוסף חוב
+                    </Button>
+                  </div>
+                  <DataTable data={debts} columns={[{ key: 'creditor_name', label: 'נושה' }, { key: 'total_amount', label: 'סכום', render: (val) => `₪${val.toLocaleString()}` }]} onDelete={(d) => base44.entities.Debt.delete(d.id).then(handleRefresh)} onEdit={(d) => {setEditItem(d); setDebtFormOpen(true);}} />
                 </TabsContent>
+
               </motion.div>
             </AnimatePresence>
           </Tabs>
         </div>
 
-        {/* FAB Menu - כפתור הוספה מרכזי */}
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50">
-          <AnimatePresence>
-            {isFabMenuOpen && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute bottom-16 left-1/2 -translate-x-1/2 flex flex-col gap-3 min-w-[150px]">
-                <Button onClick={() => openForm('expense')} className="w-full bg-orange-500 text-white rounded-full shadow-lg gap-2 h-11"><TrendingDown className="w-4 h-4" /> הוצאה</Button>
-                <Button onClick={() => openForm('income')} className="w-full bg-green-600 text-white rounded-full shadow-lg gap-2 h-11"><TrendingUp className="w-4 h-4" /> הכנסה</Button>
-                <Button onClick={() => openForm('debt')} className="w-full bg-red-600 text-white rounded-full shadow-lg gap-2 h-11"><CreditCard className="w-4 h-4" /> חוב</Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <Button onClick={() => setIsFabMenuOpen(!isFabMenuOpen)} className={`w-14 h-14 rounded-full shadow-2xl transition-all ${isFabMenuOpen ? 'bg-gray-800 rotate-45' : 'bg-blue-600'}`}><Plus className="w-8 h-8 text-white" /></Button>
-        </div>
-
-        {/* הודעות Toast */}
+        {/* הודעות Toast קטנות למעלה - שלא יפריעו לכלום */}
         <AnimatePresence>
           {toast && (
-            <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] bg-gray-900 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3">
-              {toast.type === 'success' ? <CheckCircle className="w-5 h-5 text-green-400" /> : <AlertCircle className="w-5 h-5 text-red-400" />}
-              <span className="font-medium text-sm whitespace-nowrap">{toast.message}</span>
+            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] bg-gray-900/90 text-white px-6 py-2 rounded-full shadow-xl flex items-center gap-2 border border-gray-700">
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <span className="text-sm font-medium">{toast}</span>
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* טפסים */}
+        <IncomeForm open={incomeFormOpen} onClose={() => setIncomeFormOpen(false)} onSave={() => { handleRefresh(); showToast('ההכנסה נוספה!'); }} editItem={editItem} />
+        <ExpenseForm open={expenseFormOpen} onClose={() => setExpenseFormOpen(false)} onSave={() => { handleRefresh(); showToast('ההוצאה נוספה!'); }} remainingBudgetByCategory={{}} customCategories={[]} editItem={editItem} />
+        <DebtForm open={debtFormOpen} onClose={() => setDebtFormOpen(false)} onSave={() => { handleRefresh(); showToast('החוב נשמר!'); }} editItem={editItem} />
       </div>
     </PullToRefresh>
   );
