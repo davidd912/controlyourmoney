@@ -229,7 +229,7 @@ export default function UserSettings() {
         </div>
 
         {/* --- דשבורד מנהל חכם --- */}
-        {user?.role === 'admin' && stats && (
+        {user?.role === 'admin' && stats?.summary && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="border-none shadow-xl bg-white dark:bg-gray-900 overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-blue-700 to-indigo-700 text-white p-6">
