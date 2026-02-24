@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import LandingPage from '@/pages/LandingPage';
 import { base44 } from '@/api/base44Client';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
-import { 
-  LayoutDashboard, 
+import {
+  LayoutDashboard,
   Award,
   Menu,
   X,
@@ -22,8 +22,8 @@ import {
   ArrowRight,
   Moon,
   Sun,
-  MessageCircle
-} from "lucide-react";
+  MessageCircle } from
+"lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
 // Global QueryClient עם סנכרון אקטיבי בין מכשירים
@@ -53,18 +53,18 @@ const queryClient = new QueryClient({
           return 2000;
         }
         return Math.min(1000 * Math.pow(2, failureCount), 30000);
-      },
-    },
-  },
+      }
+    }
+  }
 });
 
 const navigation = [
-  { name: 'דשבורד', page: 'Dashboard', icon: LayoutDashboard },
-  { name: 'תכנון AI', page: 'AIPlanning', icon: Sparkles },
-  { name: 'הטבות וזכויות', page: 'Benefits', icon: Award },
-  { name: 'משתמשים', page: 'UserSettings', icon: Users },
-  { name: 'מדריך', page: 'Guide', icon: BookOpen },
-];
+{ name: 'דשבורד', page: 'Dashboard', icon: LayoutDashboard },
+{ name: 'תכנון AI', page: 'AIPlanning', icon: Sparkles },
+{ name: 'הטבות וזכויות', page: 'Benefits', icon: Award },
+{ name: 'משתמשים', page: 'UserSettings', icon: Users },
+{ name: 'מדריך', page: 'Guide', icon: BookOpen }];
+
 
 export const HouseholdContext = createContext(null);
 
@@ -79,7 +79,7 @@ function LayoutContent({ children, currentPageName }) {
   });
   const [showWhatsappButton, setShowWhatsappButton] = useState(true);
   const [selectedHouseholdId, setSelectedHouseholdId] = useState(null);
-  
+
   const location = useLocation();
   const navigate = useNavigate();
   const prefersReducedMotion = useReducedMotion();
@@ -99,7 +99,7 @@ function LayoutContent({ children, currentPageName }) {
 
   const { data: user, isLoading: loadingUser, isError: userError } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
+    queryFn: () => base44.auth.me()
   });
 
   const { data: households = [], isLoading: loadingHouseholds } = useQuery({
@@ -107,14 +107,14 @@ function LayoutContent({ children, currentPageName }) {
     queryFn: async () => {
       if (!user) return [];
       const all = await base44.entities.Household.list();
-      return all.filter(h =>
-        !h.is_deleted &&
-        (h.owner_email === user.email ||
-        (h.members && h.members.includes(user.email)))
+      return all.filter((h) =>
+      !h.is_deleted && (
+      h.owner_email === user.email ||
+      h.members && h.members.includes(user.email))
       );
     },
     enabled: !!user,
-    refetchInterval: 2500,
+    refetchInterval: 2500
   });
 
   // WebSocket Subscriptions עם סנכרון משתמש
@@ -146,8 +146,8 @@ function LayoutContent({ children, currentPageName }) {
     unsubscribers.push(unsubHousehold);
 
     return () => {
-      unsubscribers.forEach(unsub => unsub());
-      Object.values(invalidateTimeoutRef.current).forEach(timeout => clearTimeout(timeout));
+      unsubscribers.forEach((unsub) => unsub());
+      Object.values(invalidateTimeoutRef.current).forEach((timeout) => clearTimeout(timeout));
       invalidateTimeoutRef.current = {};
     };
   }, [selectedHouseholdId, user?.email]);
@@ -156,16 +156,16 @@ function LayoutContent({ children, currentPageName }) {
   useEffect(() => {
     if (user && households.length > 0) {
       const serverId = user.last_selected_household_id;
-      
+
       // אם בשרת מוגדר בית אחר ממה שיש לנו כרגע - יישר קו
       if (serverId && serverId !== selectedHouseholdId) {
-        const exists = households.find(h => h.id === serverId);
+        const exists = households.find((h) => h.id === serverId);
         if (exists) {
           setSelectedHouseholdId(serverId);
           return;
         }
       }
-      
+
       // ברירת מחדל אם אין בחירה בכלל
       if (!selectedHouseholdId) {
         setSelectedHouseholdId(households[0].id);
@@ -210,8 +210,8 @@ function LayoutContent({ children, currentPageName }) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+      </div>);
+
   }
 
   if (!isAuthenticated) return <LandingPage />;
@@ -227,15 +227,15 @@ function LayoutContent({ children, currentPageName }) {
               <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
                 <Wallet className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">ניהול תקציב</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">ניהול תקציב משפחתי</span>
             </Link>
             
             <nav className="hidden md:flex items-center gap-1">
-              {navigation.map((item) => (
-                <Link key={item.page} to={createPageUrl(item.page)} className={`px-4 py-2 rounded-lg text-sm font-medium ${currentPageName === item.page ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>
+              {navigation.map((item) =>
+              <Link key={item.page} to={createPageUrl(item.page)} className={`px-4 py-2 rounded-lg text-sm font-medium ${currentPageName === item.page ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>
                   {item.name}
                 </Link>
-              ))}
+              )}
               <Button variant="ghost" size="icon" onClick={() => setDarkMode(!darkMode)}>
                 {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </Button>
@@ -263,20 +263,20 @@ function LayoutContent({ children, currentPageName }) {
         {/* Bottom Nav for Mobile */}
         <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-gray-800 border-t shadow-lg">
           <div className="flex justify-around items-center h-16 px-2">
-            {navigation.map(item => {
+            {navigation.map((item) => {
               const isActive = currentPageName === item.page;
               return (
-                <Link 
-                  key={item.page} 
-                  to={createPageUrl(item.page)} 
+                <Link
+                  key={item.page}
+                  to={createPageUrl(item.page)}
                   className={`flex flex-col items-center justify-center gap-1 flex-1 py-2 transition-colors ${
-                    isActive ? 'text-blue-600' : 'text-gray-600 dark:text-gray-400'
-                  }`}
-                >
+                  isActive ? 'text-blue-600' : 'text-gray-600 dark:text-gray-400'}`
+                  }>
+
                   <item.icon className={`w-6 h-6 ${isActive ? 'stroke-[2.5]' : ''}`} />
                   <span className="text-[10px] font-medium">{item.name}</span>
-                </Link>
-              );
+                </Link>);
+
             })}
           </div>
         </nav>
@@ -305,14 +305,14 @@ function LayoutContent({ children, currentPageName }) {
           </div>
         </footer>
         </div>
-        </HouseholdContext.Provider>
-        );
-        }
+        </HouseholdContext.Provider>);
+
+}
 
 export default function Layout({ children, currentPageName }) {
   return (
     <QueryClientProvider client={queryClient}>
       <LayoutContent children={children} currentPageName={currentPageName} />
-    </QueryClientProvider>
-  );
+    </QueryClientProvider>);
+
 }
