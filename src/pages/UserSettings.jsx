@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, Trash2, Mail, Home, UserPlus, User, LogOut, Edit, BarChart3, Calendar, UserX, Smartphone, Copy, RefreshCw, MessageCircle } from "lucide-react";
+import { Users, Plus, Trash2, Mail, Home, UserPlus, User, LogOut, Edit, BarChart3, Calendar, UserX, Smartphone, Copy, RefreshCw, MessageCircle, Send } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -172,13 +172,35 @@ export default function UserSettings() {
       code = response.data.activation_code;
     }
     
-    // Fetch dynamic WhatsApp number from SystemConfig
     const systemConfig = await base44.entities.SystemConfig.list();
     const whatsappBotNumberItem = systemConfig?.find(config => config.key === 'whatsapp_bot_number');
     const whatsappNumber = whatsappBotNumberItem?.value || '972559725996';
     
     const message = encodeURIComponent(code);
     const url = `https://api.whatsapp.com/send/?phone=${whatsappNumber}&text=${message}&type=phone_number&app_absent=0`;
+    window.open(url, '_blank');
+  };
+
+  // פונקציה חדשה לחיבור טלגרם חכם
+  const handleTelegramConnect = async (household) => {
+    let code = household.activation_code;
+    let expiresAt = household.activation_code_expires;
+    
+    const isExpired = expiresAt && new Date(expiresAt) < new Date();
+    
+    if (!code || isExpired) {
+      const response = await base44.functions.invoke('generateActivationCode', {
+        household_id: household.id
+      });
+      code = response.data.activation_code;
+    }
+    
+    const systemConfig = await base44.entities.SystemConfig.list();
+    const telegramBotUsernameItem = systemConfig?.find(config => config.key === 'telegram_bot_username');
+    const botUsername = telegramBotUsernameItem?.value || 'controlyourmoneyy_bot';
+    
+    const message = encodeURIComponent(`אשמח להפעיל את חשבון הטלגרם שלי עבור ניהול תקציב, קוד הפעלה: ${code}`);
+    const url = `https://t.me/${botUsername}?text=${message}`;
     window.open(url, '_blank');
   };
 
@@ -510,68 +532,90 @@ export default function UserSettings() {
 
                     {isOwner && (
                       (user?.role === 'admin' || user?.role === 'POC' || user?.data?.whatsapp_beta_access) ? (
-                        <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-lg border-2 border-green-200 dark:border-green-800">
+                        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
                           <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                            <Smartphone className="w-4 h-4 text-green-600" />
-                            חיבור WhatsApp
+                            <MessageCircle className="w-5 h-5 text-blue-600" />
+                            חיבור לבוט האישי (WhatsApp / Telegram)
                           </h3>
-
-                          <Button
-                            onClick={() => handleWhatsAppConnect(household)}
-                            className="w-full mb-3 bg-green-600 hover:bg-green-700 text-white"
-                          >
-                            <Smartphone className="w-4 h-4 ml-2" />
-                            פתח WhatsApp
-                          </Button>
                           
-                          {household.whatsapp_number ? (
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                <Smartphone className="w-4 h-4 text-green-600" />
-                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">מחובר: {household.whatsapp_number}</span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                            <Button
+                              onClick={() => handleWhatsAppConnect(household)}
+                              className="w-full bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              <Smartphone className="w-4 h-4 ml-2" />
+                              פתח ב-WhatsApp
+                            </Button>
+                            <Button
+                              onClick={() => handleTelegramConnect(household)}
+                              className="w-full bg-blue-500 hover:bg-blue-600 text-white shadow-sm"
+                            >
+                              <Send className="w-4 h-4 ml-2" />
+                              פתח ב-Telegram
+                            </Button>
+                          </div>
+
+                          <div className="space-y-4">
+                            {/* Generation button shown if there is no valid code */}
+                            {(!household.activation_code || new Date(household.activation_code_expires) < new Date()) && (
+                              <div className="mt-2">
+                                <Button
+                                  onClick={() => handleGenerateActivationCode(household.id)}
+                                  disabled={generatingCode[household.id]}
+                                  className="w-full bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-700 dark:hover:bg-slate-600"
+                                >
+                                  <RefreshCw className={`w-4 h-4 ml-2 ${generatingCode[household.id] ? 'animate-spin' : ''}`} />
+                                  צור קוד הפעלה לחיבור הבוט
+                                </Button>
                               </div>
-                              <p className="text-xs text-gray-600 dark:text-gray-300">
-                                💬 כעת ניתן לשלוח הודעות חופשיות לניהול התקציב דרך WhatsApp
-                              </p>
-                            </div>
-                          ) : (
-                            <div className="space-y-3">
-                              {household.activation_code && new Date(household.activation_code_expires) > new Date() ? (
-                                <div className="space-y-2">
-                                  <div className="flex items-center gap-2 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                                    <span className="text-2xl font-bold text-green-600">{household.activation_code}</span>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => copyToClipboard(household.activation_code)}
-                                    >
-                                      <Copy className="w-4 h-4" />
-                                    </Button>
+                            )}
+
+                            {/* Show activation code visibly if valid */}
+                            {household.activation_code && new Date(household.activation_code_expires) > new Date() && (
+                              <div className="space-y-2">
+                                <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-gray-700 shadow-sm">
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-sm text-gray-500 dark:text-gray-400">קוד:</span>
+                                    <span className="text-2xl font-bold tracking-widest text-blue-600 dark:text-blue-400">
+                                      {household.activation_code}
+                                    </span>
                                   </div>
-                                  <p className="text-xs text-gray-600 dark:text-gray-300">
-                                    ⏰ הקוד תקף עד: {new Date(household.activation_code_expires).toLocaleString('he-IL')}
-                                  </p>
-                                  <p className="text-xs text-gray-600 dark:text-gray-300">
-                                    📱 שלח קוד זה בהודעה ראשונה ל-WhatsApp כדי לקשר את החשבון
-                                  </p>
-                                </div>
-                              ) : (
-                                <div>
                                   <Button
-                                    onClick={() => handleGenerateActivationCode(household.id)}
-                                    disabled={generatingCode[household.id]}
-                                    className="w-full bg-green-600 hover:bg-green-700"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => copyToClipboard(household.activation_code)}
+                                    className="hover:bg-blue-50 dark:hover:bg-gray-700"
                                   >
-                                    <RefreshCw className={`w-4 h-4 ml-2 ${generatingCode[household.id] ? 'animate-spin' : ''}`} />
-                                    צור קוד הפעלה
+                                    <Copy className="w-4 h-4" />
                                   </Button>
-                                  <p className="text-xs text-gray-600 dark:text-gray-300 mt-2">
-                                    🔐 קוד ההפעלה יאפשר לך לקשר את מספר ה-WhatsApp שלך למשק בית זה
-                                  </p>
                                 </div>
-                              )}
-                            </div>
-                          )}
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  ⏰ תקף עד: {new Date(household.activation_code_expires).toLocaleString('he-IL')}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Show Connection Status dynamically */}
+                            {(household.whatsapp_number || household.whatsapp_numbers?.length > 0 || household.telegram_chat_ids?.length > 0) && (
+                              <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800 space-y-2">
+                                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">מחוברים כעת:</h4>
+                                <div className="flex flex-col gap-2">
+                                  {(household.whatsapp_number || household.whatsapp_numbers?.length > 0) && (
+                                    <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                                      <Smartphone className="w-4 h-4 text-green-500" />
+                                      וואטסאפ מחובר
+                                    </div>
+                                  )}
+                                  {household.telegram_chat_ids?.length > 0 && (
+                                    <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                                      <Send className="w-4 h-4 text-blue-500" />
+                                      טלגרם מחובר ({household.telegram_chat_ids.length} משתמשים)
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       ) : (
                         <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 rounded-lg border-2 border-blue-200 dark:border-blue-800">
