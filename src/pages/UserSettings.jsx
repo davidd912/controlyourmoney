@@ -309,9 +309,44 @@ export default function UserSettings() {
         </Card>
 
         {user?.role === 'admin' && (
-          <div className="mb-6">
-            <AnnouncementManager />
-          </div>
+          <>
+            <Card className="mb-6 border-2 dark:bg-gray-800 dark:border-gray-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 dark:text-white">
+                  <BarChart3 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  סטטיסטיקות מערכת (Admin)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {stats ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">משקי בית פעילים</p>
+                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.activeHouseholds || 0}</p>
+                    </div>
+                    <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">משתמשים רשומים</p>
+                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.totalUsers || 0}</p>
+                    </div>
+                    <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">עסקאות היום</p>
+                      <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.todayTransactions || 0}</p>
+                    </div>
+                    <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">הודעות בוט היום</p>
+                      <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.todayBotMessages || 0}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">טוען נתונים...</p>
+                )}
+              </CardContent>
+            </Card>
+
+            <div className="mb-6">
+              <AnnouncementManager />
+            </div>
+          </>
         )}
 
         <div className="mb-6">
