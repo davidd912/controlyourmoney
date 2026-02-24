@@ -138,28 +138,28 @@ export default function Dashboard() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div dir="rtl" className="min-h-screen bg-[#f8fafc] dark:bg-gray-950 pb-40 relative">
+      <div dir="rtl" className="min-h-screen bg-[#f8fafc] dark:bg-gray-950 pb-24 md:pb-8 relative">
         <AnnouncementTicker />
         
         {/* Header - כפתורים למעלה בלבד */}
-        <div className="bg-white/90 dark:bg-gray-900/90 border-b border-gray-100 sticky top-0 z-40 backdrop-blur-md px-4 py-3">
+        <div className="bg-white/90 dark:bg-gray-900/90 border-b border-gray-100 sticky top-0 z-40 backdrop-blur-md px-3 md:px-4 py-2 md:py-3">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">ControlYourMoney</h1>
-            <div className="flex items-center gap-1">
-              <Button onClick={handleWhatsAppConnect} variant="ghost" size="icon" className="text-green-600"><MessageCircle className="w-5 h-5" /></Button>
-              <Button onClick={handleTelegramConnect} variant="ghost" size="icon" className="text-blue-600"><Send className="w-5 h-5" /></Button>
-              <Button onClick={() => navigate('/user-settings')} variant="ghost" size="icon" className="text-gray-400"><Settings className="w-5 h-5" /></Button>
+            <h1 className="text-lg md:text-xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">ControlYourMoney</h1>
+            <div className="flex items-center gap-0.5 md:gap-1">
+              <Button onClick={handleWhatsAppConnect} variant="ghost" size="icon" className="text-green-600 h-8 w-8 md:h-9 md:w-9"><MessageCircle className="w-4 h-4 md:w-5 md:h-5" /></Button>
+              <Button onClick={handleTelegramConnect} variant="ghost" size="icon" className="text-blue-600 h-8 w-8 md:h-9 md:w-9"><Send className="w-4 h-4 md:w-5 md:h-5" /></Button>
+              <Button onClick={() => navigate('/user-settings')} variant="ghost" size="icon" className="text-gray-400 h-8 w-8 md:h-9 md:w-9"><Settings className="w-4 h-4 md:w-5 md:h-5" /></Button>
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-6">
-          <div className="flex flex-col sm:flex-row gap-3 bg-white dark:bg-gray-900 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+        <div className="max-w-7xl mx-auto p-2 md:p-6 space-y-3 md:space-y-6">
+          <div className="flex flex-col sm:flex-row gap-2 md:gap-3 bg-white dark:bg-gray-900 p-2 md:p-3 rounded-xl md:rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
              <HouseholdSelector households={households} selectedId={selectedHouseholdId} onSelect={setSelectedHouseholdId} />
              <MonthYearSelector month={selectedMonth} year={selectedYear} onMonthChange={setSelectedMonth} onYearChange={setSelectedYear} />
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
             <SummaryCard title="הכנסות" value={totalIncome} icon={TrendingUp} color="green" />
             <SummaryCard title="הוצאות" value={totalExpenses} icon={TrendingDown} color="orange" />
             <SummaryCard title="יתרה" value={monthlyBalance} icon={Wallet} color={monthlyBalance >= 0 ? "blue" : "red"} />
@@ -167,20 +167,20 @@ export default function Dashboard() {
           </div>
 
           <Card className="bg-indigo-600 text-white border-none shadow-md">
-            <CardContent className="p-4 flex items-center gap-3">
-              <Zap className="w-5 h-5 text-yellow-300 shrink-0" />
-              <p className="text-sm font-medium">{monthlyBalance >= 0 ? `נשארו לכם ₪${(monthlyBalance || 0).toLocaleString()} לניצול החודש.` : `חרגתם ב-₪${Math.abs(monthlyBalance || 0).toLocaleString()}.`}</p>
+            <CardContent className="p-3 md:p-4 flex items-center gap-2 md:gap-3">
+              <Zap className="w-4 h-4 md:w-5 md:h-5 text-yellow-300 shrink-0" />
+              <p className="text-xs md:text-sm font-medium">{monthlyBalance >= 0 ? `נשארו לכם ₪${(monthlyBalance || 0).toLocaleString()} לניצול החודש.` : `חרגתם ב-₪${Math.abs(monthlyBalance || 0).toLocaleString()}.`}</p>
             </CardContent>
           </Card>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <div className="sticky top-16 z-30 bg-[#f8fafc]/80 dark:bg-gray-950/80 backdrop-blur-sm py-2">
-              <TabsList className="w-full justify-start bg-white dark:bg-gray-900 border border-gray-100 rounded-full h-11 overflow-x-auto no-scrollbar">
-                <TabsTrigger value="overview" className="rounded-full flex-1">סקירה</TabsTrigger>
-                <TabsTrigger value="budget" className="rounded-full flex-1">תקציב</TabsTrigger>
-                <TabsTrigger value="income" className="rounded-full flex-1">הכנסות</TabsTrigger>
-                <TabsTrigger value="expenses" className="rounded-full flex-1">הוצאות</TabsTrigger>
-                <TabsTrigger value="debts" className="rounded-full flex-1">חובות</TabsTrigger>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 md:space-y-4">
+            <div className="sticky top-14 md:top-16 z-30 bg-[#f8fafc]/80 dark:bg-gray-950/80 backdrop-blur-sm py-1.5 md:py-2">
+              <TabsList className="w-full justify-start bg-white dark:bg-gray-900 border border-gray-100 rounded-full h-9 md:h-11 overflow-x-auto no-scrollbar px-1">
+                <TabsTrigger value="overview" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">סקירה</TabsTrigger>
+                <TabsTrigger value="budget" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">תקציב</TabsTrigger>
+                <TabsTrigger value="income" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">הכנסות</TabsTrigger>
+                <TabsTrigger value="expenses" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">הוצאות</TabsTrigger>
+                <TabsTrigger value="debts" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">חובות</TabsTrigger>
               </TabsList>
             </div>
 
@@ -196,11 +196,11 @@ export default function Dashboard() {
                    <BudgetSettingsTab householdId={selectedHouseholdId} month={selectedMonth} year={selectedYear} existingBudgets={budgetSettings} allCustomCategories={[]} onSave={handleSaveBudgetSettings} />
                 </TabsContent>
 
-                <TabsContent value="income" className="space-y-4">
+                <TabsContent value="income" className="space-y-3 md:space-y-4">
                   <div className="flex justify-between items-center mb-2 px-1">
-                    <h2 className="text-lg font-bold">פירוט הכנסות</h2>
-                    <Button onClick={() => { setEditItem(null); setIncomeFormOpen(true); }} className="bg-green-600 rounded-xl h-10 px-4 gap-2">
-                      <Plus className="w-4 h-4" /> הוסף הכנסה
+                    <h2 className="text-base md:text-lg font-bold">פירוט הכנסות</h2>
+                    <Button onClick={() => { setEditItem(null); setIncomeFormOpen(true); }} className="bg-green-600 rounded-lg md:rounded-xl h-9 md:h-10 px-3 md:px-4 gap-1.5 md:gap-2 text-sm md:text-base">
+                      <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" /> <span className="hidden sm:inline">הוסף</span> הכנסה
                     </Button>
                   </div>
                   <DataTable data={incomes} columns={[
@@ -209,11 +209,11 @@ export default function Dashboard() {
                   ]} onDelete={(i) => base44.entities.Income.delete(i.id).then(handleRefresh)} onEdit={(i) => {setEditItem(i); setIncomeFormOpen(true);}} />
                 </TabsContent>
 
-                <TabsContent value="expenses" className="space-y-4">
+                <TabsContent value="expenses" className="space-y-3 md:space-y-4">
                   <div className="flex justify-between items-center mb-2 px-1">
-                    <h2 className="text-lg font-bold">פירוט הוצאות</h2>
-                    <Button onClick={() => { setEditItem(null); setExpenseFormOpen(true); }} className="bg-orange-500 rounded-xl h-10 px-4 gap-2">
-                      <Plus className="w-4 h-4" /> הוסף הוצאה
+                    <h2 className="text-base md:text-lg font-bold">פירוט הוצאות</h2>
+                    <Button onClick={() => { setEditItem(null); setExpenseFormOpen(true); }} className="bg-orange-500 rounded-lg md:rounded-xl h-9 md:h-10 px-3 md:px-4 gap-1.5 md:gap-2 text-sm md:text-base">
+                      <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" /> <span className="hidden sm:inline">הוסף</span> הוצאה
                     </Button>
                   </div>
                   <DataTable data={expenses.filter(e => !e.is_budget || e.is_current)} columns={[
@@ -222,11 +222,11 @@ export default function Dashboard() {
                   ]} onDelete={(e) => base44.entities.Expense.delete(e.id).then(handleRefresh)} onEdit={(e) => {setEditItem(e); setExpenseFormOpen(true);}} />
                 </TabsContent>
 
-                <TabsContent value="debts" className="space-y-4">
+                <TabsContent value="debts" className="space-y-3 md:space-y-4">
                   <div className="flex justify-between items-center mb-2 px-1">
-                    <h2 className="text-lg font-bold">פירוט חובות</h2>
-                    <Button onClick={() => { setEditItem(null); setDebtFormOpen(true); }} className="bg-red-500 rounded-xl h-10 px-4 gap-2">
-                      <Plus className="w-4 h-4" /> הוסף חוב
+                    <h2 className="text-base md:text-lg font-bold">פירוט חובות</h2>
+                    <Button onClick={() => { setEditItem(null); setDebtFormOpen(true); }} className="bg-red-500 rounded-lg md:rounded-xl h-9 md:h-10 px-3 md:px-4 gap-1.5 md:gap-2 text-sm md:text-base">
+                      <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" /> <span className="hidden sm:inline">הוסף</span> חוב
                     </Button>
                   </div>
                   <DataTable data={debts} columns={[
