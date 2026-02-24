@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
     let isCallback = false;
     let callbackQueryId = null;
 
-    // 1. ניתוב משודרג: מאיפה הגיעה ההודעה ואיזה סוג היא?
+    // 1. ניתוב: מאיפה הגיעה ההודעה ואיזה סוג היא?
     if (payload.typeWebhook === 'incomingMessageReceived') {
       platform = 'whatsapp';
       const botNumber = payload.instanceData?.wid;
@@ -28,7 +28,6 @@ Deno.serve(async (req) => {
       messageBody = payload.message.text || "";
       cleanFrom = sender;
     } 
-    // זיהוי לחיצה על כפתור בטלגרם!
     else if (payload.callback_query) {
       platform = 'telegram';
       isCallback = true;
@@ -36,7 +35,6 @@ Deno.serve(async (req) => {
       sender = payload.callback_query.message.chat.id.toString();
       cleanFrom = sender;
       
-      // תרגום הכפתור השקט לטקסט שה-AI יבין
       const data = payload.callback_query.data;
       if (data === 'get_monthly_summary') messageBody = "סיכום חודשי";
       else if (data === 'undo_last_expense') messageBody = "ביטול הוצאה";
@@ -52,7 +50,6 @@ Deno.serve(async (req) => {
     const apiTokenInstance = Deno.env.get("apiTokenInstance");
     const telegramToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
 
-    // עצירת ספינר הטעינה המסתובב של הכפתור בטלגרם
     if (isCallback && telegramToken) {
       await fetch(`https://api.telegram.org/bot${telegramToken}/answerCallbackQuery`, {
         method: 'POST',
@@ -103,7 +100,7 @@ Deno.serve(async (req) => {
       return new Response("OK");
     }
 
-    // 3. הגדרות AI - נוספו דוגמאות מפורשות של "היום" ושל הכפתורים!
+    // 3. הגדרות AI - שדרוג עם סינון קטגוריות לסיכומים!
     const categoryLabels = {
       food: "מזון ופארמה", leisure: "פנאי ובילוי", clothing: "ביגוד והנעלה", household_items: "תכולת בית", 
       home_maintenance: "אחזקת בית", grooming: "טיפוח", education: "חינוך", events: "אירועים ותרומות", 
@@ -116,22 +113,22 @@ Deno.serve(async (req) => {
 
       דוגמאות חובה ללמידה:
       - "סופר 50 שקל" -> intent: "add_expense", amount: 50, category: "food"
-      - "דלק 200" -> intent: "add_expense", amount: 200, category: "transportation"
       - "כמה הוצאתי?" -> intent: "get_summary_expenses", period: "month"
-      - "כמה הוצאתי היום?" -> intent: "get_summary_expenses", period: "today"
+      - "כמה הוצאתי היום על בגדים?" -> intent: "get_summary_expenses", period: "today", summary_category: "clothing"
+      - "כמה הוצאתי השבוע על סופר?" -> intent: "get_summary_expenses", period: "week", summary_category: "food"
       - "סיכום חודשי" -> intent: "get_summary_expenses", period: "month"
       - "ביטול הוצאה" -> intent: "undo_expense"
 
       חוקים: 
-      1. אם מופיע "היום", חובה לבחור period: "today". אם "השבוע", period: "week".
-      2. חלץ מספר אם קיים לפעולת הוצאה.
+      1. אם מופיע "היום" או "החודש" בשאלה על סיכום, עדכן את ה-period בהתאם.
+      2. אם המשתמש שואל בסיכום על תחום ספציפי (בגדים, אוכל, דלק), הוסף את השדה summary_category.
 
       החזר JSON:`,
       response_json_schema: {
         type: "object",
         properties: {
           intent: { type: "string" }, amount: { type: "number" }, description: { type: "string" },
-          category: { type: "string" }, period: { type: "string" }, chat_reply: { type: "string" }
+          category: { type: "string" }, period: { type: "string" }, summary_category: { type: "string" }, chat_reply: { type: "string" }
         }
       }
     });
@@ -174,15 +171,12 @@ Deno.serve(async (req) => {
         };
       }
     } 
-    // הוספת מנגנון אמיתי לביטול הוצאה!
     else if (aiDecision.intent === 'undo_expense') {
       const allExpenses = await base44.asServiceRole.entities.Expense.filter({ household_id: household.id });
       if (allExpenses && allExpenses.length > 0) {
-         // מיון לפי תאריך כדי למצוא את ההוצאה האחרונה ביותר
          allExpenses.sort((a, b) => new Date(b.created_at || b.created_date) - new Date(a.created_at || a.created_date));
          const lastExpense = allExpenses[0];
          
-         // מחיקה מה-Database!
          await base44.asServiceRole.entities.Expense.delete(lastExpense.id);
          
          const catName = categoryLabels[lastExpense.category] || lastExpense.category;
@@ -197,7 +191,6 @@ Deno.serve(async (req) => {
     else if (aiDecision.intent === 'get_summary_expenses' || aiDecision.intent === 'get_summary_incomes') {
       const entityName = aiDecision.intent === 'get_summary_expenses' ? 'Expense' : 'Income';
       
-      // סינון תאריכים לפי "היום", "השבוע" או "החודש"
       const startDate = new Date();
       if (aiDecision.period === 'today') {
         startDate.setHours(0, 0, 0, 0);
@@ -217,14 +210,40 @@ Deno.serve(async (req) => {
         const itemDate = new Date(item.created_at || item.created_date || item._createdDate);
         return itemDate >= startDate;
       });
+
+      // סינון לפי קטגוריה אם המשתמש ביקש
+      if (aiDecision.summary_category) {
+        filteredItems = filteredItems.filter(item => item.category === aiDecision.summary_category);
+      }
       
-      const periodLabel = aiDecision.period === 'today' ? 'היום' : aiDecision.period === 'week' ? 'השבוע' : 'החודש';
+      // יצירת התאריך והיום בעברית
+      const daysHebrew = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
+      const currentDayName = daysHebrew[now.getDay()];
+      const formattedDate = `${now.getDate()}/${now.getMonth() + 1}`;
+      
+      let periodLabel = '';
+      if (aiDecision.period === 'today') periodLabel = `היום (יום ${currentDayName}, ${formattedDate})`;
+      else if (aiDecision.period === 'week') periodLabel = `השבוע האחרון`;
+      else periodLabel = `החודש`;
+
+      const typeLabel = aiDecision.intent === 'get_summary_expenses' ? 'הוצאות' : 'הכנסות';
+      const categoryLabelForText = aiDecision.summary_category ? ` על ${categoryLabels[aiDecision.summary_category] || aiDecision.summary_category}` : '';
 
       if (!filteredItems || filteredItems.length === 0) {
-        finalReply = `📊 לא מצאתי רישומים עבור ${periodLabel}.`;
+        finalReply = `📊 לא מצאתי ${typeLabel}${categoryLabelForText} עבור ${periodLabel}.`;
       } else {
         const total = filteredItems.reduce((s, i) => s + (i.amount || 0), 0);
-        finalReply = `📊 סיכום עבור ${periodLabel}:\n\n💰 סה"כ: ₪${total.toLocaleString()}\n📝 פריטים: ${filteredItems.length}`;
+        finalReply = `📊 סיכום ${typeLabel}${categoryLabelForText} עבור ${periodLabel}:\n\n💰 סה"כ: ₪${total.toLocaleString()}\n📝 פריטים: ${filteredItems.length}`;
+        
+        // הוספת פירוט קצר של הפריטים כדי שזה יהיה חכם
+        const itemsList = filteredItems.slice(-5).reverse().map(i => {
+          const cat = categoryLabels[i.category] || i.category;
+          return `• ${i.description || cat}: ₪${(i.amount || 0).toLocaleString()}`;
+        }).join('\n');
+        
+        if (itemsList) {
+          finalReply += `\n\n📋 פירוט הפריטים:\n${itemsList}`;
+        }
       }
     }
 
