@@ -8,8 +8,10 @@ Deno.serve(async (req) => {
     let sender = '';
     let cleanFrom = '';
     let messageBody = '';
+    let isCallback = false;
+    let callbackQueryId = null;
 
-    // 1. ניתוב: מאיפה הגיעה ההודעה?
+    // 1. ניתוב משודרג: מאיפה הגיעה ההודעה ואיזה סוג היא?
     if (payload.typeWebhook === 'incomingMessageReceived') {
       platform = 'whatsapp';
       const botNumber = payload.instanceData?.wid;
@@ -26,6 +28,19 @@ Deno.serve(async (req) => {
       messageBody = payload.message.text || "";
       cleanFrom = sender;
     } 
+    // זיהוי לחיצה על כפתור בטלגרם!
+    else if (payload.callback_query) {
+      platform = 'telegram';
+      isCallback = true;
+      callbackQueryId = payload.callback_query.id;
+      sender = payload.callback_query.message.chat.id.toString();
+      cleanFrom = sender;
+      
+      // תרגום הכפתור השקט לטקסט שה-AI יבין
+      const data = payload.callback_query.data;
+      if (data === 'get_monthly_summary') messageBody = "סיכום חודשי";
+      else if (data === 'undo_last_expense') messageBody = "ביטול הוצאה";
+    }
     else {
       return new Response("OK");
     }
@@ -37,7 +52,15 @@ Deno.serve(async (req) => {
     const apiTokenInstance = Deno.env.get("apiTokenInstance");
     const telegramToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
 
-    // פונקציית תגובה מופרדת לוגית (כאן טלגרם יכול לקבל כפתורים!)
+    // עצירת ספינר הטעינה המסתובב של הכפתור בטלגרם
+    if (isCallback && telegramToken) {
+      await fetch(`https://api.telegram.org/bot${telegramToken}/answerCallbackQuery`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ callback_query_id: callbackQueryId })
+      }).catch(e => console.log("Failed to stop Telegram spinner"));
+    }
+
     const replyToUser = async (text, telegramButtons = null) => {
       if (platform === 'whatsapp') {
         await sendWhatsApp(sender, text, idInstance, apiTokenInstance);
@@ -80,7 +103,7 @@ Deno.serve(async (req) => {
       return new Response("OK");
     }
 
-    // 3. הגדרות AI - שדרוג עם דוגמאות (Few-Shot Prompting)
+    // 3. הגדרות AI - נוספו דוגמאות מפורשות של "היום" ושל הכפתורים!
     const categoryLabels = {
       food: "מזון ופארמה", leisure: "פנאי ובילוי", clothing: "ביגוד והנעלה", household_items: "תכולת בית", 
       home_maintenance: "אחזקת בית", grooming: "טיפוח", education: "חינוך", events: "אירועים ותרומות", 
@@ -93,12 +116,15 @@ Deno.serve(async (req) => {
 
       דוגמאות חובה ללמידה:
       - "סופר 50 שקל" -> intent: "add_expense", amount: 50, category: "food"
-      - "קניתי בגדים ב-600" -> intent: "add_expense", amount: 600, category: "clothing"
       - "דלק 200" -> intent: "add_expense", amount: 200, category: "transportation"
-      - "מה המצב?" -> intent: "chat", chat_reply: "מעולה! מה קנינו היום?"
       - "כמה הוצאתי?" -> intent: "get_summary_expenses", period: "month"
+      - "כמה הוצאתי היום?" -> intent: "get_summary_expenses", period: "today"
+      - "סיכום חודשי" -> intent: "get_summary_expenses", period: "month"
+      - "ביטול הוצאה" -> intent: "undo_expense"
 
-      חוק ברזל: אם יש מספר לצד שם של עסק/מוצר, זה תמיד "add_expense" ותחלץ את המספר. אל תשאל שאלות אם יש מספר!
+      חוקים: 
+      1. אם מופיע "היום", חובה לבחור period: "today". אם "השבוע", period: "week".
+      2. חלץ מספר אם קיים לפעולת הוצאה.
 
       החזר JSON:`,
       response_json_schema: {
@@ -110,11 +136,11 @@ Deno.serve(async (req) => {
       }
     });
 
-    let finalReply = "מצטער, לא הצלחתי להבין. אפשר לכתוב שוב (למשל: 'סופר 50')?";
-    let optionalTelegramButtons = null; // משתנה שיחזיק את הכפתורים לטלגרם
+    let finalReply = "מצטער, לא הצלחתי להבין. אפשר לכתוב שוב?";
+    let optionalTelegramButtons = null;
     const now = new Date();
 
-    // 4. ביצוע פעולות ב-DB
+    // 4. פעולות ב-DB
     if (aiDecision.intent === 'add_expense' || aiDecision.intent === 'add_income') {
       const entityName = aiDecision.intent === 'add_expense' ? 'Expense' : 'Income';
       let finalCategory = aiDecision.category || 'other';
@@ -135,30 +161,8 @@ Deno.serve(async (req) => {
       });
       
       const categoryLabel = categoryLabels[finalCategory] || finalCategory;
-      let budgetInfo = '';
+      finalReply = `✅ רשמתי ₪${finalAmount} ל-${categoryLabel}.`;
       
-      if (aiDecision.intent === 'add_expense') {
-        try {
-          const budgetItems = await base44.asServiceRole.entities.Expense.filter({
-            household_id: household.id, category: finalCategory, month: now.getMonth() + 1, year: now.getFullYear(), is_budget: true
-          });
-          
-          if (budgetItems?.[0]) {
-            const budgetAmount = budgetItems[0].amount || 0;
-            const currentExpenses = await base44.asServiceRole.entities.Expense.filter({
-              household_id: household.id, category: finalCategory, month: now.getMonth() + 1, year: now.getFullYear(), is_current: true
-            });
-            const totalSpent = currentExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-            const remaining = budgetAmount - totalSpent;
-            
-            budgetInfo = remaining < 0 ? `\n⚠️ חרגת ב-₪${Math.abs(remaining).toLocaleString()} מהתקציב.` : `\n💰 נותרו ₪${remaining.toLocaleString()} בתקציב.`;
-          }
-        } catch (e) { console.log(e); }
-      }
-      
-      finalReply = `✅ רשמתי ₪${finalAmount} ל-${categoryLabel}.${budgetInfo}`;
-      
-      // הגדרת כפתורים רק למשתמשי טלגרם!
       if (platform === 'telegram') {
         optionalTelegramButtons = {
           inline_keyboard: [
@@ -169,26 +173,61 @@ Deno.serve(async (req) => {
           ]
         };
       }
-
     } 
+    // הוספת מנגנון אמיתי לביטול הוצאה!
+    else if (aiDecision.intent === 'undo_expense') {
+      const allExpenses = await base44.asServiceRole.entities.Expense.filter({ household_id: household.id });
+      if (allExpenses && allExpenses.length > 0) {
+         // מיון לפי תאריך כדי למצוא את ההוצאה האחרונה ביותר
+         allExpenses.sort((a, b) => new Date(b.created_at || b.created_date) - new Date(a.created_at || a.created_date));
+         const lastExpense = allExpenses[0];
+         
+         // מחיקה מה-Database!
+         await base44.asServiceRole.entities.Expense.delete(lastExpense.id);
+         
+         const catName = categoryLabels[lastExpense.category] || lastExpense.category;
+         finalReply = `🗑️ ההוצאה האחרונה בוטלה בהצלחה!\n(הוסרו ₪${lastExpense.amount} מ-${catName})`;
+      } else {
+         finalReply = `לא מצאתי הוצאות קודמות לביטול במערכת.`;
+      }
+    }
     else if (aiDecision.intent === 'chat') {
       finalReply = aiDecision.chat_reply || "שמח לעזור! ספרו לי מה קניתם וכמה זה עלה.";
     } 
     else if (aiDecision.intent === 'get_summary_expenses' || aiDecision.intent === 'get_summary_incomes') {
       const entityName = aiDecision.intent === 'get_summary_expenses' ? 'Expense' : 'Income';
+      
+      // סינון תאריכים לפי "היום", "השבוע" או "החודש"
+      const startDate = new Date();
+      if (aiDecision.period === 'today') {
+        startDate.setHours(0, 0, 0, 0);
+      } else if (aiDecision.period === 'week') {
+        startDate.setDate(startDate.getDate() - 7);
+        startDate.setHours(0, 0, 0, 0);
+      } else {
+        startDate.setDate(1);
+        startDate.setHours(0, 0, 0, 0);
+      }
+
       const allItems = await base44.asServiceRole.entities[entityName].filter({ 
         household_id: household.id, month: now.getMonth() + 1, year: now.getFullYear(), is_current: true 
       });
       
-      if (!allItems || allItems.length === 0) {
-        finalReply = `📊 אין עדיין רישומים לחודש זה.`;
+      let filteredItems = allItems.filter(item => {
+        const itemDate = new Date(item.created_at || item.created_date || item._createdDate);
+        return itemDate >= startDate;
+      });
+      
+      const periodLabel = aiDecision.period === 'today' ? 'היום' : aiDecision.period === 'week' ? 'השבוע' : 'החודש';
+
+      if (!filteredItems || filteredItems.length === 0) {
+        finalReply = `📊 לא מצאתי רישומים עבור ${periodLabel}.`;
       } else {
-        const total = allItems.reduce((s, i) => s + (i.amount || 0), 0);
-        finalReply = `📊 סיכום לחודש זה:\n\n💰 סה"כ: ₪${total.toLocaleString()}\n📝 פריטים החודש: ${allItems.length}`;
+        const total = filteredItems.reduce((s, i) => s + (i.amount || 0), 0);
+        finalReply = `📊 סיכום עבור ${periodLabel}:\n\n💰 סה"כ: ₪${total.toLocaleString()}\n📝 פריטים: ${filteredItems.length}`;
       }
     }
 
-    // שליחת התגובה (הפונקציה תדע אם לשלוח טקסט בוואטסאפ או כפתורים בטלגרם)
     await replyToUser(finalReply, optionalTelegramButtons);
     return new Response("OK");
 
@@ -198,7 +237,6 @@ Deno.serve(async (req) => {
   }
 });
 
-// פונקציות העזר
 async function sendWhatsApp(chatId, text, id, token) {
   await fetch(`https://7103.api.greenapi.com/waInstance${id}/sendMessage/${token}`, {
     method: 'POST',
@@ -210,7 +248,7 @@ async function sendWhatsApp(chatId, text, id, token) {
 async function sendTelegram(chatId, text, token, replyMarkup = null) {
   const body = { chat_id: chatId, text: text };
   if (replyMarkup) {
-    body.reply_markup = replyMarkup; // הוספת הכפתורים אם יש
+    body.reply_markup = replyMarkup; 
   }
   
   await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
