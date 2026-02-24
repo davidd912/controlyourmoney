@@ -172,7 +172,11 @@ export default function UserSettings() {
       code = response.data.activation_code;
     }
     
-    const whatsappNumber = '972559725996';
+    // Fetch dynamic WhatsApp number from SystemConfig
+    const systemConfig = await base44.entities.SystemConfig.list();
+    const whatsappBotNumberItem = systemConfig?.find(config => config.key === 'whatsapp_bot_number');
+    const whatsappNumber = whatsappBotNumberItem?.value || '972559725996';
+    
     const message = encodeURIComponent(code);
     const url = `https://api.whatsapp.com/send/?phone=${whatsappNumber}&text=${message}&type=phone_number&app_absent=0`;
     window.open(url, '_blank');
