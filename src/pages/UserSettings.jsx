@@ -309,9 +309,100 @@ export default function UserSettings() {
         </Card>
 
         {user?.role === 'admin' && (
-          <div className="mb-6">
-            <AnnouncementManager />
-          </div>
+          <>
+            <Card className="mb-6 border-2 dark:bg-gray-800 dark:border-gray-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 dark:text-white">
+                  <BarChart3 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  סטטיסטיקות מערכת - Admin
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {stats ? (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Users className="w-5 h-5 text-blue-600" />
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">משתמשים חדשים היום</p>
+                        </div>
+                        <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.newUsersToday?.length || 0}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">סה"כ במערכת: {stats.totalUsers || 0}</p>
+                      </div>
+                      <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border-2 border-green-200 dark:border-green-800">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Home className="w-5 h-5 text-green-600" />
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">משקי בית חדשים היום</p>
+                        </div>
+                        <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.newHouseholdsToday?.length || 0}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">סה"כ במערכת: {stats.totalHouseholds || 0}</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2 text-gray-900 dark:text-white">
+                        <Calendar className="w-5 h-5 text-purple-600" />
+                        משתמשים לפי תאריך
+                      </h3>
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {Object.entries(stats.usersByDate || {}).sort((a, b) => b[0].localeCompare(a[0])).map(([date, users]) => (
+                          <div key={date} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div className="flex justify-between items-center mb-2">
+                              <Badge variant="secondary" className="text-xs">{users.length} משתמשים</Badge>
+                              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                {new Date(date).toLocaleDateString('he-IL')}
+                              </span>
+                            </div>
+                            <div className="space-y-1">
+                              {users.map(user => (
+                                <div key={user.id} className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                                  <Mail className="w-3 h-3" />
+                                  {user.full_name} ({user.email})
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2 text-gray-900 dark:text-white">
+                        <Calendar className="w-5 h-5 text-green-600" />
+                        משקי בית לפי תאריך
+                      </h3>
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {Object.entries(stats.householdsByDate || {}).sort((a, b) => b[0].localeCompare(a[0])).map(([date, households]) => (
+                          <div key={date} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div className="flex justify-between items-center mb-2">
+                              <Badge className="text-xs bg-green-100 text-green-800">{households.length} משק בית</Badge>
+                              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                {new Date(date).toLocaleDateString('he-IL')}
+                              </span>
+                            </div>
+                            <div className="space-y-1">
+                              {households.map(h => (
+                                <div key={h.id} className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                                  <Home className="w-3 h-3" />
+                                  {h.name} - {h.owner_email} ({h.members_count} חברים)
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">טוען נתונים...</p>
+                )}
+              </CardContent>
+            </Card>
+
+            <div className="mb-6">
+              <AnnouncementManager />
+            </div>
+          </>
         )}
 
         <div className="mb-6">
