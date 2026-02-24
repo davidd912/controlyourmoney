@@ -65,7 +65,7 @@ export default function DataTable({
 
   if (isMobile) {
     return (
-      <div className="space-y-3 px-4">
+      <div className="space-y-3">
         <AnimatePresence>
           {data.map((item, index) => (
             <motion.div
@@ -75,39 +75,29 @@ export default function DataTable({
               exit={{ opacity: 0, x: -50 }}
               transition={{ duration: 0.2, delay: index * 0.02 }}
             >
-              <Card className="rounded-lg shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="text-lg font-bold text-primary">
-                      {columns[2] && columns[2].render ? columns[2].render(item[columns[2].key], item) : item[columns[2].key]}
+              <Card className="rounded-lg shadow-sm bg-white dark:bg-gray-800">
+                <CardContent className="p-3">
+                  <div className="flex justify-between items-start gap-3 mb-2">
+                    <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex-1">
+                      {columns[0] && columns[0].render ? columns[0].render(item[columns[0].key], item) : item[columns[0]?.key]}
                     </div>
-                    <div className="text-base font-semibold text-foreground">
-                      {columns[0] && columns[0].render ? columns[0].render(item[columns[0].key], item) : item[columns[0].key]}
+                    <div className="text-base font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                      {columns[1] && columns[1].render ? columns[1].render(item[columns[1].key], item) : item[columns[1]?.key]}
                     </div>
                   </div>
-                  {columns[1] && item[columns[1].key] && (
-                    <div className="text-sm text-muted-foreground mb-2">
-                      {columns[1].label}: {columns[1].render ? columns[1].render(item[columns[1].key], item) : item[columns[1].key]}
+                  {columns.length > 2 && columns[2] && item[columns[2].key] && (
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 line-clamp-2">
+                      {columns[2].render ? columns[2].render(item[columns[2].key], item) : item[columns[2].key]}
                     </div>
                   )}
-                  {columns[3] && item[columns[3].key] && (
-                    <div className="text-sm text-muted-foreground mb-2">
-                      {columns[3].render ? columns[3].render(item[columns[3].key], item) : item[columns[3].key]}
-                    </div>
-                  )}
-                  {columns[4] && item[columns[4].key] && (
-                    <div className="mb-2">
-                      {columns[4].render ? columns[4].render(item[columns[4].key], item) : item[columns[4].key]}
-                    </div>
-                  )}
-                  <div className="flex gap-2 justify-end mt-3 pt-3 border-t">
+                  <div className="flex gap-2 justify-end mt-3 pt-2 border-t border-gray-100 dark:border-gray-700">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onEdit(item)}
-                      className="text-primary hover:bg-primary/10"
+                      className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 h-8 px-3 text-xs"
                     >
-                      <Pencil className="h-4 w-4 ml-1" />
+                      <Pencil className="h-3.5 w-3.5 ml-1" />
                       ערוך
                     </Button>
                     <Button
@@ -117,9 +107,9 @@ export default function DataTable({
                         await onDelete(item);
                         await new Promise(resolve => setTimeout(resolve, 200));
                       }}
-                      className="text-destructive hover:bg-destructive/10"
+                      className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 h-8 px-3 text-xs"
                     >
-                      <Trash2 className="h-4 w-4 ml-1" />
+                      <Trash2 className="h-3.5 w-3.5 ml-1" />
                       מחק
                     </Button>
                   </div>
