@@ -261,29 +261,25 @@ function LayoutContent({ children, currentPageName }) {
           </AnimatePresence>
         </main>
 
-        {/* WhatsApp & Telegram Floating Buttons */}
-        {(user?.role === 'admin' || user?.role === 'POC' || user?.data?.whatsapp_beta_access) && showWhatsappButton && (
-          <div className="fixed left-6 bottom-24 md:bottom-8 z-40 flex items-center gap-4">
-            <Button onClick={() => navigate(createPageUrl('Dashboard'), { state: { action: 'whatsapp' } })} className="rounded-full bg-green-500 hover:bg-green-600 text-white shadow-lg">
-              <MessageCircle className="w-5 h-5 mr-2" /> WHATSAPP
-            </Button>
-            <Button onClick={() => navigate(createPageUrl('Dashboard'), { state: { action: 'telegram' } })} className="rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg">
-              <MessageCircle className="w-5 h-5 mr-2" /> TELEGRAM
-            </Button>
-          </div>
-        )}
-
         {/* Bottom Nav for Mobile */}
-        <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-gray-800 border-t flex justify-around items-center h-[72px]">
-          {leftNavItems.map(item => (
-            <Link key={item.page} to={createPageUrl(item.page)} className="flex flex-col items-center text-[10px]"><item.icon className="w-5 h-5" />{item.name}</Link>
-          ))}
-          <Button onClick={() => window.dispatchEvent(new CustomEvent('openFABMenu'))} className="w-14 h-14 rounded-full -mt-8 shadow-xl bg-blue-600 text-white">
-            <Plus className="w-7 h-7" />
-          </Button>
-          {rightNavItems.map(item => (
-            <Link key={item.page} to={createPageUrl(item.page)} className="flex flex-col items-center text-[10px]"><item.icon className="w-5 h-5" />{item.name}</Link>
-          ))}
+        <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-gray-800 border-t shadow-lg">
+          <div className="flex justify-around items-center h-16 px-2">
+            {navigation.map(item => {
+              const isActive = currentPageName === item.page;
+              return (
+                <Link 
+                  key={item.page} 
+                  to={createPageUrl(item.page)} 
+                  className={`flex flex-col items-center justify-center gap-1 flex-1 py-2 transition-colors ${
+                    isActive ? 'text-blue-600' : 'text-gray-600 dark:text-gray-400'
+                  }`}
+                >
+                  <item.icon className={`w-6 h-6 ${isActive ? 'stroke-[2.5]' : ''}`} />
+                  <span className="text-[10px] font-medium">{item.name}</span>
+                </Link>
+              );
+            })}
+          </div>
         </nav>
 
         {/* FAB Menu */}
