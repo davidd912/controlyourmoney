@@ -145,6 +145,48 @@ export default function Dashboard() {
   const handleRefresh = async () => queryClient.invalidateQueries();
   const openForm = (type) => { setEditItem(null); setIsFabMenuOpen(false); if (type === 'income') setIncomeFormOpen(true); if (type === 'expense') setExpenseFormOpen(true); if (type === 'debt') setDebtFormOpen(true); };
 
+  const handleSaveIncome = async (data) => {
+    const payload = { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear };
+    if (editItem) {
+      await base44.entities.Income.update(editItem.id, payload);
+      showToast('ההכנסה עודכנה בהצלחה!', 'success');
+    } else {
+      await base44.entities.Income.create(payload);
+      showToast('ההכנסה נוספה בהצלחה!', 'success');
+    }
+    handleRefresh();
+    setIncomeFormOpen(false);
+    setEditItem(null);
+  };
+
+  const handleSaveExpense = async (data) => {
+    const payload = { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear };
+    if (editItem) {
+      await base44.entities.Expense.update(editItem.id, payload);
+      showToast('ההוצאה עודכנה בהצלחה!', 'success');
+    } else {
+      await base44.entities.Expense.create(payload);
+      showToast('ההוצאה נוספה בהצלחה!', 'success');
+    }
+    handleRefresh();
+    setExpenseFormOpen(false);
+    setEditItem(null);
+  };
+
+  const handleSaveDebt = async (data) => {
+    const payload = { ...data, household_id: selectedHouseholdId };
+    if (editItem) {
+      await base44.entities.Debt.update(editItem.id, payload);
+      showToast('החוב עודכן בהצלחה!', 'success');
+    } else {
+      await base44.entities.Debt.create(payload);
+      showToast('החוב נוסף בהצלחה!', 'success');
+    }
+    handleRefresh();
+    setDebtFormOpen(false);
+    setEditItem(null);
+  };
+
   if (loadingHouseholds || !selectedHouseholdId) return <div className="p-10 text-center">טוען...</div>;
 
   return (
