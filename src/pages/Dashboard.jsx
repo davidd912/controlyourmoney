@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Plus, TrendingUp, TrendingDown, Wallet, CreditCard, PiggyBank,
   AlertCircle, Download, Users, MessageCircle, Send, Zap, Activity,
-  ArrowUpRight, ArrowDownLeft, RefreshCw, Copy, CheckCircle
+  ArrowUpRight, ArrowDownLeft, RefreshCw, Copy, CheckCircle, Settings
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -52,20 +52,16 @@ export default function Dashboard() {
   const [assetFormOpen, setAssetFormOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [isFabMenuOpen, setIsFabMenuOpen] = useState(false);
-
-  // מערכת הודעות מרחפות (Toast) - חדש!
   const [toast, setToast] = useState(null);
   
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => {
-      setToast(null);
-    }, 3000); // ההודעה תיעלם אוטומטית אחרי 3 שניות
-  };
-
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user, households, selectedHouseholdId, setSelectedHouseholdId, loadingHouseholds } = useContext(HouseholdContext);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const incomeColumns = [
     { key: 'category', label: 'קטגוריה', render: (val) => incomeLabels[val] || val, minWidth: 120 },
@@ -117,24 +113,40 @@ export default function Dashboard() {
     enabled: !!selectedHouseholdId
   });
 
-  // לוגיקת שמירת תקציב מתוקנת עם הודעה מרחפת
+  const { data: systemConfig = [] } = useQuery({
+    queryKey: ['systemConfig'],
+    queryFn: () => base44.entities.SystemConfig.list()
+  });
+
   const handleSaveBudgetSettings = async (payload) => {
     const { budgets } = payload;
     const existing = await base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, is_budget: true, is_current: false });
     for (const b of existing) await base44.entities.Expense.delete(b.id);
-
     const toCreate = Object.entries(budgets).filter(([_, v]) => parseFloat(v) > 0).map(([key, val]) => ({
       household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear,
       category: key.startsWith('custom_') ? 'custom' : key,
       custom_category_name: key.startsWith('custom_') ? key.replace('custom_', '') : null,
       amount: parseFloat(val), is_budget: true, is_current: false, description: 'תקציב חודשי'
     }));
-
     if (toCreate.length > 0) await base44.entities.Expense.bulkCreate(toCreate);
     queryClient.invalidateQueries({ queryKey: ['budgetSettings'] });
-    
-    // החלפנו את ה-alert המעצבן בהודעה היוקרתית שלנו
-    showToast('התקציב החודשי נשמר ומוכן לעבודה! 🎯', 'success');
+    showToast('התקציב החודשי עודכן בהצלחה!', 'success');
+  };
+
+  const handleWhatsAppConnect = async () => {
+    const household = households.find(h => h.id === selectedHouseholdId);
+    if (!household) return;
+    const response = await base44.functions.invoke('generateActivationCode', { household_id: household.id });
+    const botNum = systemConfig?.find(c => c.key === 'whatsapp_bot_number')?.value || '972559725996';
+    window.open(`https://api.whatsapp.com/send/?phone=${botNum}&text=${encodeURIComponent(response.data.activation_code)}`, '_blank');
+  };
+
+  const handleTelegramConnect = async () => {
+    const household = households.find(h => h.id === selectedHouseholdId);
+    if (!household) return;
+    const response = await base44.functions.invoke('generateActivationCode', { household_id: household.id });
+    const botUser = systemConfig?.find(c => c.key === 'telegram_bot_username')?.value || 'controlyourmoneyy_bot';
+    window.open(`https://t.me/${botUser}?text=${encodeURIComponent('קוד הפעלה: ' + response.data.activation_code)}`, '_blank');
   };
 
   const totalIncome = incomes.reduce((sum, i) => sum + (i.amount || 0), 0);
@@ -145,48 +157,6 @@ export default function Dashboard() {
   const handleRefresh = async () => queryClient.invalidateQueries();
   const openForm = (type) => { setEditItem(null); setIsFabMenuOpen(false); if (type === 'income') setIncomeFormOpen(true); if (type === 'expense') setExpenseFormOpen(true); if (type === 'debt') setDebtFormOpen(true); };
 
-  const handleSaveIncome = async (data) => {
-    const payload = { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear };
-    if (editItem) {
-      await base44.entities.Income.update(editItem.id, payload);
-      showToast('ההכנסה עודכנה בהצלחה!', 'success');
-    } else {
-      await base44.entities.Income.create(payload);
-      showToast('ההכנסה נוספה בהצלחה!', 'success');
-    }
-    handleRefresh();
-    setIncomeFormOpen(false);
-    setEditItem(null);
-  };
-
-  const handleSaveExpense = async (data) => {
-    const payload = { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear };
-    if (editItem) {
-      await base44.entities.Expense.update(editItem.id, payload);
-      showToast('ההוצאה עודכנה בהצלחה!', 'success');
-    } else {
-      await base44.entities.Expense.create(payload);
-      showToast('ההוצאה נוספה בהצלחה!', 'success');
-    }
-    handleRefresh();
-    setExpenseFormOpen(false);
-    setEditItem(null);
-  };
-
-  const handleSaveDebt = async (data) => {
-    const payload = { ...data, household_id: selectedHouseholdId };
-    if (editItem) {
-      await base44.entities.Debt.update(editItem.id, payload);
-      showToast('החוב עודכן בהצלחה!', 'success');
-    } else {
-      await base44.entities.Debt.create(payload);
-      showToast('החוב נוסף בהצלחה!', 'success');
-    }
-    handleRefresh();
-    setDebtFormOpen(false);
-    setEditItem(null);
-  };
-
   if (loadingHouseholds || !selectedHouseholdId) return <div className="p-10 text-center">טוען...</div>;
 
   return (
@@ -194,11 +164,27 @@ export default function Dashboard() {
       <div dir="rtl" className="min-h-screen bg-[#f8fafc] dark:bg-gray-950 pb-24 relative overflow-hidden">
         <AnnouncementTicker />
         
-        {/* Header פרימיום */}
+        {/* Header - החזרת הכפתורים למעלה */}
         <div className="bg-white/90 dark:bg-gray-900/90 border-b border-gray-100 sticky top-0 z-40 backdrop-blur-md px-4 py-3">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">ControlYourMoney</h1>
-            <Button onClick={() => navigate('/user-settings')} variant="ghost" size="icon" className="rounded-full"><Users className="w-5 h-5" /></Button>
+            <div className="flex flex-col">
+              <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">ControlYourMoney</h1>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button onClick={handleWhatsAppConnect} variant="outline" size="sm" className="hidden md:flex rounded-full border-green-200 text-green-600 hover:bg-green-50 gap-2">
+                <MessageCircle className="w-4 h-4" /> WhatsApp
+              </Button>
+              <Button onClick={handleTelegramConnect} variant="outline" size="sm" className="hidden md:flex rounded-full border-blue-200 text-blue-600 hover:bg-blue-50 gap-2">
+                <Send className="w-4 h-4" /> Telegram
+              </Button>
+              
+              {/* כפתורים למובייל - בתוך ה-Header */}
+              <Button onClick={handleWhatsAppConnect} variant="ghost" size="icon" className="md:hidden text-green-600"><MessageCircle className="w-5 h-5" /></Button>
+              <Button onClick={handleTelegramConnect} variant="ghost" size="icon" className="md:hidden text-blue-600"><Send className="w-5 h-5" /></Button>
+              
+              <Button onClick={() => navigate(createPageUrl('UserSettings'))} variant="ghost" size="icon" className="rounded-full"><Settings className="w-5 h-5" /></Button>
+            </div>
           </div>
         </div>
 
@@ -215,7 +201,6 @@ export default function Dashboard() {
             <SummaryCard title="נכסים" value={0} icon={PiggyBank} color="purple" />
           </div>
 
-          {/* AI Insight */}
           <Card className="bg-indigo-600 text-white border-none shadow-md">
             <CardContent className="p-4 flex items-center gap-3">
               <Zap className="w-5 h-5 text-yellow-300 shrink-0" />
@@ -236,37 +221,31 @@ export default function Dashboard() {
 
             <AnimatePresence mode="wait">
               <motion.div key={activeTab} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.2 }}>
-                
                 <TabsContent value="overview" className="space-y-4">
                     <CategoryBreakdown expenses={actualExpenses} budgets={budgetSettings} />
                     <AlertPanel alerts={alerts} onDismiss={() => {}} onMarkRead={() => {}} onRefresh={() => {}} />
                 </TabsContent>
-
                 <TabsContent value="budget" className="space-y-4">
                    <BudgetSettingsTab householdId={selectedHouseholdId} month={selectedMonth} year={selectedYear} existingBudgets={budgetSettings} allCustomCategories={[]} onSave={handleSaveBudgetSettings} />
                 </TabsContent>
-
                 <TabsContent value="income" className="space-y-4">
                   <div className="flex justify-between items-center"><h2 className="text-lg font-bold">הכנסות</h2><Button onClick={() => openForm('income')} className="bg-blue-600 rounded-full"><Plus className="w-4 h-4 ml-2"/>הוסף</Button></div>
-                  <DataTable data={incomes} columns={incomeColumns} onEdit={(i) => { setEditItem(i); setIncomeFormOpen(true); }} onDelete={(i) => base44.entities.Income.delete(i.id).then(() => { handleRefresh(); showToast('הכנסה נמחקה', 'success'); })} />
+                  <DataTable data={incomes} columns={incomeColumns} onDelete={(i) => base44.entities.Income.delete(i.id).then(() => { handleRefresh(); showToast('הכנסה נמחקה', 'success'); })} />
                 </TabsContent>
-
                 <TabsContent value="expenses" className="space-y-4">
                   <div className="flex justify-between items-center"><h2 className="text-lg font-bold">הוצאות</h2><Button onClick={() => openForm('expense')} className="bg-orange-500 rounded-full"><Plus className="w-4 h-4 ml-2"/>הוסף</Button></div>
-                  <DataTable data={actualExpenses} columns={expenseColumns} onEdit={(e) => { setEditItem(e); setExpenseFormOpen(true); }} onDelete={(e) => base44.entities.Expense.delete(e.id).then(() => { handleRefresh(); showToast('הוצאה נמחקה', 'success'); })} />
+                  <DataTable data={actualExpenses} columns={expenseColumns} onDelete={(e) => base44.entities.Expense.delete(e.id).then(() => { handleRefresh(); showToast('הוצאה נמחקה', 'success'); })} />
                 </TabsContent>
-
                 <TabsContent value="debts" className="space-y-4">
                   <div className="flex justify-between items-center"><h2 className="text-lg font-bold">חובות</h2><Button onClick={() => openForm('debt')} className="bg-red-500 rounded-full"><Plus className="w-4 h-4 ml-2"/>הוסף</Button></div>
-                  <DataTable data={debts} columns={debtColumns} onEdit={(d) => { setEditItem(d); setDebtFormOpen(true); }} onDelete={(d) => base44.entities.Debt.delete(d.id).then(() => { handleRefresh(); showToast('חוב נמחק', 'success'); })} />
+                  <DataTable data={debts} columns={debtColumns} onDelete={(d) => base44.entities.Debt.delete(d.id).then(() => { handleRefresh(); showToast('חוב נמחק', 'success'); })} />
                 </TabsContent>
-
               </motion.div>
             </AnimatePresence>
           </Tabs>
         </div>
 
-        {/* FAB Menu במובייל */}
+        {/* FAB Menu - כפתור הוספה מרכזי בלבד */}
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
           <AnimatePresence>
             {isFabMenuOpen && (
@@ -280,29 +259,20 @@ export default function Dashboard() {
           <Button onClick={() => setIsFabMenuOpen(!isFabMenuOpen)} className={`w-14 h-14 rounded-full shadow-2xl transition-all ${isFabMenuOpen ? 'bg-gray-800 rotate-45' : 'bg-blue-600'}`}><Plus className="w-8 h-8 text-white" /></Button>
         </div>
 
-        {/* הודעות מרחפות (Toast) */}
+        {/* הודעות Toast */}
         <AnimatePresence>
           {toast && (
-            <motion.div
-              initial={{ opacity: 0, y: 50, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.9 }}
-              className="fixed bottom-24 md:bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-gray-900/95 backdrop-blur-sm text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-gray-700 pointer-events-none whitespace-nowrap"
-            >
-              {toast.type === 'success' ? (
-                <CheckCircle className="w-5 h-5 text-green-400" />
-              ) : (
-                <AlertCircle className="w-5 h-5 text-red-400" />
-              )}
-              <span className="font-medium text-sm md:text-base">{toast.message}</span>
+            <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.9 }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] bg-gray-900 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-gray-700">
+              {toast.type === 'success' ? <CheckCircle className="w-5 h-5 text-green-400" /> : <AlertCircle className="w-5 h-5 text-red-400" />}
+              <span className="font-medium text-sm whitespace-nowrap">{toast.message}</span>
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* טפסים */}
-        <IncomeForm open={incomeFormOpen} onClose={() => { setIncomeFormOpen(false); setEditItem(null); }} onSave={handleSaveIncome} editItem={editItem} />
-        <ExpenseForm open={expenseFormOpen} onClose={() => { setExpenseFormOpen(false); setEditItem(null); }} onSave={handleSaveExpense} editItem={editItem} remainingBudgetByCategory={{}} customCategories={[]} />
-        <DebtForm open={debtFormOpen} onClose={() => { setDebtFormOpen(false); setEditItem(null); }} onSave={handleSaveDebt} editItem={editItem} />
+        <IncomeForm open={incomeFormOpen} onClose={() => setIncomeFormOpen(false)} onSave={() => { handleRefresh(); showToast('ההכנסה נוספה בהצלחה!', 'success'); }} />
+        <ExpenseForm open={expenseFormOpen} onClose={() => setExpenseFormOpen(false)} onSave={() => { handleRefresh(); showToast('ההוצאה נוספה בהצלחה!', 'success'); }} remainingBudgetByCategory={{}} customCategories={[]} />
+        <DebtForm open={debtFormOpen} onClose={() => setDebtFormOpen(false)} onSave={() => { handleRefresh(); showToast('החוב עודכן בהצלחה!', 'success'); }} />
       </div>
     </PullToRefresh>
   );
