@@ -143,22 +143,32 @@ export default function Dashboard() {
 
         <div className="max-w-7xl mx-auto p-2 md:p-6 space-y-3 md:space-y-6">
           
-          {/* כפתורי WhatsApp ו-Telegram */}
-          <div className="flex gap-3 justify-center">
-            <Button 
-              onClick={handleWhatsAppConnect} 
-              className="flex-1 max-w-[200px] bg-green-500 hover:bg-green-600 text-white h-12 rounded-xl text-base font-bold shadow-lg flex items-center justify-center gap-2"
-            >
-              <MessageCircle className="w-5 h-5" />
-              WhatsApp
-            </Button>
-            <Button 
-              onClick={handleTelegramConnect} 
-              className="flex-1 max-w-[200px] bg-blue-500 hover:bg-blue-600 text-white h-12 rounded-xl text-base font-bold shadow-lg flex items-center justify-center gap-2"
-            >
-              <Send className="w-5 h-5" />
-              Telegram
-            </Button>
+          {/* כותרת עליונה עם כפתורים */}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4">
+            <div className="flex justify-between items-center">
+              <div className="text-right">
+                <h1 className="text-2xl font-black text-gray-900 dark:text-white">ניהול תקציב משפחתי</h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  {households.find(h => h.id === selectedHouseholdId)?.name || 'משק בית'}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleWhatsAppConnect} 
+                  className="bg-green-500 hover:bg-green-600 text-white h-10 px-4 rounded-lg text-sm font-bold shadow-md flex items-center gap-2"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  WhatsApp
+                </Button>
+                <Button 
+                  onClick={handleTelegramConnect} 
+                  className="bg-blue-500 hover:bg-blue-600 text-white h-10 px-4 rounded-lg text-sm font-bold shadow-md flex items-center gap-2"
+                >
+                  <Send className="w-4 h-4" />
+                  Telegram
+                </Button>
+              </div>
+            </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 md:gap-3 bg-white dark:bg-gray-900 p-2 md:p-3 rounded-xl md:rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
              <HouseholdSelector households={households} selectedId={selectedHouseholdId} onSelect={setSelectedHouseholdId} />
