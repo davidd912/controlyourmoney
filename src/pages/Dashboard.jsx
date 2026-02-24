@@ -145,10 +145,10 @@ export default function Dashboard() {
         <div className="bg-white/90 dark:bg-gray-900/90 border-b border-gray-100 sticky top-0 z-40 backdrop-blur-md px-3 md:px-4 py-2 md:py-3">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <h1 className="text-lg md:text-xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">ControlYourMoney</h1>
-            <div className="flex items-center gap-0.5 md:gap-1">
-              <Button onClick={handleWhatsAppConnect} variant="ghost" size="icon" className="text-green-600 h-8 w-8 md:h-9 md:w-9"><MessageCircle className="w-4 h-4 md:w-5 md:h-5" /></Button>
-              <Button onClick={handleTelegramConnect} variant="ghost" size="icon" className="text-blue-600 h-8 w-8 md:h-9 md:w-9"><Send className="w-4 h-4 md:w-5 md:h-5" /></Button>
-              <Button onClick={() => navigate('/user-settings')} variant="ghost" size="icon" className="text-gray-400 h-8 w-8 md:h-9 md:w-9"><Settings className="w-4 h-4 md:w-5 md:h-5" /></Button>
+            <div className="flex items-center gap-1 md:gap-2">
+              <Button onClick={handleWhatsAppConnect} variant="ghost" size="icon" className="text-green-600 h-10 w-10 md:h-11 md:w-11"><MessageCircle className="w-6 h-6 md:w-7 md:h-7" /></Button>
+              <Button onClick={handleTelegramConnect} variant="ghost" size="icon" className="text-blue-600 h-10 w-10 md:h-11 md:w-11"><Send className="w-6 h-6 md:w-7 md:h-7" /></Button>
+              <Button onClick={() => navigate('/user-settings')} variant="ghost" size="icon" className="text-gray-500 h-10 w-10 md:h-11 md:w-11"><Settings className="w-6 h-6 md:w-7 md:h-7" /></Button>
             </div>
           </div>
         </div>

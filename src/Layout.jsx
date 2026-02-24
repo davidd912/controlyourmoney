@@ -216,8 +216,7 @@ function LayoutContent({ children, currentPageName }) {
 
   if (!isAuthenticated) return <LandingPage />;
 
-  const leftNavItems = navigation.slice(0, 2);
-  const rightNavItems = navigation.slice(2, 4);
+
 
   return (
     <HouseholdContext.Provider value={{ user, households, selectedHouseholdId, setSelectedHouseholdId, loadingHouseholds }}>
@@ -282,19 +281,7 @@ function LayoutContent({ children, currentPageName }) {
           </div>
         </nav>
 
-        {/* FAB Menu */}
-        <AnimatePresence>
-          {fabMenuOpen && (
-            <div className="fixed inset-0 bg-black/50 z-[60] flex items-end justify-center pb-32" onClick={() => setFabMenuOpen(false)}>
-              <motion.div initial={{ y: 100 }} animate={{ y: 0 }} className="bg-white dark:bg-gray-800 p-6 w-full max-w-md rounded-t-3xl">
-                <div className="grid grid-cols-2 gap-3 text-center">
-                  <Button variant="outline" className="h-24 flex-col" onClick={() => navigate(createPageUrl('Dashboard'), { state: { openForm: 'income' } })}><TrendingUp />הכנסה</Button>
-                  <Button variant="outline" className="h-24 flex-col" onClick={() => navigate(createPageUrl('Dashboard'), { state: { openForm: 'expense' } })}><TrendingDown />הוצאה</Button>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
+
 
         {/* Footer */}
         <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-6 mt-8">
