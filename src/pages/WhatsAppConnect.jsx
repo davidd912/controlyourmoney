@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Copy, CheckCircle, ArrowRight } from "lucide-react";
+import { MessageCircle, Copy, CheckCircle, ArrowRight, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 export default function WhatsAppConnect() {
   const navigate = useNavigate();
@@ -13,6 +15,14 @@ export default function WhatsAppConnect() {
   
   const activationCode = location.state?.activationCode;
   const householdName = location.state?.householdName;
+
+  const { data: systemConfig, isLoading: isLoadingConfig } = useQuery({
+    queryKey: ['systemConfig'],
+    queryFn: () => base44.entities.SystemConfig.list(),
+  });
+
+  const whatsappBotNumberItem = systemConfig?.find(config => config.key === 'whatsapp_bot_number');
+  const dynamicBotNumber = whatsappBotNumberItem?.value || '14155238886';
 
   useEffect(() => {
     // If no activation code, redirect back
@@ -29,10 +39,8 @@ export default function WhatsAppConnect() {
   };
 
   const openWhatsApp = () => {
-    // Replace with your actual Twilio WhatsApp Sandbox number
-    const twilioNumber = '14155238886'; // REPLACE WITH YOUR TWILIO NUMBER
     const message = encodeURIComponent(activationCode);
-    const url = `https://wa.me/${twilioNumber}?text=${message}`;
+    const url = `https://wa.me/${dynamicBotNumber}?text=${message}`;
     window.open(url, '_blank');
   };
 
@@ -89,23 +97,37 @@ export default function WhatsAppConnect() {
             {/* Open WhatsApp Button */}
             <Button
               onClick={openWhatsApp}
+              disabled={isLoadingConfig}
               className="w-full h-14 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-lg font-semibold shadow-lg"
             >
-              <MessageCircle className="w-6 h-6 ml-2" />
-              פתיחת האפליקציה
-              <ArrowRight className="w-5 h-5 mr-2" />
+              {isLoadingConfig ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin ml-2" />
+                  טוען...
+                </>
+              ) : (
+                <>
+                  <MessageCircle className="w-6 h-6 ml-2" />
+                  פתיחת האפליקציה
+                  <ArrowRight className="w-5 h-5 mr-2" />
+                </>
+              )}
             </Button>
 
             {/* Web WhatsApp Option */}
             <div className="text-center">
-              <a
-                href={`https://web.whatsapp.com/send?phone=14155238886&text=${encodeURIComponent(activationCode)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-green-600 dark:text-green-400 hover:underline"
-              >
-                להמשיך ב-WhatsApp Web →
-              </a>
+              {isLoadingConfig ? (
+                <span className="text-sm text-gray-400">טוען...</span>
+              ) : (
+                <a
+                  href={`https://web.whatsapp.com/send?phone=${dynamicBotNumber}&text=${encodeURIComponent(activationCode)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-green-600 dark:text-green-400 hover:underline"
+                >
+                  להמשיך ב-WhatsApp Web →
+                </a>
+              )}
             </div>
 
             {/* Instructions */}
