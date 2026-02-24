@@ -206,17 +206,17 @@ export default function Dashboard() {
 
                 <TabsContent value="income" className="space-y-4">
                   <div className="flex justify-between items-center"><h2 className="text-lg font-bold">הכנסות</h2><Button onClick={() => openForm('income')} className="bg-blue-600 rounded-full"><Plus className="w-4 h-4 ml-2"/>הוסף</Button></div>
-                  <DataTable data={incomes} columns={incomeColumns} onDelete={(i) => base44.entities.Income.delete(i.id).then(() => { handleRefresh(); showToast('הכנסה נמחקה', 'success'); })} />
+                  <DataTable data={incomes} columns={incomeColumns} onEdit={(i) => { setEditItem(i); setIncomeFormOpen(true); }} onDelete={(i) => base44.entities.Income.delete(i.id).then(() => { handleRefresh(); showToast('הכנסה נמחקה', 'success'); })} />
                 </TabsContent>
 
                 <TabsContent value="expenses" className="space-y-4">
                   <div className="flex justify-between items-center"><h2 className="text-lg font-bold">הוצאות</h2><Button onClick={() => openForm('expense')} className="bg-orange-500 rounded-full"><Plus className="w-4 h-4 ml-2"/>הוסף</Button></div>
-                  <DataTable data={actualExpenses} columns={expenseColumns} onDelete={(e) => base44.entities.Expense.delete(e.id).then(() => { handleRefresh(); showToast('הוצאה נמחקה', 'success'); })} />
+                  <DataTable data={actualExpenses} columns={expenseColumns} onEdit={(e) => { setEditItem(e); setExpenseFormOpen(true); }} onDelete={(e) => base44.entities.Expense.delete(e.id).then(() => { handleRefresh(); showToast('הוצאה נמחקה', 'success'); })} />
                 </TabsContent>
 
                 <TabsContent value="debts" className="space-y-4">
                   <div className="flex justify-between items-center"><h2 className="text-lg font-bold">חובות</h2><Button onClick={() => openForm('debt')} className="bg-red-500 rounded-full"><Plus className="w-4 h-4 ml-2"/>הוסף</Button></div>
-                  <DataTable data={debts} columns={debtColumns} onDelete={(d) => base44.entities.Debt.delete(d.id).then(() => { handleRefresh(); showToast('חוב נמחק', 'success'); })} />
+                  <DataTable data={debts} columns={debtColumns} onEdit={(d) => { setEditItem(d); setDebtFormOpen(true); }} onDelete={(d) => base44.entities.Debt.delete(d.id).then(() => { handleRefresh(); showToast('חוב נמחק', 'success'); })} />
                 </TabsContent>
 
               </motion.div>
@@ -258,9 +258,9 @@ export default function Dashboard() {
         </AnimatePresence>
 
         {/* טפסים */}
-        <IncomeForm open={incomeFormOpen} onClose={() => setIncomeFormOpen(false)} onSave={() => { handleRefresh(); showToast('ההכנסה נוספה בהצלחה!', 'success'); }} />
-        <ExpenseForm open={expenseFormOpen} onClose={() => setExpenseFormOpen(false)} onSave={() => { handleRefresh(); showToast('ההוצאה נוספה בהצלחה!', 'success'); }} remainingBudgetByCategory={{}} customCategories={[]} />
-        <DebtForm open={debtFormOpen} onClose={() => setDebtFormOpen(false)} onSave={() => { handleRefresh(); showToast('החוב עודכן בהצלחה!', 'success'); }} />
+        <IncomeForm open={incomeFormOpen} onClose={() => { setIncomeFormOpen(false); setEditItem(null); }} onSave={handleSaveIncome} editItem={editItem} />
+        <ExpenseForm open={expenseFormOpen} onClose={() => { setExpenseFormOpen(false); setEditItem(null); }} onSave={handleSaveExpense} editItem={editItem} remainingBudgetByCategory={{}} customCategories={[]} />
+        <DebtForm open={debtFormOpen} onClose={() => { setDebtFormOpen(false); setEditItem(null); }} onSave={handleSaveDebt} editItem={editItem} />
       </div>
     </PullToRefresh>
   );
