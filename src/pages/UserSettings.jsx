@@ -5,7 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, Trash2, Mail, Home, UserPlus, User, LogOut, Edit, BarChart3, Calendar, UserX, Smartphone, Copy, RefreshCw, MessageCircle, Send } from "lucide-react";
+import { 
+  Users, Plus, Trash2, Mail, Home, UserPlus, User, LogOut, Edit, 
+  BarChart3, Calendar, UserX, Smartphone, Copy, RefreshCw, 
+  MessageCircle, Send, Zap, TrendingUp, TrendingDown, Activity, Settings, CreditCard
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -37,6 +41,7 @@ export default function UserSettings() {
 
   const { user, households, setSelectedHouseholdId } = useContext(HouseholdContext);
 
+  // שליפת סטטיסטיקות חכמות למנהל
   const { data: stats } = useQuery({
     queryKey: ['todayStats'],
     queryFn: async () => {
@@ -45,6 +50,7 @@ export default function UserSettings() {
       return result.data;
     },
     enabled: !!user && user.role === 'admin',
+    refetchInterval: 30000, // רענון אוטומטי כל 30 שניות
   });
 
   const updateUserName = useMutation({
@@ -211,31 +217,124 @@ export default function UserSettings() {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
-            <User className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-            הגדרות משתמש
+    <div dir="rtl" className="min-h-screen bg-slate-50 dark:bg-gray-950 p-4 md:p-8 pb-32">
+      <div className="max-w-5xl mx-auto space-y-8">
+        
+        {/* כותרת דף */}
+        <div>
+          <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+            <Settings className="w-8 h-8 text-blue-600" />
+            הגדרות וניהול
           </h1>
-          <p className="text-gray-700 dark:text-gray-200">
-            נהל את הפרופיל שלך ואת משקי הבית המשותפים
-          </p>
-        </motion.div>
+        </div>
 
-        <Card className="mb-6 border-2 dark:bg-gray-800 dark:border-gray-700">
+        {/* --- דשבורד מנהל חכם --- */}
+        {user?.role === 'admin' && stats && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-none shadow-xl bg-white dark:bg-gray-900 overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-blue-700 to-indigo-700 text-white p-6">
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xl font-bold">
+                    <Zap className="w-6 h-6 text-yellow-300" />
+                    דופק מערכת בזמן אמת
+                  </div>
+                  <Badge className="bg-white/20 text-white border-none px-3 py-1">LIVE</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                {/* מדדי פעילות (Pulse) */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-2xl border border-orange-100 dark:border-orange-800">
+                    <p className="text-xs font-bold text-orange-600 dark:text-orange-400 mb-1">פעולות היום</p>
+                    <p className="text-3xl font-black text-orange-700 dark:text-orange-300">{stats.summary.totalEntriesToday}</p>
+                  </div>
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-800">
+                    <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-1">משתמשים פעילים</p>
+                    <p className="text-3xl font-black text-emerald-700 dark:text-emerald-300">{stats.summary.activeUsersToday}</p>
+                  </div>
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800">
+                    <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-1">נרשמו היום</p>
+                    <p className="text-3xl font-black text-blue-700 dark:text-blue-300">{stats.newUsersToday.length}</p>
+                  </div>
+                  <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-2xl border border-purple-100 dark:border-purple-800">
+                    <p className="text-xs font-bold text-purple-600 dark:text-purple-400 mb-1">סה"כ משתמשים</p>
+                    <p className="text-3xl font-black text-purple-700 dark:text-purple-300">{stats.summary.totalUsers}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* פירוט פעילות */}
+                  <div className="space-y-4">
+                    <h3 className="font-bold flex items-center gap-2"><Activity className="w-5 h-5 text-blue-600" /> התפלגות הזנות היום</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                        <span className="flex items-center gap-2"><TrendingDown className="w-4 h-4 text-orange-500" /> הוצאות</span>
+                        <span className="font-bold">{stats.activityBreakdown.expenses}</span>
+                      </div>
+                      <div className="flex justify-between text-sm p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                        <span className="flex items-center gap-2"><TrendingUp className="w-4 h-4 text-green-500" /> הכנסות</span>
+                        <span className="font-bold">{stats.activityBreakdown.incomes}</span>
+                      </div>
+                      <div className="flex justify-between text-sm p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                        <span className="flex items-center gap-2"><CreditCard className="w-4 h-4 text-red-500" /> חובות</span>
+                        <span className="font-bold">{stats.activityBreakdown.debts}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* נרשמים חדשים */}
+                  <div className="space-y-4">
+                    <h3 className="font-bold flex items-center gap-2"><UserPlus className="w-5 h-5 text-indigo-600" /> הצטרפו היום</h3>
+                    <div className="max-h-40 overflow-y-auto space-y-2 pr-2">
+                      {stats.newUsersToday.length > 0 ? stats.newUsersToday.map((u, i) => (
+                        <div key={i} className="flex justify-between items-center text-xs p-2 bg-slate-50 dark:bg-gray-800 rounded-lg">
+                          <span className="font-bold">{u.full_name || 'ללא שם'}</span>
+                          <span className="text-gray-400">{u.email}</span>
+                        </div>
+                      )) : <p className="text-gray-400 text-sm italic">ממתינים לנרשמים חדשים...</p>}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="mt-6">
+              <AnnouncementManager />
+            </div>
+          </motion.div>
+        )}
+
+        {/* --- הגדרות פרופיל --- */}
+        <Card className="border-none shadow-sm dark:bg-gray-900">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 dark:text-white">
-              <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              פרופיל אישי
+            <CardTitle className="text-lg flex items-center gap-2">
+              <User className="w-5 h-5 text-blue-600" /> פרופיל אישי
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl">
+                <p className="text-xs text-gray-400 mb-1">שם מלא</p>
+                <p className="font-bold text-lg dark:text-white">{user?.full_name}</p>
+              </div>
+              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl">
+                <p className="text-xs text-gray-400 mb-1">אימייל</p>
+                <p className="font-bold dark:text-white">{user?.email}</p>
+              </div>
+            </div>
+            <Button onClick={handleLogout} variant="outline" className="w-full rounded-xl text-red-600 border-red-100 hover:bg-red-50">
+              <LogOut className="w-4 h-4 ml-2" /> התנתק
+            </Button>
+          </CardContent>
+        </Card>
+
+      </div>
+    </div>
+  );
+}
+
+{/* OLD CODE TO DELETE - START */}
+            <div style={{display: 'none'}}>
               <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">שם מלא</label>
               {!isEditingName ? (
                 <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -278,262 +377,4 @@ export default function UserSettings() {
                 </form>
               )}
             </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">אימייל</label>
-              <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center gap-2">
-                <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                <span className="text-gray-900 dark:text-gray-100">{user?.email}</span>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t space-y-2">
-              <Button
-                onClick={handleLogout}
-                variant="outline"
-                className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 border-red-200"
-              >
-                <LogOut className="w-4 h-4 ml-2" />
-                התנתק מהמערכת
-              </Button>
-              <Button
-                onClick={() => setShowDeleteDialog(true)}
-                variant="outline"
-                className="w-full text-red-700 hover:text-red-800 hover:bg-red-100 dark:hover:bg-red-950 border-red-300"
-              >
-                <UserX className="w-4 h-4 ml-2" />
-                מחק חשבון לצמיתות
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {user?.role === 'admin' && (
-          <>
-            <Card className="mb-6 border-2 dark:bg-gray-800 dark:border-gray-700">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 dark:text-white">
-                  <BarChart3 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  סטטיסטיקות מערכת - Admin
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {stats ? (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Users className="w-5 h-5 text-blue-600" />
-                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">משתמשים חדשים היום</p>
-                        </div>
-                        <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.newUsersToday?.length || 0}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">סה"כ במערכת: {stats.totalUsers || 0}</p>
-                      </div>
-                      <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border-2 border-green-200 dark:border-green-800">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Home className="w-5 h-5 text-green-600" />
-                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">משקי בית חדשים היום</p>
-                        </div>
-                        <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.newHouseholdsToday?.length || 0}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">סה"כ במערכת: {stats.totalHouseholds || 0}</p>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2 text-gray-900 dark:text-white">
-                        <Calendar className="w-5 h-5 text-purple-600" />
-                        משתמשים לפי תאריך
-                      </h3>
-                      <div className="space-y-2 max-h-64 overflow-y-auto">
-                        {Object.entries(stats.usersByDate || {}).sort((a, b) => b[0].localeCompare(a[0])).map(([date, users]) => (
-                          <div key={date} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div className="flex justify-between items-center mb-2">
-                              <Badge variant="secondary" className="text-xs">{users.length} משתמשים</Badge>
-                              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                {new Date(date).toLocaleDateString('he-IL')}
-                              </span>
-                            </div>
-                            <div className="space-y-1">
-                              {users.map(user => (
-                                <div key={user.id} className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
-                                  <Mail className="w-3 h-3" />
-                                  {user.full_name} ({user.email})
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2 text-gray-900 dark:text-white">
-                        <Calendar className="w-5 h-5 text-green-600" />
-                        משקי בית לפי תאריך
-                      </h3>
-                      <div className="space-y-2 max-h-64 overflow-y-auto">
-                        {Object.entries(stats.householdsByDate || {}).sort((a, b) => b[0].localeCompare(a[0])).map(([date, households]) => (
-                          <div key={date} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div className="flex justify-between items-center mb-2">
-                              <Badge className="text-xs bg-green-100 text-green-800">{households.length} משק בית</Badge>
-                              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                {new Date(date).toLocaleDateString('he-IL')}
-                              </span>
-                            </div>
-                            <div className="space-y-1">
-                              {households.map(h => (
-                                <div key={h.id} className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
-                                  <Home className="w-3 h-3" />
-                                  {h.name} - {h.owner_email} ({h.members_count} חברים)
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-gray-500 dark:text-gray-400">טוען נתונים...</p>
-                )}
-              </CardContent>
-            </Card>
-
-            <div className="mb-6">
-              <AnnouncementManager />
-            </div>
-          </>
-        )}
-
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <Home className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            משקי בית משותפים
-          </h2>
-        </div>
-
-        <div className="space-y-4">
-          {households.map((household) => {
-            const isOwner = household.owner_email === user?.email;
-            return (
-              <Card key={household.id} className="border-2 dark:bg-gray-800 dark:border-gray-700">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="flex items-center gap-2 dark:text-white">
-                        <Home className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                        {household.name}
-                      </CardTitle>
-                    </div>
-                    {isOwner && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setHouseholdToDelete(household);
-                          setShowDeleteHouseholdDialog(true);
-                        }}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {isOwner && (
-                    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
-                      <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                        <MessageCircle className="w-5 h-5 text-blue-600" />
-                        חיבור לבוט האישי (WhatsApp / Telegram)
-                      </h3>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                        <Button
-                          onClick={() => handleWhatsAppConnect(household)}
-                          className="w-full bg-green-600 hover:bg-green-700 text-white"
-                        >
-                          <Smartphone className="w-4 h-4 ml-2" />
-                          פתח ב-WhatsApp
-                        </Button>
-                        <Button
-                          onClick={() => handleTelegramConnect(household)}
-                          className="w-full bg-blue-500 hover:bg-blue-600 text-white shadow-sm"
-                        >
-                          <Send className="w-4 h-4 ml-2" />
-                          פתח ב-Telegram
-                        </Button>
-                      </div>
-
-                      <div className="space-y-4">
-                        {(!household.activation_code || new Date(household.activation_code_expires) < new Date()) && (
-                          <div className="mt-2">
-                            <Button
-                              onClick={() => handleGenerateActivationCode(household.id)}
-                              disabled={generatingCode[household.id]}
-                              className="w-full bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-700 dark:hover:bg-slate-600"
-                            >
-                              <RefreshCw className={`w-4 h-4 ml-2 ${generatingCode[household.id] ? 'animate-spin' : ''}`} />
-                              צור קוד הפעלה לחיבור הבוט
-                            </Button>
-                          </div>
-                        )}
-
-                        {household.activation_code && new Date(household.activation_code_expires) > new Date() && (
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-gray-700 shadow-sm">
-                              <div className="flex items-center gap-3">
-                                <span className="text-sm text-gray-500 dark:text-gray-400">קוד:</span>
-                                <span className="text-2xl font-bold tracking-widest text-blue-600 dark:text-blue-400">
-                                  {household.activation_code}
-                                </span>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => copyToClipboard(household.activation_code)}
-                                className="hover:bg-blue-50 dark:hover:bg-gray-700"
-                              >
-                                <Copy className="w-4 h-4" />
-                              </Button>
-                            </div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              ⏰ תקף עד: {new Date(household.activation_code_expires).toLocaleString('he-IL')}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {isOwner && (
-                    <div>
-                      <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                        <UserPlus className="w-4 h-4" />
-                        הזמן חבר חדש
-                      </h3>
-                      <div className="flex gap-2">
-                        <Input
-                          type="email"
-                          placeholder="הכנס כתובת אימייל"
-                          value={inviteEmail}
-                          onChange={(e) => setInviteEmail(e.target.value)}
-                        />
-                        <Button
-                          onClick={() => handleInvite(household.id)}
-                          disabled={!inviteEmail.trim() || !inviteEmail.includes('@')}
-                        >
-                          שלח הזמנה
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
+{/* OLD CODE TO DELETE - END */}
