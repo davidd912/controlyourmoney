@@ -4,39 +4,61 @@ Deno.serve(async (req) => {
   try {
     const payload = await req.json();
     
-    // 1. חסימת כל מה שאינו הודעה נכנסת ממשתמש
-    if (payload.typeWebhook !== 'incomingMessageReceived') {
-      return new Response("OK"); 
+    let platform = 'unknown';
+    let sender = '';
+    let cleanFrom = '';
+    let messageBody = '';
+
+    // 1. זיהוי הפלטפורמה (WhatsApp דרך Green API או Telegram)
+    if (payload.typeWebhook === 'incomingMessageReceived') {
+      platform = 'whatsapp';
+      const botNumber = payload.instanceData?.wid;
+      const senderNumber = payload.senderData?.sender;
+      if (senderNumber === botNumber) return new Response("OK"); // מניעת לולאה
+
+      sender = payload.senderData?.chatId;
+      messageBody = payload.messageData?.textMessageData?.textMessage || "";
+      cleanFrom = sender.replace('@c.us', '').replace('+', '');
+    } 
+    else if (payload.message && payload.message.chat) {
+      platform = 'telegram';
+      sender = payload.message.chat.id.toString(); // בטלגרם ה-ID הוא מספר
+      messageBody = payload.message.text || "";
+      cleanFrom = sender;
+    } 
+    else {
+      return new Response("OK"); // חסימת בקשות לא קשורות
     }
 
-    // 2. מניעת לולאה: האם השולח הוא הבוט עצמו?
-    const botNumber = payload.instanceData?.wid;
-    const senderNumber = payload.senderData?.sender;
-
-    if (senderNumber === botNumber) {
-      console.log(`[WhatsApp] Ignoring self-sent message from ${senderNumber}`);
-      return new Response("OK");
-    }
+    console.log(`[${platform.toUpperCase()}] Received message from ${cleanFrom}: "${messageBody}"`);
 
     const base44 = createClientFromRequest(req);
     const idInstance = Deno.env.get("idInstance");
     const apiTokenInstance = Deno.env.get("apiTokenInstance");
+    const telegramToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
 
-    const sender = payload.senderData?.chatId;
-    const messageBody = payload.messageData?.textMessageData?.textMessage || "";
-    const cleanFrom = sender.replace('@c.us', '').replace('+', '');
+    // פונקציית עזר פנימית לשליחת תשובה לפי פלטפורמה
+    const replyToUser = async (text) => {
+      if (platform === 'whatsapp') {
+        await sendWhatsApp(sender, text, idInstance, apiTokenInstance);
+      } else if (platform === 'telegram') {
+        await sendTelegram(sender, text, telegramToken);
+      }
+    };
 
-    console.log(`[WhatsApp] Received message from ${cleanFrom}: "${messageBody}"`);
-
-    // 1. זיהוי (Identify): חיפוש משק בית שבו המספר נמצא במערך whatsapp_numbers
+    // 2. זיהוי (Identify): חיפוש משק בית מתאים לפי הפלטפורמה
     const households = await base44.asServiceRole.entities.Household.filter({});
-    let household = households.find(h => 
-      h.whatsapp_numbers && Array.isArray(h.whatsapp_numbers) && h.whatsapp_numbers.includes(cleanFrom)
-    );
+    let household = households.find(h => {
+      if (platform === 'whatsapp') {
+        return h.whatsapp_numbers && Array.isArray(h.whatsapp_numbers) && h.whatsapp_numbers.includes(cleanFrom);
+      } else {
+        return h.telegram_chat_ids && Array.isArray(h.telegram_chat_ids) && h.telegram_chat_ids.includes(cleanFrom);
+      }
+    });
 
-    // 2. טיפול במספר חדש (New Member): אם לא נמצא משק בית - בדיקת קוד אקטיבציה
+    // 3. טיפול במספר חדש - בדיקת קוד אקטיבציה
     if (!household) {
-      console.log(`[WhatsApp] No household found for ${cleanFrom}. Checking for activation code.`);
+      console.log(`[${platform}] No household found for ${cleanFrom}. Checking for activation code.`);
       const extractedCode = messageBody.match(/\d{6}/)?.[0];
       
       if (extractedCode) {
@@ -44,66 +66,52 @@ Deno.serve(async (req) => {
         
         if (matching?.[0]) {
           const targetHousehold = matching[0];
-          console.log(`[WhatsApp] Activation code ${extractedCode} found for household ${targetHousehold.id}`);
-
-          // בדיקת תוקף קוד ההפעלה
+          
+          // בדיקת תוקף
           const activationCodeExpires = targetHousehold.activation_code_expires ? new Date(targetHousehold.activation_code_expires) : null;
           if (!activationCodeExpires || activationCodeExpires < new Date()) {
-            console.log(`[WhatsApp] Activation code has expired for household ${targetHousehold.id}`);
-            await sendWhatsApp(sender, "⏰ קוד ההפעלה ששלחת פג תוקפו או כבר שומש. בבקשה צור קוד חדש באפליקציה ונסה שוב.", idInstance, apiTokenInstance);
+            await replyToUser("⏰ קוד ההפעלה ששלחת פג תוקפו או כבר שומש. בבקשה צור קוד חדש באפליקציה ונסה שוב.");
             return new Response("OK");
           }
 
-          // הוספת המספר למערך ללא כפילויות
-          const currentNumbers = targetHousehold.whatsapp_numbers || [];
-          const updatedNumbers = [...new Set([...currentNumbers, cleanFrom])];
-          
-          // עדכון expires_at ל-14 יום מהיום
-          const newExpiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
-
-          // ניקוי קוד האקטיבציה אחרי שימוש מוצלח
-          await base44.asServiceRole.entities.Household.update(targetHousehold.id, {
-            whatsapp_numbers: updatedNumbers,
+          // הוספה למערך הנכון לפי הפלטפורמה
+          const updateData = {
             activation_code: null,
             activation_code_expires: null,
-            expires_at: newExpiresAt
-          });
+            expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+          };
 
-          console.log(`[WhatsApp] Household ${targetHousehold.id} updated. Numbers: ${updatedNumbers.join(', ')}. Expires: ${newExpiresAt}`);
-          
-          await sendWhatsApp(sender, "✅ החיבור הצליח! אני הבנקאי האישי שלכם לניהול התקציב. איך אוכל לעזור?", idInstance, apiTokenInstance);
+          if (platform === 'whatsapp') {
+            const currentNumbers = targetHousehold.whatsapp_numbers || [];
+            updateData.whatsapp_numbers = [...new Set([...currentNumbers, cleanFrom])];
+          } else {
+            const currentChats = targetHousehold.telegram_chat_ids || [];
+            updateData.telegram_chat_ids = [...new Set([...currentChats, cleanFrom])];
+          }
+
+          await base44.asServiceRole.entities.Household.update(targetHousehold.id, updateData);
+          await replyToUser("✅ החיבור הצליח! אני הבנקאי האישי שלכם לניהול התקציב. איך אוכל לעזור?");
           return new Response("OK");
         }
       }
       
-      // 3. תגובה לכולם: אם אין קוד או הקוד לא תקין
-      console.log(`[WhatsApp] No valid activation code found. Prompting user ${cleanFrom} for code.`);
-      await sendWhatsApp(sender, "👋 שלום! אני לא מזהה את המספר. אנא שלח קוד אקטיבציה מהאפליקציה.", idInstance, apiTokenInstance);
+      await replyToUser("👋 שלום! אני לא מזהה את החשבון. אנא שלח קוד אקטיבציה מהאפליקציה.");
       return new Response("OK");
     }
 
-    console.log(`[WhatsApp] Household ${household.id} identified for ${cleanFrom}`);
-
-    // בדיקת גישה לשירות WhatsApp לפי subscription_type ו-expires_at
+    // בדיקת גישה לשירות (רלוונטי לשתי הפלטפורמות)
     const subscriptionType = household.subscription_type || 'trial';
-    
     if (subscriptionType !== 'manual_premium') {
       const now = new Date();
       const expiresAt = household.expires_at ? new Date(household.expires_at) : null;
-      
       if (!expiresAt || now > expiresAt) {
-        console.log(`[WhatsApp] Household ${household.id} WhatsApp access expired`);
-        await sendWhatsApp(
-          sender,
-          '⏰ תקופת הניסיון בשירות הוואטסאפ הסתיימה.\n\nתוכלו להמשיך להשתמש באפליקציה בצורה רגילה ולנהל את התקציב ידנית. רק שירות הבוט בוואטסאפ מוגבל למנויי פרימיום.\n\nמעוניינים לשדרג? צרו קשר דרך האפליקציה.',
-          idInstance,
-          apiTokenInstance
-        );
+        await replyToUser('⏰ תקופת הניסיון בשירות הבוט הסתיימה.\n\nתוכלו להמשיך להשתמש באפליקציה כרגיל. שירות הבוט מוגבל למנויי פרימיום. צרו קשר דרך האפליקציה לשדרוג.');
         return new Response("OK");
       }
     }
 
-    // קטגוריות זמינות
+    // --- מכאן והלאה הלוגיקה זהה לחלוטין - המוח של ה-AI ---
+    
     const expenseCategories = ["food", "leisure", "clothing", "household_items", "home_maintenance", 
       "grooming", "education", "events", "health", "transportation", "family", "communication", 
       "housing", "obligations", "assets", "finance", "other"];
@@ -118,42 +126,28 @@ Deno.serve(async (req) => {
       salary: "שכר", allowance: "קצבאות", other: "אחר"
     };
 
-    // עיבוד AI
     const aiDecision = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `אתה בנקאי אישי לניהול תקציב. נתח את ההודעה: "${messageBody}".
+      prompt: `אתה בנקאי אישי חכם עבור אפליקציית ניהול התקציב המשפחתי "Control Your Money". תפקידך לנתח את הודעת המשתמש: "${messageBody}".
 
     קטגוריות הוצאה זמינות: ${expenseCategories.map(c => `${c} (${categoryLabels[c]})`).join(', ')}
     קטגוריות הכנסה זמינות: ${incomeCategories.map(c => `${c} (${categoryLabels[c]})`).join(', ')}
 
-    הנחיות מיוחדות לזיהוי:
-    - אם ההודעה מכילה "סופר", "סופרמרקט", "שופרסל", "רמי לוי" - סווג כ-"food" (מזון ופארמה)
-    - אם ההודעה מכילה "משחק", "משחקים", "צעצוע", "צעצועים" - סווג כ-"leisure" (פנאי ובילוי)
-    - אם המשתמש מבקש סיכום וגם מציין קטגוריה ספציפית (לדוגמה: "הראה לי הוצאות מזון לחודש זה"), החזר את שם הקטגוריה ב-summary_category
-    - עשה מאמץ מקסימלי לשייך לקטגוריה קיימת. רק אם באמת לא בטוח - השתמש ב-"other"
-    - זיהוי תאריכים: אם ההודעה מכילה תאריך יחסי כמו "אתמול", "שלשום", "לפני 3 ימים", או תאריך ספציפי - זהה אותו והחזר אותו ב-transaction_date בפורמט ISO. אם לא - השאר ריק או null
-    - זיהוי סוחרים: נסה לזהות שם עסק או סוחר בהודעה (למשל "רמי לוי", "Yellow", "סופרפארם") והחזר אותו ב-merchant
-    - שיחה כללית: אם המשתמש אומר "תודה", "מה קורה", "שלום", "מה אתה יודע לעשות", "עזרה" או כל הודעה שלא קשורה לרישום כספים או סיכומים - זהה את זה כ-"chat" ותן תשובה חכמה ומועילה. אל תנסה לרשום הוצאה או הכנסה.
+    🚨 חוקי ברזל (Guardrails) - חובה לציית:
+    1. מיקוד מוחלט באפליקציה: אתה עונה *רק* על נושאי תקציב.
+    2. בקשות עריכה ומחיקה: אם מבקשים למחוק או לערוך, קבע intent: "chat" והחזר ב-chat_reply שעריכה מתבצעת רק באתר controlyourmoney.info.
+    3. נתונים חסרים: אם חסר סכום, קבע intent: "chat" ושאל "כמה עלתה הקנייה?".
 
-    החזר JSON בפורמט הבא:
-    - intent: "add_expense" (הוצאה), "add_income" (הכנסה), "get_summary_expenses" (סיכום הוצאות), "get_summary_incomes" (סיכום הכנסות), "chat" (שיחה כללית)
-    - amount: מספר (אם רלוונטי)
-    - description: תיאור קצר
-    - category: בחר מהרשימה למעלה (הכנסה/הוצאה לפי הכוונה). אם לא בטוח - השתמש ב-"other"
-    - period: "today" (היום), "week" (השבוע), "month" (החודש) - רלוונטי רק לסיכומים
-    - merchant: שם העסק/סוחר אם מזוהה בטקסט (או null)
-    - summary_category: קטגוריה ספציפית לסיכום (אם רלוונטי, אחרת null)
-    - transaction_date: תאריך הטרנזקציה בפורמט ISO אם זוהה (או null)`,
+    🎯 הנחיות לזיהוי נתונים:
+    - period: "today", "week", "month" (היום/השבוע/החודש בהתאמה לסיכומים).
+    - שייך לקטגוריה קיימת בצורה הגיונית.
+
+    החזר JSON: intent, amount, description, category, period, merchant, summary_category, transaction_date, chat_reply.`,
       response_json_schema: {
         type: "object",
         properties: {
-          intent: { type: "string" },
-          amount: { type: "number" },
-          description: { type: "string" },
-          category: { type: "string" },
-          period: { type: "string" },
-          merchant: { type: "string" },
-          summary_category: { type: "string" },
-          transaction_date: { type: "string" }
+          intent: { type: "string" }, amount: { type: "number" }, description: { type: "string" },
+          category: { type: "string" }, period: { type: "string" }, merchant: { type: "string" },
+          summary_category: { type: "string" }, transaction_date: { type: "string" }, chat_reply: { type: "string" }
         }
       }
     });
@@ -161,67 +155,20 @@ Deno.serve(async (req) => {
     let finalReply = "מצטער, לא הצלחתי לעבד את הבקשה.";
     const now = new Date();
 
-    // לוגיקת ביצוע
     if (aiDecision.intent === 'add_expense' || aiDecision.intent === 'add_income') {
       const entityName = aiDecision.intent === 'add_expense' ? 'Expense' : 'Income';
       const validCategories = aiDecision.intent === 'add_expense' ? expenseCategories : incomeCategories;
       
-      // קביעת תאריך הטרנזקציה
       let transactionDate = now;
       if (aiDecision.transaction_date) {
         try {
           transactionDate = new Date(aiDecision.transaction_date);
-          if (isNaN(transactionDate.getTime())) {
-            transactionDate = now;
-          }
-        } catch {
-          transactionDate = now;
-        }
+          if (isNaN(transactionDate.getTime())) transactionDate = now;
+        } catch { transactionDate = now; }
       }
       
-      // בדיקת חוק סוחר (MerchantRule)
       let finalCategory = aiDecision.category || 'other';
-      let merchantRuleExists = false;
-      
-      if (aiDecision.merchant) {
-        const merchantKey = aiDecision.merchant.toLowerCase().trim();
-        const merchantRules = await base44.asServiceRole.entities.MerchantRule.filter({
-          household_id: household.id,
-          key: merchantKey
-        });
-        
-        if (merchantRules?.[0]) {
-          // חוק קיים - שימוש בקטגוריה המוגדרת
-          merchantRuleExists = true;
-          finalCategory = merchantRules[0].default_category_id || finalCategory;
-          await base44.asServiceRole.entities.MerchantRule.update(merchantRules[0].id, {
-            times_used: (merchantRules[0].times_used || 0) + 1,
-            last_used_at: now.toISOString()
-          });
-        }
-      }
-      
-      if (!validCategories.includes(finalCategory)) {
-        finalCategory = 'other';
-      }
-      
-      // למידת סוחרים אוטומטית (Self-Learning)
-      if (aiDecision.merchant && !merchantRuleExists && finalCategory !== 'other' && aiDecision.intent === 'add_expense') {
-        const merchantKey = aiDecision.merchant.toLowerCase().trim();
-        try {
-          await base44.asServiceRole.entities.MerchantRule.create({
-            household_id: household.id,
-            key: merchantKey,
-            default_type: 'expense',
-            default_category_id: finalCategory,
-            times_used: 1,
-            last_used_at: now.toISOString()
-          });
-        } catch (e) {
-          // שגיאה שקטה - ממשיכים
-          console.log(`[WhatsApp] Could not create MerchantRule for ${merchantKey}: ${e.message}`);
-        }
-      }
+      if (!validCategories.includes(finalCategory)) finalCategory = 'other';
       
       await base44.asServiceRole.entities[entityName].create({
         household_id: household.id,
@@ -235,64 +182,11 @@ Deno.serve(async (req) => {
       });
       
       const categoryLabel = categoryLabels[finalCategory] || finalCategory;
+      finalReply = `✅ רשמתי ₪${aiDecision.amount} ל-${categoryLabel}.`;
       
-      // חישוב יתרת תקציב לקטגוריה זו
-      let budgetInfo = '';
-      if (aiDecision.intent === 'add_expense') {
-        try {
-          const budgetItems = await base44.asServiceRole.entities.Expense.filter({
-            household_id: household.id,
-            category: finalCategory,
-            month: transactionDate.getMonth() + 1,
-            year: transactionDate.getFullYear(),
-            is_budget: true
-          });
-          
-          if (budgetItems?.[0]) {
-            const budgetAmount = budgetItems[0].amount || 0;
-            
-            // חישוב סך ההוצאות הנוכחיות באותו חודש ושנה
-            const currentExpenses = await base44.asServiceRole.entities.Expense.filter({
-              household_id: household.id,
-              category: finalCategory,
-              month: transactionDate.getMonth() + 1,
-              year: transactionDate.getFullYear(),
-              is_current: true
-            });
-            
-            const totalSpent = currentExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-            const remaining = budgetAmount - totalSpent;
-            
-            if (remaining < 0) {
-              budgetInfo = `\n⚠️ חרגת ב-₪${Math.abs(remaining).toLocaleString()} מהתקציב החודשי.`;
-            } else {
-              budgetInfo = `\n💰 נותרו ₪${remaining.toLocaleString()} בתקציב החודשי.`;
-            }
-          }
-        } catch (e) {
-          console.log(`[WhatsApp] Could not calculate budget: ${e.message}`);
-        }
-      }
-      
-      finalReply = `✅ רשמתי ₪${aiDecision.amount} ל-${categoryLabel}.${budgetInfo}`;
-    } 
-    else if (aiDecision.intent === 'chat') {
-      // טיפול בשיחה כללית
-      const chatResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `אתה בנקאי אישי חכם ומועיל לניהול תקציב. המשתמש אמר: "${messageBody}".
-        
-        תן תשובה קצרה, חמה ומועילה. אם שאלו מה אתה יודע לעשות, הסבר בקצרה:
-        - רישום הוצאות והכנסות (למשל: "קניתי פיצה ב-80 שקל")
-        - סיכומים (למשל: "הראה לי הוצאות החודש")
-        - תמיכה בתאריכים ("אתמול קניתי...")
-        - מעקב אחרי תקציב
-        
-        השב בעברית, בצורה ידידותית וקצרה (עד 3 שורות).`
-      });
-      
-      finalReply = chatResponse || "שמח לעזור! אני יכול לעזור לך לנהל את התקציב - פשוט ספר לי על הוצאות והכנסות שלך ואני ארשום אותן.";
-    } 
-    else if (aiDecision.intent === 'get_summary_expenses' || aiDecision.intent === 'get_summary_incomes') {
+    } else if (aiDecision.intent === 'chat') {
+      finalReply = aiDecision.chat_reply || "שמח לעזור! ספרו לי על הוצאה או הכנסה וארשום אותה.";
+    } else if (aiDecision.intent === 'get_summary_expenses' || aiDecision.intent === 'get_summary_incomes') {
       const isExpense = aiDecision.intent === 'get_summary_expenses';
       const entityName = isExpense ? 'Expense' : 'Income';
 
@@ -300,23 +194,16 @@ Deno.serve(async (req) => {
       const endDate = new Date();
 
       if (aiDecision.period === 'today') {
-        startDate.setHours(0, 0, 0, 0);
+        startDate.setHours(0, 0, 0, 0); endDate.setHours(23, 59, 59, 999);
       } else if (aiDecision.period === 'week') {
-        startDate.setDate(startDate.getDate() - 7);
+        startDate.setDate(startDate.getDate() - 7); startDate.setHours(0, 0, 0, 0); endDate.setHours(23, 59, 59, 999);
       } else {
-        startDate.setDate(1);
-        startDate.setHours(0, 0, 0, 0);
+        startDate.setDate(1); startDate.setHours(0, 0, 0, 0); endDate.setHours(23, 59, 59, 999);
       }
 
-      const allItems = await base44.asServiceRole.entities[entityName].filter({
-        household_id: household.id,
-        month: now.getMonth() + 1,
-        year: now.getFullYear(),
-        is_current: true
-      });
-
+      const allItems = await base44.asServiceRole.entities[entityName].filter({ household_id: household.id, is_current: true });
       let filteredItems = allItems.filter(item => {
-        const itemDate = new Date(item.created_date);
+        const itemDate = new Date(item.created_at || item.created_date || item._createdDate);
         return itemDate >= startDate && itemDate <= endDate;
       });
 
@@ -324,69 +211,37 @@ Deno.serve(async (req) => {
         filteredItems = filteredItems.filter(item => item.category === aiDecision.summary_category);
       }
 
-      const periodLabel = aiDecision.period === 'today' ? 'היום' : aiDecision.period === 'week' ? 'השבוע' : 'החודש';
-      const typeLabel = isExpense ? 'הוצאות' : 'הכנסות';
-      const categoryFilter = aiDecision.summary_category ? ` בקטגוריה ${categoryLabels[aiDecision.summary_category] || aiDecision.summary_category}` : '';
-
       if (filteredItems.length === 0) {
-        finalReply = `📊 אין ${typeLabel}${categoryFilter} ${periodLabel}`;
+        finalReply = `📊 אין נתונים בטווח זה.`;
       } else {
-        const byCategory = {};
-        filteredItems.forEach(item => {
-          const catKey = item.category;
-          if (!byCategory[catKey]) {
-            byCategory[catKey] = { items: [], total: 0 };
-          }
-          byCategory[catKey].items.push(item);
-          byCategory[catKey].total += (item.amount || 0);
-        });
-
         const total = filteredItems.reduce((s, i) => s + (i.amount || 0), 0);
-
-        let summaryText = `📊 ${typeLabel}${categoryFilter} ${periodLabel}:\n\n`;
-        summaryText += `💰 סה"כ: ₪${total.toLocaleString()}\n`;
-        summaryText += `📝 מספר פריטים: ${filteredItems.length}\n\n`;
-
-        if (!aiDecision.summary_category && Object.keys(byCategory).length > 1) {
-          summaryText += `📑 פירוט לפי קטגוריות:\n`;
-          Object.keys(byCategory).forEach(catKey => {
-            const catLabel = categoryLabels[catKey] || catKey;
-            const catTotal = byCategory[catKey].total;
-            const catCount = byCategory[catKey].items.length;
-            summaryText += `\n${catLabel}: ₪${catTotal.toLocaleString()} (${catCount} פריטים)`;
-          });
-          summaryText += `\n\n`;
-        }
-
-        summaryText += `📋 פירוט פריטים:\n`;
-        const itemsList = filteredItems.filter(i => (i.amount || 0) > 0).slice(0, 10).map(i => {
-          const cat = categoryLabels[i.category] || i.category;
-          return `• ${i.description || cat}: ₪${i.amount.toLocaleString()}`;
-        }).join('\n');
-
-        summaryText += itemsList;
-
-        if (filteredItems.length > 10) {
-          summaryText += `\n\n(ועוד ${filteredItems.length - 10} פריטים...)`;
-        }
-
-        finalReply = summaryText;
+        finalReply = `📊 סיכום לתקופה:\n💰 סה"כ: ₪${total.toLocaleString()}\n📝 מספר פריטים: ${filteredItems.length}`;
       }
     }
 
-    await sendWhatsApp(sender, finalReply, idInstance, apiTokenInstance);
+    // שליחת התשובה בחזרה לפלטפורמה ממנה הגיעה!
+    await replyToUser(finalReply);
     return new Response("OK");
 
   } catch (e) {
-    console.error("[WhatsApp] Error:", e.message, e.stack);
+    console.error("[Bot Error]:", e.message, e.stack);
     return new Response("OK");
   }
 });
 
+// פונקציות השליחה
 async function sendWhatsApp(chatId, text, id, token) {
   await fetch(`https://7103.api.greenapi.com/waInstance${id}/sendMessage/${token}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chatId, message: text })
+  });
+}
+
+async function sendTelegram(chatId, text, token) {
+  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, text: text })
   });
 }
