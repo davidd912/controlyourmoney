@@ -37,11 +37,12 @@ Deno.serve(async (req) => {
     const apiTokenInstance = Deno.env.get("apiTokenInstance");
     const telegramToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
 
-    const replyToUser = async (text) => {
+    // פונקציית תגובה מופרדת לוגית (כאן טלגרם יכול לקבל כפתורים!)
+    const replyToUser = async (text, telegramButtons = null) => {
       if (platform === 'whatsapp') {
         await sendWhatsApp(sender, text, idInstance, apiTokenInstance);
       } else if (platform === 'telegram') {
-        await sendTelegram(sender, text, telegramToken);
+        await sendTelegram(sender, text, telegramToken, telegramButtons);
       }
     };
 
@@ -75,11 +76,11 @@ Deno.serve(async (req) => {
           return new Response("OK");
         }
       }
-      await replyToUser("👋 שלום! אני לא מזהה את החשבון. אנא שלח קוד אקטיבציה מהאפליקציה.");
+      await replyToUser("👋 שלום! אני לא מזהה את החשבון. אנא שלח קוד אקטיבציה בן 6 ספרות מהאפליקציה.");
       return new Response("OK");
     }
 
-    // 3. הגדרות AI
+    // 3. הגדרות AI - שדרוג עם דוגמאות (Few-Shot Prompting)
     const categoryLabels = {
       food: "מזון ופארמה", leisure: "פנאי ובילוי", clothing: "ביגוד והנעלה", household_items: "תכולת בית", 
       home_maintenance: "אחזקת בית", grooming: "טיפוח", education: "חינוך", events: "אירועים ותרומות", 
@@ -88,13 +89,16 @@ Deno.serve(async (req) => {
     };
 
     const aiDecision = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `אתה מנהל תקציב חכם. המשתמש כתב: "${messageBody}".
+      prompt: `אתה מנהל תקציב גאון. המשתמש כתב: "${messageBody}".
 
-      חוקי ברזל:
-      1. הוצאה: אם המשתמש כתב סכום כלשהו (למשל: 50, 70, 600) לצד מילה כמו "סופר", "בגדים", "דלק", או "קפה" - חובה עליך להגדיר intent: "add_expense" ולחלץ את הסכום במדויק. בשום אופן אל תבחר "chat" אם יש סכום מובהק.
-      2. קטגוריות: "סופר", "שופרסל", "רמי לוי", "מכולת" = food. "בגדים", "זארה" = clothing.
-      3. סיכום: אם הוא שואל "כמה הוצאתי?", החזר intent: "get_summary_expenses" עם period ("today" או "month").
-      4. שיחה: בחר "chat" רק אם זה "היי", "תודה", או שאלה כללית ללא סכום וללא פעולה.
+      דוגמאות חובה ללמידה:
+      - "סופר 50 שקל" -> intent: "add_expense", amount: 50, category: "food"
+      - "קניתי בגדים ב-600" -> intent: "add_expense", amount: 600, category: "clothing"
+      - "דלק 200" -> intent: "add_expense", amount: 200, category: "transportation"
+      - "מה המצב?" -> intent: "chat", chat_reply: "מעולה! מה קנינו היום?"
+      - "כמה הוצאתי?" -> intent: "get_summary_expenses", period: "month"
+
+      חוק ברזל: אם יש מספר לצד שם של עסק/מוצר, זה תמיד "add_expense" ותחלץ את המספר. אל תשאל שאלות אם יש מספר!
 
       החזר JSON:`,
       response_json_schema: {
@@ -106,18 +110,16 @@ Deno.serve(async (req) => {
       }
     });
 
-    let finalReply = "מצטער, לא הצלחתי לעבד את הבקשה. אנא נסה לכתוב את הסכום והתיאור ברור יותר.";
+    let finalReply = "מצטער, לא הצלחתי להבין. אפשר לכתוב שוב (למשל: 'סופר 50')?";
+    let optionalTelegramButtons = null; // משתנה שיחזיק את הכפתורים לטלגרם
     const now = new Date();
 
-    // 4. פעולות השרת
+    // 4. ביצוע פעולות ב-DB
     if (aiDecision.intent === 'add_expense' || aiDecision.intent === 'add_income') {
       const entityName = aiDecision.intent === 'add_expense' ? 'Expense' : 'Income';
       let finalCategory = aiDecision.category || 'other';
-      
-      // המרה בטוחה למספר וחילוץ תאריכים
       const finalAmount = Number(aiDecision.amount) || 0;
 
-      // שמירה ב-DB כולל הזרקת תאריכים מפורשת לאתר
       await base44.asServiceRole.entities[entityName].create({
         household_id: household.id,
         amount: finalAmount,
@@ -155,6 +157,19 @@ Deno.serve(async (req) => {
       }
       
       finalReply = `✅ רשמתי ₪${finalAmount} ל-${categoryLabel}.${budgetInfo}`;
+      
+      // הגדרת כפתורים רק למשתמשי טלגרם!
+      if (platform === 'telegram') {
+        optionalTelegramButtons = {
+          inline_keyboard: [
+            [
+              { text: "📊 סיכום חודשי", callback_data: "get_monthly_summary" },
+              { text: "✏️ בטל הוצאה", callback_data: "undo_last_expense" }
+            ]
+          ]
+        };
+      }
+
     } 
     else if (aiDecision.intent === 'chat') {
       finalReply = aiDecision.chat_reply || "שמח לעזור! ספרו לי מה קניתם וכמה זה עלה.";
@@ -173,7 +188,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    await replyToUser(finalReply);
+    // שליחת התגובה (הפונקציה תדע אם לשלוח טקסט בוואטסאפ או כפתורים בטלגרם)
+    await replyToUser(finalReply, optionalTelegramButtons);
     return new Response("OK");
 
   } catch (e) {
@@ -182,6 +198,7 @@ Deno.serve(async (req) => {
   }
 });
 
+// פונקציות העזר
 async function sendWhatsApp(chatId, text, id, token) {
   await fetch(`https://7103.api.greenapi.com/waInstance${id}/sendMessage/${token}`, {
     method: 'POST',
@@ -190,10 +207,15 @@ async function sendWhatsApp(chatId, text, id, token) {
   });
 }
 
-async function sendTelegram(chatId, text, token) {
+async function sendTelegram(chatId, text, token, replyMarkup = null) {
+  const body = { chat_id: chatId, text: text };
+  if (replyMarkup) {
+    body.reply_markup = replyMarkup; // הוספת הכפתורים אם יש
+  }
+  
   await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text: text })
+    body: JSON.stringify(body)
   });
 }
