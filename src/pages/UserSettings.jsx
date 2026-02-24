@@ -147,15 +147,22 @@ export default function UserSettings() {
     base44.auth.logout();
   };
 
+  // פונקציה מתוקנת - ללא alert ועם רענון נתונים
   const handleGenerateActivationCode = async (householdId) => {
     setGeneratingCode({ ...generatingCode, [householdId]: true });
-    const response = await base44.functions.invoke('generateActivationCode', { household_id: householdId });
-    alert(`קוד ההפעלה שלך: ${response.data.activation_code}\n\nתוקף: 24 שעות`);
+    await base44.functions.invoke('generateActivationCode', { household_id: householdId });
+    
+    // רענון השאילתות כדי להציג את הקוד החדש ישר בממשק
+    queryClient.invalidateQueries({ queryKey: ['userHouseholds'] });
     setGeneratingCode({ ...generatingCode, [householdId]: false });
+    
+    // רענון דף קטן כדי להבטיח שהנתונים ב-Context התעדכנו
+    window.location.reload();
   };
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
+    // אפשר להשאיר את ה-alert הזה כי הוא קצר ומאשר פעולת העתקה
     alert('הקוד הועתק ללוח');
   };
 
@@ -181,7 +188,6 @@ export default function UserSettings() {
     window.open(url, '_blank');
   };
 
-  // פונקציה חדשה לחיבור טלגרם חכם
   const handleTelegramConnect = async (household) => {
     let code = household.activation_code;
     let expiresAt = household.activation_code_expires;
@@ -221,7 +227,6 @@ export default function UserSettings() {
           </p>
         </motion.div>
 
-        {/* User Profile Card */}
         <Card className="mb-6 border-2 dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 dark:text-white">
@@ -303,422 +308,140 @@ export default function UserSettings() {
           </CardContent>
         </Card>
 
-        {/* Admin Announcement Manager */}
         {user?.role === 'admin' && (
           <div className="mb-6">
             <AnnouncementManager />
           </div>
         )}
 
-        {/* Admin Stats Section */}
-        {user?.role === 'admin' && stats && (
-          <div className="mb-6">
-            <Card className="border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-purple-900 dark:text-purple-200">
-                  <BarChart3 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  סטטיסטיקות מערכת - Admin
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-white rounded-lg border-2 border-blue-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <UserPlus className="w-5 h-5 text-blue-600" />
-                      <h3 className="font-semibold text-blue-900">משתמשים חדשים היום</h3>
-                    </div>
-                    <p className="text-3xl font-bold text-blue-600 mb-2">{stats.newUsersToday?.length || 0}</p>
-                    <p className="text-sm text-gray-500">סה״כ במערכת: {stats.totalUsers}</p>
-                  </div>
-                  <div className="p-4 bg-white rounded-lg border-2 border-green-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Home className="w-5 h-5 text-green-600" />
-                      <h3 className="font-semibold text-green-900">משקי בית חדשים היום</h3>
-                    </div>
-                    <p className="text-3xl font-bold text-green-600 mb-2">{stats.newHouseholdsToday?.length || 0}</p>
-                    <p className="text-sm text-gray-500">סה״כ במערכת: {stats.totalHouseholds}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-purple-600" />
-                    משתמשים לפי תאריך
-                  </h3>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {Object.entries(stats.usersByDate || {})
-                      .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
-                      .map(([date, users]) => (
-                        <div key={date} className="bg-white p-3 rounded-lg border">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="font-semibold text-purple-900">{new Date(date).toLocaleDateString('he-IL')}</span>
-                            <Badge className="bg-purple-100 text-purple-700">{users.length} משתמשים</Badge>
-                          </div>
-                          <div className="space-y-1">
-                            {users.map(u => (
-                              <div key={u.id} className="text-sm text-gray-600 flex items-center gap-2">
-                                <Mail className="w-3 h-3" />
-                                {u.full_name} ({u.email})
-                                {u.role === 'admin' && <Badge variant="outline" className="text-xs">אדמין</Badge>}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-green-600" />
-                    משקי בית לפי תאריך
-                  </h3>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {Object.entries(stats.householdsByDate || {})
-                      .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
-                      .map(([date, households]) => (
-                        <div key={date} className="bg-white p-3 rounded-lg border">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="font-semibold text-green-900">{new Date(date).toLocaleDateString('he-IL')}</span>
-                            <Badge className="bg-green-100 text-green-700">{households.length} משקי בית</Badge>
-                          </div>
-                          <div className="space-y-1">
-                            {households.map(h => (
-                              <div key={h.id} className="text-sm text-gray-600 flex items-center gap-2">
-                                <Home className="w-3 h-3" />
-                                {h.name} - {h.owner_email} ({h.members_count} חברים)
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Household Management Section */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Home className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             משקי בית משותפים
           </h2>
-          <p className="text-gray-700 dark:text-gray-200 mb-4">
-            צור משק בית משותף והזמן בן/בת זוג או שותפים לנהל את התקציב ביחד
-          </p>
         </div>
 
-        {/* Create New Household */}
-        {(user?.role === 'admin' || households.length === 0) && (
-          !showCreateForm ? (
-            <Button
-              onClick={() => setShowCreateForm(true)}
-              className="mb-6 bg-blue-600 hover:bg-blue-700"
-            >
-              <Plus className="w-4 h-4 ml-2" />
-              צור משק בית חדש
-            </Button>
-          ) : (
-            <Card className="mb-6 dark:bg-gray-800 dark:border-gray-700">
-              <CardContent className="pt-6">
-                <form onSubmit={handleCreateHousehold} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">שם משק הבית</label>
-                    <Input
-                      placeholder='לדוגמה: "משפחת כהן"'
-                      value={newHouseholdName}
-                      onChange={(e) => setNewHouseholdName(e.target.value)}
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                      צור משק בית
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setShowCreateForm(false);
-                        setNewHouseholdName('');
-                      }}
-                    >
-                      ביטול
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          )
-        )}
-
-        {/* Existing Households */}
         <div className="space-y-4">
-          {households.length === 0 ? (
-            <Card className="dark:bg-gray-800 dark:border-gray-700">
-              <CardContent className="py-12 text-center">
-                <Users className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-                <p className="text-gray-500 dark:text-gray-400 mb-4">עדיין לא יצרת משק בית</p>
-                <p className="text-sm text-gray-400 dark:text-gray-500">
-                  צור משק בית כדי להתחיל לנהל תקציב משותף
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            households.map((household) => {
-              const isOwner = household.owner_email === user?.email;
-              return (
-                <Card key={household.id} className="border-2 dark:bg-gray-800 dark:border-gray-700">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="flex items-center gap-2 dark:text-white">
-                          <Home className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                          {household.name}
-                        </CardTitle>
-                        {isOwner && (
-                          <Badge className="mt-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">בעלים</Badge>
-                        )}
-                      </div>
-                      {isOwner && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setHouseholdToDelete(household);
-                            setShowDeleteHouseholdDialog(true);
-                          }}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+          {households.map((household) => {
+            const isOwner = household.owner_email === user?.email;
+            return (
+              <Card key={household.id} className="border-2 dark:bg-gray-800 dark:border-gray-700">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
                     <div>
+                      <CardTitle className="flex items-center gap-2 dark:text-white">
+                        <Home className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        {household.name}
+                      </CardTitle>
+                    </div>
+                    {isOwner && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setHouseholdToDelete(household);
+                          setShowDeleteHouseholdDialog(true);
+                        }}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {isOwner && (
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
                       <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                        <Users className="w-4 h-4" />
-                        חברים ({household.members?.length || 0})
+                        <MessageCircle className="w-5 h-5 text-blue-600" />
+                        חיבור לבוט האישי (WhatsApp / Telegram)
                       </h3>
-                      <div className="space-y-2">
-                        {household.members?.map((memberEmail) => (
-                          <div
-                            key={memberEmail}
-                            className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                          >
-                            <div className="flex items-center gap-2">
-                              <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                              <span className="text-sm text-gray-900 dark:text-gray-100">{memberEmail}</span>
-                              {memberEmail === household.owner_email && (
-                                <Badge variant="outline" className="text-xs">בעלים</Badge>
-                              )}
-                            </div>
-                            {isOwner && memberEmail !== household.owner_email && (
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                        <Button
+                          onClick={() => handleWhatsAppConnect(household)}
+                          className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <Smartphone className="w-4 h-4 ml-2" />
+                          פתח ב-WhatsApp
+                        </Button>
+                        <Button
+                          onClick={() => handleTelegramConnect(household)}
+                          className="w-full bg-blue-500 hover:bg-blue-600 text-white shadow-sm"
+                        >
+                          <Send className="w-4 h-4 ml-2" />
+                          פתח ב-Telegram
+                        </Button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {(!household.activation_code || new Date(household.activation_code_expires) < new Date()) && (
+                          <div className="mt-2">
+                            <Button
+                              onClick={() => handleGenerateActivationCode(household.id)}
+                              disabled={generatingCode[household.id]}
+                              className="w-full bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-700 dark:hover:bg-slate-600"
+                            >
+                              <RefreshCw className={`w-4 h-4 ml-2 ${generatingCode[household.id] ? 'animate-spin' : ''}`} />
+                              צור קוד הפעלה לחיבור הבוט
+                            </Button>
+                          </div>
+                        )}
+
+                        {household.activation_code && new Date(household.activation_code_expires) > new Date() && (
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-gray-700 shadow-sm">
+                              <div className="flex items-center gap-3">
+                                <span className="text-sm text-gray-500 dark:text-gray-400">קוד:</span>
+                                <span className="text-2xl font-bold tracking-widest text-blue-600 dark:text-blue-400">
+                                  {household.activation_code}
+                                </span>
+                              </div>
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => removeMember.mutate({ householdId: household.id, email: memberEmail })}
-                                className="text-red-600 hover:text-red-700"
+                                onClick={() => copyToClipboard(household.activation_code)}
+                                className="hover:bg-blue-50 dark:hover:bg-gray-700"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Copy className="w-4 h-4" />
                               </Button>
-                            )}
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              ⏰ תקף עד: {new Date(household.activation_code_expires).toLocaleString('he-IL')}
+                            </p>
                           </div>
-                        ))}
+                        )}
                       </div>
                     </div>
+                  )}
 
-                    {isOwner && (
-                      (user?.role === 'admin' || user?.role === 'POC' || user?.data?.whatsapp_beta_access) ? (
-                        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
-                          <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                            <MessageCircle className="w-5 h-5 text-blue-600" />
-                            חיבור לבוט האישי (WhatsApp / Telegram)
-                          </h3>
-                          
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                            <Button
-                              onClick={() => handleWhatsAppConnect(household)}
-                              className="w-full bg-green-600 hover:bg-green-700 text-white"
-                            >
-                              <Smartphone className="w-4 h-4 ml-2" />
-                              פתח ב-WhatsApp
-                            </Button>
-                            <Button
-                              onClick={() => handleTelegramConnect(household)}
-                              className="w-full bg-blue-500 hover:bg-blue-600 text-white shadow-sm"
-                            >
-                              <Send className="w-4 h-4 ml-2" />
-                              פתח ב-Telegram
-                            </Button>
-                          </div>
-
-                          <div className="space-y-4">
-                            {/* Generation button shown if there is no valid code */}
-                            {(!household.activation_code || new Date(household.activation_code_expires) < new Date()) && (
-                              <div className="mt-2">
-                                <Button
-                                  onClick={() => handleGenerateActivationCode(household.id)}
-                                  disabled={generatingCode[household.id]}
-                                  className="w-full bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-700 dark:hover:bg-slate-600"
-                                >
-                                  <RefreshCw className={`w-4 h-4 ml-2 ${generatingCode[household.id] ? 'animate-spin' : ''}`} />
-                                  צור קוד הפעלה לחיבור הבוט
-                                </Button>
-                              </div>
-                            )}
-
-                            {/* Show activation code visibly if valid */}
-                            {household.activation_code && new Date(household.activation_code_expires) > new Date() && (
-                              <div className="space-y-2">
-                                <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-gray-700 shadow-sm">
-                                  <div className="flex items-center gap-3">
-                                    <span className="text-sm text-gray-500 dark:text-gray-400">קוד:</span>
-                                    <span className="text-2xl font-bold tracking-widest text-blue-600 dark:text-blue-400">
-                                      {household.activation_code}
-                                    </span>
-                                  </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => copyToClipboard(household.activation_code)}
-                                    className="hover:bg-blue-50 dark:hover:bg-gray-700"
-                                  >
-                                    <Copy className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                  ⏰ תקף עד: {new Date(household.activation_code_expires).toLocaleString('he-IL')}
-                                </p>
-                              </div>
-                            )}
-
-                            {/* Show Connection Status dynamically */}
-                            {(household.whatsapp_number || household.whatsapp_numbers?.length > 0 || household.telegram_chat_ids?.length > 0) && (
-                              <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800 space-y-2">
-                                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">מחוברים כעת:</h4>
-                                <div className="flex flex-col gap-2">
-                                  {(household.whatsapp_number || household.whatsapp_numbers?.length > 0) && (
-                                    <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
-                                      <Smartphone className="w-4 h-4 text-green-500" />
-                                      וואטסאפ מחובר
-                                    </div>
-                                  )}
-                                  {household.telegram_chat_ids?.length > 0 && (
-                                    <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
-                                      <Send className="w-4 h-4 text-blue-500" />
-                                      טלגרם מחובר ({household.telegram_chat_ids.length} משתמשים)
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 rounded-lg border-2 border-blue-200 dark:border-blue-800">
-                          <h3 className="font-semibold mb-2 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                            <MessageCircle className="w-4 h-4 text-blue-600" />
-                            חיבור WhatsApp
-                          </h3>
-                          <p className="text-sm text-gray-700 dark:text-gray-300">
-                            🚀 התכונה תהיה זמינה בקרוב!
-                          </p>
-                        </div>
-                      )
-                    )}
-
-                    {isOwner && (
-                      <div>
-                        <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                          <UserPlus className="w-4 h-4" />
-                          הזמן חבר חדש
-                        </h3>
-                        <div className="flex gap-2">
-                          <Input
-                            type="email"
-                            placeholder="הכנס כתובת אימייל"
-                            value={inviteEmail}
-                            onChange={(e) => setInviteEmail(e.target.value)}
-                          />
-                          <Button
-                            onClick={() => handleInvite(household.id)}
-                            disabled={!inviteEmail.trim() || !inviteEmail.includes('@')}
-                          >
-                            שלח הזמנה
-                          </Button>
-                        </div>
-                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-2">
-                          המערכת תשלח הזמנה למייל שהוזן. אם המשתמש עדיין לא רשום, יישלח אליו מייל הרשמה.
-                        </p>
+                  {isOwner && (
+                    <div>
+                      <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                        <UserPlus className="w-4 h-4" />
+                        הזמן חבר חדש
+                      </h3>
+                      <div className="flex gap-2">
+                        <Input
+                          type="email"
+                          placeholder="הכנס כתובת אימייל"
+                          value={inviteEmail}
+                          onChange={(e) => setInviteEmail(e.target.value)}
+                        />
+                        <Button
+                          onClick={() => handleInvite(household.id)}
+                          disabled={!inviteEmail.trim() || !inviteEmail.includes('@')}
+                        >
+                          שלח הזמנה
+                        </Button>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
-
-        {/* Delete Household Dialog */}
-        <AlertDialog open={showDeleteHouseholdDialog} onOpenChange={setShowDeleteHouseholdDialog}>
-          <AlertDialogContent dir="rtl" className="bg-white dark:bg-gray-800 border-2 border-red-200 dark:border-red-800">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
-                האם אתה בטוח שברצונך למחוק את משק הבית?
-              </AlertDialogTitle>
-              <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300 space-y-3">
-                <p className="font-semibold text-red-600 dark:text-red-400">
-                  משק הבית "{householdToDelete?.name}" יימחק באופן זמני.
-                </p>
-                <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <p className="font-semibold text-blue-900 dark:text-blue-200 mb-2">ℹ️ מידע חשוב:</p>
-                  <ul className="text-sm space-y-1 text-blue-800 dark:text-blue-300">
-                    <li>• ניתן לשחזר את משק הבית תוך 30 יום</li>
-                    <li>• לאחר 30 יום המשק יימחק לצמיתות</li>
-                    <li>• כל הנתונים (הכנסות, הוצאות, חובות) יישמרו</li>
-                  </ul>
-                </div>
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter className="gap-2">
-              <AlertDialogCancel className="border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-                ביטול
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => deleteHousehold.mutate(householdToDelete?.id)}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                <Trash2 className="w-4 h-4 ml-2" />
-                מחק זמנית (ניתן לשחזור)
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        {/* Delete Account Dialog */}
-        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <AlertDialogContent dir="rtl">
-            <AlertDialogHeader>
-              <AlertDialogTitle>האם אתה בטוח?</AlertDialogTitle>
-              <AlertDialogDescription>
-                פעולה זו תמחק את כל הנתונים שלך לצמיתות, כולל משקי בית, הכנסות, הוצאות וחובות. לא ניתן לשחזר את הנתונים לאחר המחיקה.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>ביטול</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteAccount}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                מחק חשבון
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
     </div>
   );
