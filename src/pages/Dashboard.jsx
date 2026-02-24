@@ -138,20 +138,8 @@ export default function Dashboard() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div dir="rtl" className="min-h-screen bg-[#f8fafc] dark:bg-gray-950 pb-24 md:pb-8 relative">
+      <div dir="rtl" className="min-h-screen bg-[#f8fafc] dark:bg-gray-950 relative">
         <AnnouncementTicker />
-        
-        {/* Header - כפתורים למעלה בלבד */}
-        <div className="bg-white/90 dark:bg-gray-900/90 border-b border-gray-100 sticky top-0 z-40 backdrop-blur-md px-3 md:px-4 py-2 md:py-3">
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 className="text-lg md:text-xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">ControlYourMoney</h1>
-            <div className="flex items-center gap-1 md:gap-2">
-              <Button onClick={handleWhatsAppConnect} variant="ghost" size="icon" className="text-green-600 h-10 w-10 md:h-11 md:w-11"><MessageCircle className="w-6 h-6 md:w-7 md:h-7" /></Button>
-              <Button onClick={handleTelegramConnect} variant="ghost" size="icon" className="text-blue-600 h-10 w-10 md:h-11 md:w-11"><Send className="w-6 h-6 md:w-7 md:h-7" /></Button>
-              <Button onClick={() => navigate('/user-settings')} variant="ghost" size="icon" className="text-gray-500 h-10 w-10 md:h-11 md:w-11"><Settings className="w-6 h-6 md:w-7 md:h-7" /></Button>
-            </div>
-          </div>
-        </div>
 
         <div className="max-w-7xl mx-auto p-2 md:p-6 space-y-3 md:space-y-6">
           <div className="flex flex-col sm:flex-row gap-2 md:gap-3 bg-white dark:bg-gray-900 p-2 md:p-3 rounded-xl md:rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
