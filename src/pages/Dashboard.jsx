@@ -189,8 +189,35 @@ export default function Dashboard() {
     window.open(`https://t.me/${botUser}?text=${encodeURIComponent('אשמח להפעיל את הטלגרם, קוד: ' + response.data.activation_code)}`, '_blank');
   };
 
+  const createIncome = useMutation({ mutationFn: (data) => base44.entities.Income.create(data), onSuccess: handleRefresh });
+  const updateIncome = useMutation({ mutationFn: ({id, data}) => base44.entities.Income.update(id, data), onSuccess: handleRefresh });
   const deleteIncome = useMutation({ mutationFn: (id) => base44.entities.Income.delete(id), onSuccess: handleRefresh });
+  
+  const createExpense = useMutation({ mutationFn: (data) => base44.entities.Expense.create(data), onSuccess: handleRefresh });
+  const updateExpense = useMutation({ mutationFn: ({id, data}) => base44.entities.Expense.update(id, data), onSuccess: handleRefresh });
   const deleteExpense = useMutation({ mutationFn: (id) => base44.entities.Expense.delete(id), onSuccess: handleRefresh });
+
+  const handleSaveIncome = (data) => {
+    const payload = { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear };
+    if (editItem) {
+      updateIncome.mutate({ id: editItem.id, data: payload });
+    } else {
+      createIncome.mutate(payload);
+    }
+    setIncomeFormOpen(false);
+    setEditItem(null);
+  };
+
+  const handleSaveExpense = (data) => {
+    const payload = { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear };
+    if (editItem) {
+      updateExpense.mutate({ id: editItem.id, data: payload });
+    } else {
+      createExpense.mutate(payload);
+    }
+    setExpenseFormOpen(false);
+    setEditItem(null);
+  };
 
   if (loadingHouseholds) return <div className="flex items-center justify-center min-h-screen">טוען...</div>;
 
@@ -334,7 +361,16 @@ export default function Dashboard() {
                         <Button onClick={() => setIncomeFormOpen(true)} className="bg-blue-600"><Plus className="w-4 h-4 ml-2"/>הוסף</Button>
                      </CardHeader>
                      <CardContent>
-                        <DataTable data={incomes} columns={[{key:'description', label:'תיאור'}, {key:'amount', label:'סכום'}]} onDelete={(i) => deleteIncome.mutate(i.id)} />
+                        <DataTable 
+                          data={incomes} 
+                          columns={[
+                            {key:'category', label:'קטגוריה', minWidth: 100},
+                            {key:'description', label:'תיאור', minWidth: 150}, 
+                            {key:'amount', label:'סכום', render: (val) => `₪${(val || 0).toLocaleString()}`, minWidth: 100}
+                          ]} 
+                          onEdit={(i) => { setEditItem(i); setIncomeFormOpen(true); }}
+                          onDelete={(i) => deleteIncome.mutate(i.id)} 
+                        />
                      </CardContent>
                    </Card>
                 </TabsContent>
@@ -346,7 +382,16 @@ export default function Dashboard() {
                         <Button onClick={() => setExpenseFormOpen(true)} className="bg-orange-500"><Plus className="w-4 h-4 ml-2"/>הוסף</Button>
                      </CardHeader>
                      <CardContent>
-                        <DataTable data={actualExpenses} columns={[{key:'description', label:'תיאור'}, {key:'amount', label:'סכום'}]} onDelete={(e) => deleteExpense.mutate(e.id)} />
+                        <DataTable 
+                          data={actualExpenses} 
+                          columns={[
+                            {key:'category', label:'קטגוריה', minWidth: 100},
+                            {key:'description', label:'תיאור', minWidth: 150}, 
+                            {key:'amount', label:'סכום', render: (val) => `₪${(val || 0).toLocaleString()}`, minWidth: 100}
+                          ]} 
+                          onEdit={(e) => { setEditItem(e); setExpenseFormOpen(true); }}
+                          onDelete={(e) => deleteExpense.mutate(e.id)} 
+                        />
                      </CardContent>
                    </Card>
                 </TabsContent>
@@ -358,8 +403,8 @@ export default function Dashboard() {
         </div>
 
         {/* פאנל טפסים */}
-        <IncomeForm open={incomeFormOpen} onClose={() => setIncomeFormOpen(false)} onSave={(d) => {}} />
-        <ExpenseForm open={expenseFormOpen} onClose={() => setExpenseFormOpen(false)} onSave={(d) => {}} />
+        <IncomeForm open={incomeFormOpen} onClose={() => { setIncomeFormOpen(false); setEditItem(null); }} onSave={handleSaveIncome} editItem={editItem} />
+        <ExpenseForm open={expenseFormOpen} onClose={() => { setExpenseFormOpen(false); setEditItem(null); }} onSave={handleSaveExpense} editItem={editItem} />
       </div>
     </PullToRefresh>
   );
