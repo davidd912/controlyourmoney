@@ -6,31 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Plus, 
-  TrendingUp, 
-  TrendingDown, 
-  Wallet, 
-  CreditCard, 
-  PiggyBank,
-  ArrowLeft,
-  AlertCircle,
-  Download,
-  Users,
-  Copy,
-  MessageCircle,
-  Send,
-  Zap,
-  Activity,
-  ChevronLeft
+  Plus, TrendingUp, TrendingDown, Wallet, CreditCard, PiggyBank,
+  AlertCircle, Download, Users, MessageCircle, Send, Zap, Activity,
+  ArrowUpRight, ArrowDownLeft, RefreshCw, Copy
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { createPageUrl } from "@/utils";
+import { useNavigate, useLocation } from "react-router-dom";
 import moment from 'moment';
 import { HouseholdContext } from '../Layout';
 
 import SummaryCard from "@/components/budget/SummaryCard";
-import WhatsAppConnection from "@/components/budget/WhatsAppConnection";
 import CategoryBreakdown from "@/components/budget/CategoryBreakdown";
 import IncomeForm from "@/components/budget/IncomeForm";
 import ExpenseForm from "@/components/budget/ExpenseForm";
@@ -38,17 +23,11 @@ import DebtForm from "@/components/budget/DebtForm";
 import AssetForm from "@/components/budget/AssetForm";
 import DataTable from "@/components/budget/DataTable";
 import AlertPanel from "@/components/budget/AlertPanel";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import CreateHouseholdDialog from "@/components/budget/CreateHouseholdDialog";
-import PullToRefresh from "@/components/PullToRefresh";
-import AnnouncementTicker from "@/components/announcements/AnnouncementTicker";
-
-import ExportButton, { convertToCSV, downloadCSV } from "@/components/budget/ExportButton";
 import HouseholdSelector from "@/components/budget/HouseholdSelector";
 import MonthYearSelector from "@/components/budget/MonthYearSelector";
 import BudgetSettingsTab from "@/components/budget/BudgetSettingsTab";
+import AnnouncementTicker from "@/components/announcements/AnnouncementTicker";
+import PullToRefresh from "@/components/PullToRefresh";
 
 const incomeLabels = { salary: "שכר", allowance: "קצבאות", other: "הכנסות שונות" };
 const expenseLabels = {
@@ -59,63 +38,46 @@ const expenseLabels = {
   housing: "דיור", obligations: "התחייבויות", assets: "נכסים", finance: "פיננסים", 
   custom: "קטגוריה מותאמת אישית", other: "אחר"
 };
-
-const getExpenseLabel = (expense) => {
-  if (expense.category === 'custom' && expense.custom_category_name) {
-    return expense.custom_category_name;
-  }
-  return expenseLabels[expense.category] || expense.category;
-};
+const debtLabels = { gmach: "גמ\"ח", friends: "חברים", bank_loan: "בנק הלוואה", family: "משפחה", other: "אחר" };
 
 export default function Dashboard() {
   const currentDate = new Date();
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
+  
   const [incomeFormOpen, setIncomeFormOpen] = useState(false);
   const [expenseFormOpen, setExpenseFormOpen] = useState(false);
   const [debtFormOpen, setDebtFormOpen] = useState(false);
   const [assetFormOpen, setAssetFormOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [isGeneratingAlerts, setIsGeneratingAlerts] = useState(false);
-  const [customCategoriesCache, setCustomCategoriesCache] = useState([]);
-  const [createHouseholdOpen, setCreateHouseholdOpen] = useState(false);
-  const [newHouseholdName, setNewHouseholdName] = useState('');
-  const [isPollingForHousehold, setIsPollingForHousehold] = useState(false);
+  const [isFabMenuOpen, setIsFabMenuOpen] = useState(false);
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const location = useLocation();
-
   const { user, households, selectedHouseholdId, setSelectedHouseholdId, loadingHouseholds } = useContext(HouseholdContext);
 
-  // Listen for FAB action events
-  React.useEffect(() => {
-    const handleFABAction = (e) => {
-      setEditItem(null);
-      switch (e.detail.type) {
-        case 'income': setIncomeFormOpen(true); break;
-        case 'expense': setExpenseFormOpen(true); break;
-        case 'debt': setDebtFormOpen(true); break;
-        case 'asset': setAssetFormOpen(true); break;
-      }
-    };
-    window.addEventListener('fabAction', handleFABAction);
-    return () => window.removeEventListener('fabAction', handleFABAction);
-  }, []);
+  // עמודות לטבלאות - קריטי למניעת שגיאות
+  const incomeColumns = [
+    { key: 'category', label: 'קטגוריה', render: (val) => incomeLabels[val] || val, minWidth: 120 },
+    { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}`, minWidth: 100 },
+    { key: 'description', label: 'תיאור', minWidth: 150 }
+  ];
 
-  // Handle WhatsApp/Telegram actions
-  React.useEffect(() => {
-    if (location.state?.action === 'whatsapp') {
-      handleWhatsAppConnect();
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-    if (location.state?.action === 'telegram') {
-      handleTelegramConnect();
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location.state]);
+  const expenseColumns = [
+    { key: 'category', label: 'קטגוריה', render: (val, item) => (item.category === 'custom' ? item.custom_category_name : expenseLabels[val] || val), minWidth: 120 },
+    { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}`, minWidth: 100 },
+    { key: 'description', label: 'תיאור', minWidth: 150 }
+  ];
 
+  const debtColumns = [
+    { key: 'creditor_name', label: 'נושה', minWidth: 100 },
+    { key: 'debt_type', label: 'סוג', render: (val) => debtLabels[val] || val, minWidth: 100 },
+    { key: 'total_amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}`, minWidth: 100 },
+    { key: 'is_arranged', label: 'סטטוס', render: (val) => <Badge className={val ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}>{val ? 'בהסדר' : 'לא בהסדר'}</Badge>, minWidth: 100 }
+  ];
+
+  // Queries
   const { data: incomes = [] } = useQuery({
     queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear],
     queryFn: () => base44.entities.Income.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear }),
@@ -140,271 +102,135 @@ export default function Dashboard() {
     enabled: !!selectedHouseholdId
   });
 
-  const { data: assets = [] } = useQuery({
-    queryKey: ['assets', selectedHouseholdId],
-    queryFn: () => base44.entities.Asset.filter({ household_id: selectedHouseholdId }),
-    enabled: !!selectedHouseholdId
-  });
-
   const { data: alerts = [] } = useQuery({
     queryKey: ['alerts', selectedHouseholdId],
     queryFn: () => base44.entities.Alert.filter({ household_id: selectedHouseholdId }, '-created_date', 50),
     enabled: !!selectedHouseholdId
   });
 
-  const { data: systemConfig = [] } = useQuery({
-    queryKey: ['systemConfig'],
-    queryFn: () => base44.entities.SystemConfig.list()
-  });
+  // לוגיקת שמירת תקציב - קריטי שזה יהיה כאן!
+  const handleSaveBudgetSettings = async (payload) => {
+    const { budgets } = payload;
+    const existing = await base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, is_budget: true, is_current: false });
+    for (const b of existing) await base44.entities.Expense.delete(b.id);
 
-  // Calculations
+    const toCreate = Object.entries(budgets).filter(([_, v]) => parseFloat(v) > 0).map(([key, val]) => ({
+      household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear,
+      category: key.startsWith('custom_') ? 'custom' : key,
+      custom_category_name: key.startsWith('custom_') ? key.replace('custom_', '') : null,
+      amount: parseFloat(val), is_budget: true, is_current: false, description: 'תקציב חודשי'
+    }));
+
+    if (toCreate.length > 0) await base44.entities.Expense.bulkCreate(toCreate);
+    queryClient.invalidateQueries({ queryKey: ['budgetSettings'] });
+    alert('התקציב עודכן בהצלחה!');
+  };
+
   const totalIncome = incomes.reduce((sum, i) => sum + (i.amount || 0), 0);
   const actualExpenses = expenses.filter(e => !e.is_budget || e.is_current);
   const totalExpenses = actualExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
   const monthlyBalance = totalIncome - totalExpenses;
-  const totalAssetValue = assets.reduce((sum, a) => sum + (a.current_value || 0), 0);
 
-  const handleRefresh = React.useCallback(async () => {
-    queryClient.invalidateQueries({ queryKey: ['incomes'] });
-    queryClient.invalidateQueries({ queryKey: ['expenses'] });
-    queryClient.invalidateQueries({ queryKey: ['budgetSettings'] });
-    queryClient.invalidateQueries({ queryKey: ['debts'] });
-    queryClient.invalidateQueries({ queryKey: ['assets'] });
-    queryClient.invalidateQueries({ queryKey: ['alerts'] });
-  }, [queryClient]);
+  const handleRefresh = async () => queryClient.invalidateQueries();
+  const openForm = (type) => { setEditItem(null); setIsFabMenuOpen(false); if (type === 'income') setIncomeFormOpen(true); if (type === 'expense') setExpenseFormOpen(true); if (type === 'debt') setDebtFormOpen(true); };
 
-  const handleWhatsAppConnect = async () => {
-    const household = households.find(h => h.id === selectedHouseholdId);
-    if (!household) return;
-    const response = await base44.functions.invoke('generateActivationCode', { household_id: household.id });
-    const whatsappBotNumber = systemConfig?.find(c => c.key === 'whatsapp_bot_number')?.value || '972559725996';
-    window.open(`https://api.whatsapp.com/send/?phone=${whatsappBotNumber}&text=${encodeURIComponent(response.data.activation_code)}`, '_blank');
-  };
-
-  const handleTelegramConnect = async () => {
-    const household = households.find(h => h.id === selectedHouseholdId);
-    if (!household) return;
-    const response = await base44.functions.invoke('generateActivationCode', { household_id: household.id });
-    const botUser = systemConfig?.find(c => c.key === 'telegram_bot_username')?.value || 'controlyourmoneyy_bot';
-    window.open(`https://t.me/${botUser}?text=${encodeURIComponent('אשמח להפעיל את הטלגרם, קוד: ' + response.data.activation_code)}`, '_blank');
-  };
-
-  const createIncome = useMutation({ mutationFn: (data) => base44.entities.Income.create(data), onSuccess: handleRefresh });
-  const updateIncome = useMutation({ mutationFn: ({id, data}) => base44.entities.Income.update(id, data), onSuccess: handleRefresh });
-  const deleteIncome = useMutation({ mutationFn: (id) => base44.entities.Income.delete(id), onSuccess: handleRefresh });
-  
-  const createExpense = useMutation({ mutationFn: (data) => base44.entities.Expense.create(data), onSuccess: handleRefresh });
-  const updateExpense = useMutation({ mutationFn: ({id, data}) => base44.entities.Expense.update(id, data), onSuccess: handleRefresh });
-  const deleteExpense = useMutation({ mutationFn: (id) => base44.entities.Expense.delete(id), onSuccess: handleRefresh });
-
-  const handleSaveIncome = (data) => {
-    const payload = { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear };
-    if (editItem) {
-      updateIncome.mutate({ id: editItem.id, data: payload });
-    } else {
-      createIncome.mutate(payload);
-    }
-    setIncomeFormOpen(false);
-    setEditItem(null);
-  };
-
-  const handleSaveExpense = (data) => {
-    const payload = { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear };
-    if (editItem) {
-      updateExpense.mutate({ id: editItem.id, data: payload });
-    } else {
-      createExpense.mutate(payload);
-    }
-    setExpenseFormOpen(false);
-    setEditItem(null);
-  };
-
-  if (loadingHouseholds) return <div className="flex items-center justify-center min-h-screen">טוען...</div>;
+  if (loadingHouseholds || !selectedHouseholdId) return <div className="p-10 text-center">טוען...</div>;
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div dir="rtl" className="min-h-screen bg-[#f8fafc] dark:bg-gray-950 pb-20">
+      <div dir="rtl" className="min-h-screen bg-[#f8fafc] dark:bg-gray-950 pb-24">
         <AnnouncementTicker />
         
         {/* Header פרימיום */}
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-30 backdrop-blur-md bg-opacity-80">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                ControlYourMoney
-              </h1>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant="secondary" className="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                  <Activity className="w-3 h-3 ml-1" />
-                  {households.find(h => h.id === selectedHouseholdId)?.name || 'חשבון אישי'}
-                </Badge>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-               <Button onClick={handleWhatsAppConnect} variant="outline" className="rounded-full border-green-200 text-green-600 hover:bg-green-50 gap-2">
-                 <MessageCircle className="w-4 h-4" />
-                 <span className="hidden sm:inline">WhatsApp</span>
-               </Button>
-               <Button onClick={handleTelegramConnect} variant="outline" className="rounded-full border-blue-200 text-blue-600 hover:bg-blue-50 gap-2">
-                 <Send className="w-4 h-4" />
-                 <span className="hidden sm:inline">Telegram</span>
-               </Button>
-               <Button onClick={() => navigate(createPageUrl('UserSettings'))} variant="ghost" className="rounded-full">
-                 <Users className="w-4 h-4" />
-               </Button>
-            </div>
+        <div className="bg-white/90 dark:bg-gray-900/90 border-b border-gray-100 sticky top-0 z-40 backdrop-blur-md px-4 py-3">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 className="text-xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">ControlYourMoney</h1>
+            <Button onClick={() => navigate('/user-settings')} variant="ghost" size="icon" className="rounded-full"><Users className="w-5 h-5" /></Button>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-8">
-          
-          {/* בורר חודש ומשק בית */}
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white dark:bg-gray-900 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-            <HouseholdSelector
-              households={households}
-              selectedId={selectedHouseholdId}
-              onSelect={setSelectedHouseholdId}
-              currentUserEmail={user?.email}
-            />
-            <MonthYearSelector
-              month={selectedMonth}
-              year={selectedYear}
-              onMonthChange={setSelectedMonth}
-              onYearChange={setSelectedYear}
-            />
+        <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row gap-3 bg-white dark:bg-gray-900 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+             <HouseholdSelector households={households} selectedId={selectedHouseholdId} onSelect={setSelectedHouseholdId} />
+             <MonthYearSelector month={selectedMonth} year={selectedYear} onMonthChange={setSelectedMonth} onYearChange={setSelectedYear} />
           </div>
 
-          {/* קלפי סיכום משודרגים */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { title: "הכנסות", value: totalIncome, icon: TrendingUp, color: "green", bg: "bg-emerald-50" },
-              { title: "הוצאות", value: totalExpenses, icon: TrendingDown, color: "orange", bg: "bg-orange-50" },
-              { title: "יתרה חופשית", value: monthlyBalance, icon: Wallet, color: monthlyBalance >= 0 ? "blue" : "red", bg: "bg-blue-50" },
-              { title: "נכסים", value: totalAssetValue, icon: PiggyBank, color: "purple", bg: "bg-purple-50" }
-            ].map((card, idx) => (
-              <motion.div key={idx} whileHover={{ y: -5 }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }}>
-                <SummaryCard
-                  title={card.title}
-                  value={card.value}
-                  icon={card.icon}
-                  color={card.color}
-                  className={`border-none shadow-sm hover:shadow-md transition-shadow ${card.bg}`}
-                />
-              </motion.div>
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <SummaryCard title="הכנסות" value={totalIncome} icon={TrendingUp} color="green" />
+            <SummaryCard title="הוצאות" value={totalExpenses} icon={TrendingDown} color="orange" />
+            <SummaryCard title="יתרה" value={monthlyBalance} icon={Wallet} color={monthlyBalance >= 0 ? "blue" : "red"} />
+            <SummaryCard title="נכסים" value={0} icon={PiggyBank} color="purple" />
           </div>
 
-          {/* שורת תובנת AI - אלמנט פרימיום */}
-          <Card className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white border-none overflow-hidden relative">
-            <div className="absolute right-0 top-0 opacity-10">
-              <Zap className="w-32 h-32 -mr-10 -mt-10" />
-            </div>
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="bg-white/20 p-3 rounded-full">
-                <Zap className="w-6 h-6 text-yellow-300" />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg">תובנה חכמה</h3>
-                <p className="text-white/80 text-sm">
-                  {monthlyBalance > 0 
-                    ? `מעולה! נשארה לכם יתרה של ₪${monthlyBalance.toLocaleString()}. זה זמן מצוין להגדיל את החיסכון החודשי.`
-                    : `שימו לב, ההוצאות החודשיות עברו את ההכנסות ב-₪${Math.abs(monthlyBalance).toLocaleString()}. כדאי לבדוק קטגוריות גמישות.`
-                  }
-                </p>
-              </div>
+          {/* AI Insight */}
+          <Card className="bg-indigo-600 text-white border-none shadow-md">
+            <CardContent className="p-4 flex items-center gap-3">
+              <Zap className="w-5 h-5 text-yellow-300 shrink-0" />
+              <p className="text-sm font-medium">{monthlyBalance >= 0 ? `נשארו לכם ₪${monthlyBalance.toLocaleString()} לניצול החודש.` : `חרגתם ב-₪${Math.abs(monthlyBalance).toLocaleString()}.`}</p>
             </CardContent>
           </Card>
 
-          {/* טאבים וממשק מרכזי */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <div className="flex justify-center">
-              <TabsList className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-1 rounded-full h-auto shadow-sm">
-                {[
-                  { id: "overview", label: "סקירה", icon: Activity },
-                  { id: "budget", label: "תקציב", icon: PiggyBank },
-                  { id: "income", label: "הכנסות", icon: TrendingUp },
-                  { id: "expenses", label: "הוצאות", icon: TrendingDown },
-                  { id: "debts", label: "חובות", icon: CreditCard }
-                ].map(t => (
-                  <TabsTrigger key={t.id} value={t.id} className="rounded-full px-6 py-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all">
-                    <t.icon className="w-4 h-4 ml-2" />
-                    {t.label}
-                  </TabsTrigger>
-                ))}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <div className="sticky top-16 z-30 bg-[#f8fafc]/80 dark:bg-gray-950/80 backdrop-blur-sm py-2">
+              <TabsList className="w-full justify-start bg-white dark:bg-gray-900 border border-gray-100 rounded-full h-11 overflow-x-auto no-scrollbar">
+                <TabsTrigger value="overview" className="rounded-full flex-1">סקירה</TabsTrigger>
+                <TabsTrigger value="budget" className="rounded-full flex-1">תקציב</TabsTrigger>
+                <TabsTrigger value="income" className="rounded-full flex-1">הכנסות</TabsTrigger>
+                <TabsTrigger value="expenses" className="rounded-full flex-1">הוצאות</TabsTrigger>
+                <TabsTrigger value="debts" className="rounded-full flex-1">חובות</TabsTrigger>
               </TabsList>
             </div>
 
             <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.2 }}
-              >
-                <TabsContent value="overview" className="space-y-6">
-                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      <div className="lg:col-span-2">
-                        <CategoryBreakdown expenses={actualExpenses} budgets={budgetSettings} />
-                      </div>
-                      <div>
-                        <AlertPanel alerts={alerts} onDismiss={() => {}} onMarkRead={() => {}} onRefresh={() => {}} />
-                      </div>
-                   </div>
-                </TabsContent>
-
-                <TabsContent value="income">
-                   <Card className="border-none shadow-sm">
-                     <CardHeader className="flex flex-row justify-between items-center">
-                        <CardTitle>פירוט הכנסות</CardTitle>
-                        <Button onClick={() => setIncomeFormOpen(true)} className="bg-blue-600"><Plus className="w-4 h-4 ml-2"/>הוסף</Button>
-                     </CardHeader>
-                     <CardContent>
-                        <DataTable 
-                          data={incomes} 
-                          columns={[
-                            {key:'category', label:'קטגוריה', minWidth: 100},
-                            {key:'description', label:'תיאור', minWidth: 150}, 
-                            {key:'amount', label:'סכום', render: (val) => `₪${(val || 0).toLocaleString()}`, minWidth: 100}
-                          ]} 
-                          onEdit={(i) => { setEditItem(i); setIncomeFormOpen(true); }}
-                          onDelete={(i) => deleteIncome.mutate(i.id)} 
-                        />
-                     </CardContent>
-                   </Card>
-                </TabsContent>
-
-                <TabsContent value="expenses">
-                   <Card className="border-none shadow-sm">
-                     <CardHeader className="flex flex-row justify-between items-center">
-                        <CardTitle>פירוט הוצאות</CardTitle>
-                        <Button onClick={() => setExpenseFormOpen(true)} className="bg-orange-500"><Plus className="w-4 h-4 ml-2"/>הוסף</Button>
-                     </CardHeader>
-                     <CardContent>
-                        <DataTable 
-                          data={actualExpenses} 
-                          columns={[
-                            {key:'category', label:'קטגוריה', minWidth: 100},
-                            {key:'description', label:'תיאור', minWidth: 150}, 
-                            {key:'amount', label:'סכום', render: (val) => `₪${(val || 0).toLocaleString()}`, minWidth: 100}
-                          ]} 
-                          onEdit={(e) => { setEditItem(e); setExpenseFormOpen(true); }}
-                          onDelete={(e) => deleteExpense.mutate(e.id)} 
-                        />
-                     </CardContent>
-                   </Card>
-                </TabsContent>
+              <motion.div key={activeTab} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.2 }}>
                 
-                {/* שאר התוכן של הטאבים ימשיך כרגיל */}
+                <TabsContent value="overview" className="space-y-4">
+                    <CategoryBreakdown expenses={actualExpenses} budgets={budgetSettings} />
+                    <AlertPanel alerts={alerts} onDismiss={() => {}} onMarkRead={() => {}} onRefresh={() => {}} />
+                </TabsContent>
+
+                <TabsContent value="budget" className="space-y-4">
+                   <BudgetSettingsTab householdId={selectedHouseholdId} month={selectedMonth} year={selectedYear} existingBudgets={budgetSettings} allCustomCategories={[]} onSave={handleSaveBudgetSettings} />
+                </TabsContent>
+
+                <TabsContent value="income" className="space-y-4">
+                  <div className="flex justify-between items-center"><h2 className="text-lg font-bold">הכנסות</h2><Button onClick={() => openForm('income')} className="bg-blue-600 rounded-full"><Plus className="w-4 h-4 ml-2"/>הוסף</Button></div>
+                  <DataTable data={incomes} columns={incomeColumns} onDelete={(i) => base44.entities.Income.delete(i.id).then(handleRefresh)} />
+                </TabsContent>
+
+                <TabsContent value="expenses" className="space-y-4">
+                  <div className="flex justify-between items-center"><h2 className="text-lg font-bold">הוצאות</h2><Button onClick={() => openForm('expense')} className="bg-orange-500 rounded-full"><Plus className="w-4 h-4 ml-2"/>הוסף</Button></div>
+                  <DataTable data={actualExpenses} columns={expenseColumns} onDelete={(e) => base44.entities.Expense.delete(e.id).then(handleRefresh)} />
+                </TabsContent>
+
+                <TabsContent value="debts" className="space-y-4">
+                  <div className="flex justify-between items-center"><h2 className="text-lg font-bold">חובות</h2><Button onClick={() => openForm('debt')} className="bg-red-500 rounded-full"><Plus className="w-4 h-4 ml-2"/>הוסף</Button></div>
+                  <DataTable data={debts} columns={debtColumns} onDelete={(d) => base44.entities.Debt.delete(d.id).then(handleRefresh)} />
+                </TabsContent>
+
               </motion.div>
             </AnimatePresence>
           </Tabs>
         </div>
 
-        {/* פאנל טפסים */}
-        <IncomeForm open={incomeFormOpen} onClose={() => { setIncomeFormOpen(false); setEditItem(null); }} onSave={handleSaveIncome} editItem={editItem} />
-        <ExpenseForm open={expenseFormOpen} onClose={() => { setExpenseFormOpen(false); setEditItem(null); }} onSave={handleSaveExpense} editItem={editItem} />
+        {/* FAB Menu במובייל */}
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+          <AnimatePresence>
+            {isFabMenuOpen && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute bottom-16 left-1/2 -translate-x-1/2 flex flex-col gap-3 min-w-[150px]">
+                <Button onClick={() => openForm('expense')} className="w-full bg-orange-500 text-white rounded-full shadow-lg gap-2 h-11"><TrendingDown className="w-4 h-4" /> הוצאה</Button>
+                <Button onClick={() => openForm('income')} className="w-full bg-green-600 text-white rounded-full shadow-lg gap-2 h-11"><TrendingUp className="w-4 h-4" /> הכנסה</Button>
+                <Button onClick={() => openForm('debt')} className="w-full bg-red-600 text-white rounded-full shadow-lg gap-2 h-11"><CreditCard className="w-4 h-4" /> חוב</Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <Button onClick={() => setIsFabMenuOpen(!isFabMenuOpen)} className={`w-14 h-14 rounded-full shadow-2xl transition-all ${isFabMenuOpen ? 'bg-gray-800 rotate-45' : 'bg-blue-600'}`}><Plus className="w-8 h-8 text-white" /></Button>
+        </div>
+
+        {/* טפסים */}
+        <IncomeForm open={incomeFormOpen} onClose={() => setIncomeFormOpen(false)} onSave={() => handleRefresh()} />
+        <ExpenseForm open={expenseFormOpen} onClose={() => setExpenseFormOpen(false)} onSave={() => handleRefresh()} remainingBudgetByCategory={{}} customCategories={[]} />
+        <DebtForm open={debtFormOpen} onClose={() => setDebtFormOpen(false)} onSave={() => handleRefresh()} />
       </div>
     </PullToRefresh>
   );
