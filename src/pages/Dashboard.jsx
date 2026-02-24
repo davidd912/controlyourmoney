@@ -17,7 +17,8 @@ import {
   Download,
   Users,
   Copy,
-  MessageCircle
+  MessageCircle,
+  Send
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -150,6 +151,10 @@ export default function Dashboard() {
       handleWhatsAppConnect();
       navigate(location.pathname, { replace: true, state: {} });
       }
+      if (location.state?.action === 'telegram') {
+      handleTelegramConnect();
+      navigate(location.pathname, { replace: true, state: {} });
+      }
       }, [location.state]);
 
 
@@ -249,6 +254,13 @@ export default function Dashboard() {
       return base44.entities.Alert.filter({ household_id: selectedHouseholdId }, '-created_date', 50);
     },
     enabled: !!user && !!selectedHouseholdId
+  });
+
+  const { data: systemConfig = [], isLoading: isLoadingSystemConfig } = useQuery({
+    queryKey: ['systemConfig'],
+    queryFn: async () => {
+      return base44.entities.SystemConfig.list();
+    }
   });
 
   // Mutations - with Optimistic UI for deletions
@@ -834,13 +846,39 @@ ${JSON.stringify(financialData, null, 2)}
       code = response.data.activation_code;
     }
     
-    // Fetch dynamic WhatsApp number from SystemConfig
-    const systemConfig = await base44.entities.SystemConfig.list();
     const whatsappBotNumberItem = systemConfig?.find(config => config.key === 'whatsapp_bot_number');
     const whatsappNumber = whatsappBotNumberItem?.value || '972559725996';
     
     const message = encodeURIComponent(code);
     const url = `https://api.whatsapp.com/send/?phone=${whatsappNumber}&text=${message}&type=phone_number&app_absent=0`;
+    window.open(url, '_blank');
+  };
+
+  const handleTelegramConnect = async () => {
+    if (!currentHousehold) return;
+    
+    let code = currentHousehold.activation_code;
+    let expiresAt = currentHousehold.activation_code_expires;
+    
+    const isExpired = expiresAt && new Date(expiresAt) < new Date();
+    
+    if (!code || isExpired) {
+      const response = await base44.functions.invoke('generateActivationCode', {
+        household_id: currentHousehold.id
+      });
+      code = response.data.activation_code;
+    }
+    
+    const telegramBotUsernameItem = systemConfig?.find(config => config.key === 'telegram_bot_username');
+    const telegramUsername = telegramBotUsernameItem?.value || '';
+    
+    if (!telegramUsername) {
+      alert('שם המשתמש של בוט הטלגרם לא הוגדר במערכת');
+      return;
+    }
+    
+    const message = encodeURIComponent(`אשמח להפעיל את חשבון הטלגרם שלי עבור ניהול תקציב, קוד הפעלה: ${code}`);
+    const url = `https://t.me/${telegramUsername}?text=${message}`;
     window.open(url, '_blank');
   };
 
@@ -1030,15 +1068,28 @@ ${JSON.stringify(financialData, null, 2)}
             </div>
             <div className="flex gap-2">
               {(user?.role === 'admin' || user?.role === 'POC' || user?.data?.whatsapp_beta_access) && (
-                <Button
-                  onClick={handleWhatsAppConnect}
-                  variant="outline"
-                  className="gap-2 hidden md:flex text-green-600 hover:text-white hover:bg-green-500 border-green-500"
-                  aria-label="התחבר ל-WhatsApp"
-                >
-                  <MessageCircle className="w-4 h-4" aria-hidden="true" />
-                  WhatsApp
-                </Button>
+                <>
+                  <Button
+                    onClick={handleWhatsAppConnect}
+                    variant="outline"
+                    className="gap-2 hidden md:flex text-green-600 hover:text-white hover:bg-green-500 border-green-500"
+                    aria-label="התחבר ל-WhatsApp"
+                    disabled={isLoadingSystemConfig}
+                  >
+                    <MessageCircle className="w-4 h-4" aria-hidden="true" />
+                    {isLoadingSystemConfig ? 'טוען...' : 'WhatsApp'}
+                  </Button>
+                  <Button
+                    onClick={handleTelegramConnect}
+                    variant="outline"
+                    className="gap-2 hidden md:flex text-blue-600 hover:text-white hover:bg-blue-500 border-blue-500"
+                    aria-label="התחבר ל-Telegram"
+                    disabled={isLoadingSystemConfig}
+                  >
+                    <Send className="w-4 h-4" aria-hidden="true" />
+                    {isLoadingSystemConfig ? 'טוען...' : 'Telegram'}
+                  </Button>
+                </>
               )}
               <Button
                 onClick={handleExportAll}

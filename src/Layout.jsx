@@ -261,11 +261,14 @@ function LayoutContent({ children, currentPageName }) {
           </AnimatePresence>
         </main>
 
-        {/* WhatsApp Floating Button */}
+        {/* WhatsApp & Telegram Floating Buttons */}
         {(user?.role === 'admin' || user?.role === 'POC' || user?.data?.whatsapp_beta_access) && showWhatsappButton && (
-          <div className="fixed left-6 bottom-24 md:bottom-8 z-40 flex items-center gap-2">
+          <div className="fixed left-6 bottom-24 md:bottom-8 z-40 flex items-center gap-4">
             <Button onClick={() => navigate(createPageUrl('Dashboard'), { state: { action: 'whatsapp' } })} className="rounded-full bg-green-500 hover:bg-green-600 text-white shadow-lg">
               <MessageCircle className="w-5 h-5 mr-2" /> WHATSAPP
+            </Button>
+            <Button onClick={() => navigate(createPageUrl('Dashboard'), { state: { action: 'telegram' } })} className="rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg">
+              <MessageCircle className="w-5 h-5 mr-2" /> TELEGRAM
             </Button>
           </div>
         )}
