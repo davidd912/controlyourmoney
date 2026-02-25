@@ -143,7 +143,7 @@ export default function Dashboard() {
 
         <div className="max-w-7xl mx-auto p-2 md:p-6 space-y-3 md:space-y-6">
           
-          {/* כותרת עליונה עם כפתורים */}
+          {/* כותרת עליונה */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4">
             <div className="flex justify-between items-center">
               <div className="text-right">
@@ -153,23 +153,16 @@ export default function Dashboard() {
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button
-                  onClick={handleWhatsAppConnect}
-                  className="bg-green-500 hover:bg-green-600 text-white h-10 px-4 rounded-lg text-sm font-bold shadow-md flex items-center gap-2">
-
-                  <MessageCircle className="w-4 h-4" />
-                  WhatsApp
+                <Button onClick={handleWhatsAppConnect} className="bg-green-500 hover:bg-green-600 text-white h-10 px-4 rounded-lg text-sm font-bold shadow-md flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4" /> WhatsApp
                 </Button>
-                <Button
-                  onClick={handleTelegramConnect}
-                  className="bg-blue-500 hover:bg-blue-600 text-white h-10 px-4 rounded-lg text-sm font-bold shadow-md flex items-center gap-2">
-
-                  <Send className="w-4 h-4" />
-                  Telegram
+                <Button onClick={handleTelegramConnect} className="bg-blue-500 hover:bg-blue-600 text-white h-10 px-4 rounded-lg text-sm font-bold shadow-md flex items-center gap-2">
+                  <Send className="w-4 h-4" /> Telegram
                 </Button>
               </div>
             </div>
           </div>
+
           <div className="flex flex-col sm:flex-row gap-2 md:gap-3 bg-white dark:bg-gray-900 p-2 md:p-3 rounded-xl md:rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
              <HouseholdSelector households={households} selectedId={selectedHouseholdId} onSelect={setSelectedHouseholdId} />
              <MonthYearSelector month={selectedMonth} year={selectedYear} onMonthChange={setSelectedMonth} onYearChange={setSelectedYear} />
@@ -212,6 +205,7 @@ export default function Dashboard() {
                    <BudgetSettingsTab householdId={selectedHouseholdId} month={selectedMonth} year={selectedYear} existingBudgets={budgetSettings} allCustomCategories={[]} onSave={handleSaveBudgetSettings} />
                 </TabsContent>
 
+                {/* הכנסות - עם עמודת תיאור */}
                 <TabsContent value="income" className="space-y-3 md:space-y-4">
                   <div className="flex justify-between items-center mb-2 px-1">
                     <h2 className="text-base md:text-lg font-bold">פירוט הכנסות</h2>
@@ -220,11 +214,13 @@ export default function Dashboard() {
                     </Button>
                   </div>
                   <DataTable data={incomes} columns={[
-                  { key: 'category', label: 'קטגוריה', render: (val) => incomeLabels[val] || val },
-                  { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` }]
-                  } onDelete={(i) => base44.entities.Income.delete(i.id).then(handleRefresh)} onEdit={(i) => {setEditItem(i);setIncomeFormOpen(true);}} />
+                    { key: 'category', label: 'קטגוריה', render: (val) => incomeLabels[val] || val },
+                    { key: 'description', label: 'תיאור' }, // העמודה החדשה
+                    { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` }
+                  ]} onDelete={(i) => base44.entities.Income.delete(i.id).then(handleRefresh)} onEdit={(i) => {setEditItem(i);setIncomeFormOpen(true);}} />
                 </TabsContent>
 
+                {/* הוצאות - עם עמודת תיאור */}
                 <TabsContent value="expenses" className="space-y-3 md:space-y-4">
                   <div className="flex justify-between items-center mb-2 px-1">
                     <h2 className="text-base md:text-lg font-bold">פירוט הוצאות</h2>
@@ -233,9 +229,10 @@ export default function Dashboard() {
                     </Button>
                   </div>
                   <DataTable data={expenses.filter((e) => !e.is_budget || e.is_current)} columns={[
-                  { key: 'category', label: 'קטגוריה', render: (val, item) => item.category === 'custom' ? item.custom_category_name : expenseLabels[val] || val },
-                  { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` }]
-                  } onDelete={(e) => base44.entities.Expense.delete(e.id).then(handleRefresh)} onEdit={(e) => {setEditItem(e);setExpenseFormOpen(true);}} />
+                    { key: 'category', label: 'קטגוריה', render: (val, item) => item.category === 'custom' ? item.custom_category_name : expenseLabels[val] || val },
+                    { key: 'description', label: 'תיאור' }, // העמודה החדשה
+                    { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` }
+                  ]} onDelete={(e) => base44.entities.Expense.delete(e.id).then(handleRefresh)} onEdit={(e) => {setEditItem(e);setExpenseFormOpen(true);}} />
                 </TabsContent>
 
                 <TabsContent value="debts" className="space-y-3 md:space-y-4">
@@ -246,9 +243,9 @@ export default function Dashboard() {
                     </Button>
                   </div>
                   <DataTable data={debts} columns={[
-                  { key: 'creditor_name', label: 'נושה' },
-                  { key: 'total_amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` }]
-                  } onDelete={(d) => base44.entities.Debt.delete(d.id).then(handleRefresh)} onEdit={(d) => {setEditItem(d);setDebtFormOpen(true);}} />
+                    { key: 'creditor_name', label: 'נושה' },
+                    { key: 'total_amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` }
+                  ]} onDelete={(d) => base44.entities.Debt.delete(d.id).then(handleRefresh)} onEdit={(d) => {setEditItem(d);setDebtFormOpen(true);}} />
                 </TabsContent>
 
               </motion.div>
@@ -256,7 +253,7 @@ export default function Dashboard() {
           </Tabs>
         </div>
 
-        {/* הודעות Toast קטנות למעלה */}
+        {/* הודעות Toast */}
         <AnimatePresence>
           {toast &&
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] bg-gray-900/90 text-white px-6 py-2 rounded-full shadow-xl flex items-center gap-2 border border-gray-700 pointer-events-none">
@@ -271,6 +268,6 @@ export default function Dashboard() {
         <ExpenseForm open={expenseFormOpen} onClose={() => setExpenseFormOpen(false)} onSave={() => handleRefresh()} editItem={editItem} remainingBudgetByCategory={{}} customCategories={[]} />
         <DebtForm open={debtFormOpen} onClose={() => setDebtFormOpen(false)} onSave={() => handleRefresh()} editItem={editItem} />
       </div>
-    </PullToRefresh>);
-
+    </PullToRefresh>
+  );
 }
