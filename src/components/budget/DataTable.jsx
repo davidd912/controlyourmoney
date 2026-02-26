@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Pencil, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -63,19 +61,22 @@ export default function DataTable({
     );
   }
 
+  // תצוגת מובייל - כרטיסיות מונפשות
   if (isMobile) {
     return (
       <div className="space-y-3">
-        <AnimatePresence>
+        {/* AnimatePresence מאפשר לאנימציות ה-exit לעבוד */}
+        <AnimatePresence mode="popLayout">
           {data.map((item, index) => (
             <motion.div
               key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.2, delay: index * 0.02 }}
+              layout // גורם לשאר הכרטיסיות לעלות חלק כשכרטיסיה נמחקת
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, x: -100, backgroundColor: "rgba(239, 68, 68, 0.1)" }} // עף שמאלה ונהיה אדמדם
+              transition={{ duration: 0.3, type: "spring", bounce: 0.2 }}
             >
-              <Card className="rounded-lg shadow-sm bg-white dark:bg-gray-800">
+              <Card className="rounded-lg shadow-sm bg-white dark:bg-gray-800 border dark:border-gray-700">
                 <CardContent className="p-3">
                   <div className="flex justify-between items-start gap-3 mb-2">
                     <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex-1">
@@ -95,7 +96,7 @@ export default function DataTable({
                       variant="ghost"
                       size="sm"
                       onClick={() => onEdit(item)}
-                      className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 h-8 px-3 text-xs"
+                      className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 h-8 px-3 text-xs active:scale-95 transition-transform"
                     >
                       <Pencil className="h-3.5 w-3.5 ml-1" />
                       ערוך
@@ -105,9 +106,9 @@ export default function DataTable({
                       size="sm"
                       onClick={async () => {
                         await onDelete(item);
-                        await new Promise(resolve => setTimeout(resolve, 200));
+                        // ה-setTimeout פה כבר לא נחוץ אם ה-onDelete מטפל במחיקה כמו שצריך בשרת
                       }}
-                      className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 h-8 px-3 text-xs"
+                      className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 h-8 px-3 text-xs active:scale-95 transition-transform"
                     >
                       <Trash2 className="h-3.5 w-3.5 ml-1" />
                       מחק
@@ -122,10 +123,11 @@ export default function DataTable({
     );
   }
 
+  // תצוגת דסקטופ - טבלה מונפשת
   return (
-    <div className="rounded-lg border border-border bg-card overflow-hidden">
+    <div className="rounded-lg border border-border bg-card overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full" style={{ tableLayout: 'fixed' }}>
+        <table className="w-full text-right" style={{ tableLayout: 'fixed' }}>
           <thead>
             <tr className="border-b border-border bg-muted/50">
               {columns.map((col) => (
@@ -149,16 +151,17 @@ export default function DataTable({
               <th className="w-24 text-center text-foreground font-semibold px-4 py-3">פעולות</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border">
             <AnimatePresence mode="popLayout">
               {data.map((item, index) => (
                 <motion.tr
                   key={item.id}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -50 }}
-                  transition={{ duration: 0.2, delay: index * 0.02 }}
-                  className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+                  layout // גורם לשורות להחליק למעלה באלגנטיות כששורה מעליהן נמחקת
+                  initial={{ opacity: 0, scale: 0.95, y: -20, backgroundColor: "rgba(59, 130, 246, 0.1)" }} // כניסה מודגשת בכחול
+                  animate={{ opacity: 1, scale: 1, y: 0, backgroundColor: "transparent" }}
+                  exit={{ opacity: 0, x: -100, scale: 0.9, backgroundColor: "rgba(239, 68, 68, 0.1)" }} // יציאה אדומה לשמאל
+                  transition={{ duration: 0.3, type: "spring", bounce: 0.2 }}
+                  className="hover:bg-muted/30 transition-colors group"
                 >
                   {columns.map((col) => (
                     <td 
@@ -171,12 +174,12 @@ export default function DataTable({
                     </td>
                   ))}
                   <td className="px-4 py-3">
-                    <div className="flex justify-center gap-1">
+                    <div className="flex justify-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => onEdit(item)}
-                        className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                        className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full transition-transform active:scale-90"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -185,9 +188,8 @@ export default function DataTable({
                         size="icon"
                         onClick={async () => {
                           await onDelete(item);
-                          await new Promise(resolve => setTimeout(resolve, 200));
                         }}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full transition-transform active:scale-90"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
