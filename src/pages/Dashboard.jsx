@@ -40,6 +40,9 @@ const expenseLabels = {
 };
 const debtLabels = { gmach: "גמ\"ח", friends: "חברים", bank_loan: "בנק הלוואה", family: "משפחה", other: "אחר" };
 
+// פונקציית עזר ליצירת מזהה קבוצה ייחודי לפעולות קבועות
+const generateGroupId = () => Math.random().toString(36).substring(2, 10);
+
 export default function Dashboard() {
   const currentDate = new Date();
   const [activeTab, setActiveTab] = useState("overview");
@@ -76,7 +79,6 @@ export default function Dashboard() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['households'] });
       if (data?.id) setSelectedHouseholdId(data.id);
-      // קונפטי 🎉
       import('canvas-confetti').then((confetti) => {
         confetti.default({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
       });
@@ -119,6 +121,140 @@ export default function Dashboard() {
     queryKey: ['systemConfig'],
     queryFn: () => base44.entities.SystemConfig.list()
   });
+
+  // --- לוגיקה חכמה: מחיקה, הכנסה והוצאה --- //
+
+  const handleDeleteItem = async (item, entityType) => {
+    try {
+      const isRecurring = item.is_recurring || item.recurring_group_id;
+      
+      if (isRecurring) {
+        // מחיקה חכמה של כל המופעים מהחודש הנוכחי והלאה
+        const allItems = await base44.entities[entityType].filter({ household_id: selectedHouseholdId });
+        const futureItems = allItems.filter(e => 
+          (e.recurring_group_id === item.recurring_group_id || (e.description === item.description && e.category === item.category && e.is_recurring)) &&
+          (e.year > item.year || (e.year === item.year && e.month >= item.month))
+        );
+        
+        for (const fItem of futureItems) {
+          await base44.entities[entityType].delete(fItem.id);
+        }
+        showToast('הפעולה הקבועה נמחקה מכל החודשים הבאים! 🧹');
+      } else {
+        await base44.entities[entityType].delete(item.id);
+        showToast('נמחק בהצלחה! 🗑️');
+      }
+    } catch (err) {
+      showToast('שגיאה במחיקה');
+    }
+    handleRefresh();
+  };
+
+  const handleSaveExpense = async (data) => {
+    const isRecurring = data.is_recurring || (editItem && editItem.is_recurring);
+    const groupId = (editItem && editItem.recurring_group_id) ? editItem.recurring_group_id : generateGroupId();
+
+    try {
+      if (editItem) {
+        await base44.entities.Expense.update(editItem.id, { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, recurring_group_id: groupId });
+        
+        if (isRecurring) {
+          const allExpenses = await base44.entities.Expense.filter({ household_id: selectedHouseholdId });
+          const futureItems = allExpenses.filter(e => 
+            e.recurring_group_id === groupId && 
+            (e.year > selectedYear || (e.year === selectedYear && e.month > selectedMonth))
+          );
+          for (const fItem of futureItems) {
+            await base44.entities.Expense.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
+          }
+          showToast('עודכן לכל החודשים הבאים! ✨');
+        } else {
+          showToast('עודכן בהצלחה! ✨');
+        }
+      } else if (data.is_recurring) {
+        const entries = [];
+        const monthsLeftThisYear = 12 - selectedMonth + 1; // מחשב כמה חודשים נשארו עד סוף השנה
+        
+        for (let i = 0; i < monthsLeftThisYear; i++) {
+          entries.push({ 
+            ...data, 
+            household_id: selectedHouseholdId, 
+            month: selectedMonth + i, 
+            year: selectedYear, 
+            recurring_group_id: groupId 
+          });
+        }
+        await base44.entities.Expense.bulkCreate(entries);
+        showToast(`נוספה הוצאה קבועה עד סוף השנה! 📅`);
+      } else {
+        await base44.entities.Expense.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
+        showToast('נוסף בהצלחה! ✨');
+      }
+
+      // חיתוך חובות אוטומטי
+      if (data.category === 'obligations') {
+        const matchingDebt = debts.find(d => d.creditor_name === data.description || data.description.includes(d.creditor_name));
+        if (matchingDebt) {
+           const newAmount = Math.max(0, matchingDebt.total_amount - data.amount);
+           await base44.entities.Debt.update(matchingDebt.id, { total_amount: newAmount });
+           showToast(`החוב ל-${matchingDebt.creditor_name} צומצם ל-₪${newAmount.toLocaleString()} 📉`);
+        }
+      }
+    } catch (e) { showToast('שגיאה בשמירה'); }
+
+    setExpenseFormOpen(false);
+    setEditItem(null);
+    handleRefresh();
+  };
+
+  const handleSaveIncome = async (data) => {
+    const isRecurring = data.is_recurring || (editItem && editItem.is_recurring);
+    const groupId = (editItem && editItem.recurring_group_id) ? editItem.recurring_group_id : generateGroupId();
+
+    try {
+      if (editItem) {
+        await base44.entities.Income.update(editItem.id, { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, recurring_group_id: groupId });
+        
+        if (isRecurring) {
+          const allIncomes = await base44.entities.Income.filter({ household_id: selectedHouseholdId });
+          const futureItems = allIncomes.filter(i => 
+            i.recurring_group_id === groupId && 
+            (i.year > selectedYear || (i.year === selectedYear && i.month > selectedMonth))
+          );
+          for (const fItem of futureItems) {
+            await base44.entities.Income.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
+          }
+          showToast('הכנסה קבועה עודכנה קדימה! ✨');
+        } else {
+          showToast('עודכן בהצלחה! ✨');
+        }
+      } else if (data.is_recurring) {
+        const entries = [];
+        const monthsLeftThisYear = 12 - selectedMonth + 1;
+        
+        for (let i = 0; i < monthsLeftThisYear; i++) {
+          entries.push({ 
+            ...data, 
+            household_id: selectedHouseholdId, 
+            month: selectedMonth + i, 
+            year: selectedYear, 
+            recurring_group_id: groupId 
+          });
+        }
+        await base44.entities.Income.bulkCreate(entries);
+        showToast('נוספה הכנסה קבועה עד סוף השנה! 📅');
+      } else {
+        await base44.entities.Income.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
+        showToast('נוסף בהצלחה! ✨');
+      }
+    } catch (e) { showToast('שגיאה בשמירה'); }
+
+    setIncomeFormOpen(false);
+    setEditItem(null);
+    handleRefresh();
+  };
+
+  // --- סוף לוגיקה חכמה --- //
 
   const handleSaveBudgetSettings = async (payload) => {
     try {
@@ -255,12 +391,12 @@ export default function Dashboard() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div dir="rtl" className="min-h-screen bg-[#f8fafc] dark:bg-gray-950 relative">
+      {/* שמירה על ה- pb-32 כדי שהתפריט התחתון לא יסתיר */}
+      <div dir="rtl" className="min-h-screen bg-[#f8fafc] dark:bg-gray-950 relative pb-32">
         <AnnouncementTicker />
 
         <div className="max-w-7xl mx-auto p-2 md:p-6 space-y-3 md:space-y-6">
           
-          {/* כותרת עליונה */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4">
             <div className="flex justify-between items-center">
               <div className="text-right">
@@ -322,7 +458,6 @@ export default function Dashboard() {
                    <BudgetSettingsTab householdId={selectedHouseholdId} month={selectedMonth} year={selectedYear} existingBudgets={budgetSettings} allCustomCategories={[]} onSave={handleSaveBudgetSettings} />
                 </TabsContent>
 
-                {/* הכנסות - עם עמודת תיאור */}
                 <TabsContent value="income" className="space-y-3 md:space-y-4">
                   <div className="flex justify-between items-center mb-2 px-1">
                     <h2 className="text-base md:text-lg font-bold">פירוט הכנסות</h2>
@@ -332,12 +467,11 @@ export default function Dashboard() {
                   </div>
                   <DataTable data={incomes} columns={[
                     { key: 'category', label: 'קטגוריה', render: (val) => incomeLabels[val] || val },
-                    { key: 'description', label: 'תיאור' }, // העמודה החדשה
+                    { key: 'description', label: 'תיאור' },
                     { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` }
-                  ]} onDelete={async (i) => { try { await base44.entities.Income.delete(i.id); } catch(e) {} handleRefresh(); }} onEdit={(i) => {setEditItem(i);setIncomeFormOpen(true);}} />
+                  ]} onDelete={(i) => handleDeleteItem(i, 'Income')} onEdit={(i) => {setEditItem(i);setIncomeFormOpen(true);}} />
                 </TabsContent>
 
-                {/* הוצאות - עם עמודת תיאור */}
                 <TabsContent value="expenses" className="space-y-3 md:space-y-4">
                   <div className="flex justify-between items-center mb-2 px-1">
                     <h2 className="text-base md:text-lg font-bold">פירוט הוצאות</h2>
@@ -347,9 +481,9 @@ export default function Dashboard() {
                   </div>
                   <DataTable data={expenses.filter((e) => !e.is_budget || e.is_current)} columns={[
                     { key: 'category', label: 'קטגוריה', render: (val, item) => item.category === 'custom' ? item.custom_category_name : expenseLabels[val] || val },
-                    { key: 'description', label: 'תיאור' }, // העמודה החדשה
+                    { key: 'description', label: 'תיאור' },
                     { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` }
-                  ]} onDelete={async (e) => { try { await base44.entities.Expense.delete(e.id); } catch(err) {} handleRefresh(); }} onEdit={(e) => {setEditItem(e);setExpenseFormOpen(true);}} />
+                  ]} onDelete={(e) => handleDeleteItem(e, 'Expense')} onEdit={(e) => {setEditItem(e);setExpenseFormOpen(true);}} />
                 </TabsContent>
 
                 <TabsContent value="debts" className="space-y-3 md:space-y-4">
@@ -362,7 +496,7 @@ export default function Dashboard() {
                   <DataTable data={debts} columns={[
                     { key: 'creditor_name', label: 'נושה' },
                     { key: 'total_amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` }
-                  ]} onDelete={async (d) => { try { await base44.entities.Debt.delete(d.id); } catch(err) {} handleRefresh(); }} onEdit={(d) => {setEditItem(d);setDebtFormOpen(true);}} />
+                  ]} onDelete={async (d) => { try { await base44.entities.Debt.delete(d.id); showToast('נמחק בהצלחה! 🗑️'); } catch(err) {} handleRefresh(); }} onEdit={(d) => {setEditItem(d);setDebtFormOpen(true);}} />
                 </TabsContent>
 
               </motion.div>
@@ -370,7 +504,6 @@ export default function Dashboard() {
           </Tabs>
         </div>
 
-        {/* הודעות Toast */}
         <AnimatePresence>
           {toast &&
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] bg-gray-900/90 text-white px-6 py-2 rounded-full shadow-xl flex items-center gap-2 border border-gray-700 pointer-events-none">
@@ -380,43 +513,16 @@ export default function Dashboard() {
           }
         </AnimatePresence>
 
-        {/* טפסים */}
         <IncomeForm
           open={incomeFormOpen}
           onClose={() => { setIncomeFormOpen(false); setEditItem(null); }}
-          onSave={async (data) => {
-            if (editItem) {
-              await base44.entities.Income.update(editItem.id, { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
-            } else {
-              await base44.entities.Income.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
-            }
-            setIncomeFormOpen(false);
-            setEditItem(null);
-            queryClient.invalidateQueries({ queryKey: ['incomes', selectedHouseholdId] });
-          }}
+          onSave={handleSaveIncome}
           editItem={editItem}
         />
         <ExpenseForm
           open={expenseFormOpen}
           onClose={() => { setExpenseFormOpen(false); setEditItem(null); }}
-          onSave={async (data) => {
-            if (editItem) {
-              await base44.entities.Expense.update(editItem.id, { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
-            } else if (data.is_recurring) {
-              // יצירת הוצאה קבועה ל-12 חודשים קדימה
-              const entries = [];
-              for (let i = 0; i < 12; i++) {
-                const d = new Date(selectedYear, selectedMonth - 1 + i, 1);
-                entries.push({ ...data, household_id: selectedHouseholdId, month: d.getMonth() + 1, year: d.getFullYear() });
-              }
-              await base44.entities.Expense.bulkCreate(entries);
-            } else {
-              await base44.entities.Expense.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
-            }
-            setExpenseFormOpen(false);
-            setEditItem(null);
-            queryClient.invalidateQueries({ queryKey: ['expenses', selectedHouseholdId] });
-          }}
+          onSave={handleSaveExpense}
           editItem={editItem}
           remainingBudgetByCategory={{}}
           customCategories={[]}
@@ -425,14 +531,17 @@ export default function Dashboard() {
           open={debtFormOpen}
           onClose={() => { setDebtFormOpen(false); setEditItem(null); }}
           onSave={async (data) => {
-            if (editItem) {
-              await base44.entities.Debt.update(editItem.id, { ...data, household_id: selectedHouseholdId });
-            } else {
-              await base44.entities.Debt.create({ ...data, household_id: selectedHouseholdId });
-            }
-            setDebtFormOpen(false);
-            setEditItem(null);
-            queryClient.invalidateQueries({ queryKey: ['debts', selectedHouseholdId] });
+             try {
+               if (editItem) {
+                 await base44.entities.Debt.update(editItem.id, { ...data, household_id: selectedHouseholdId });
+               } else {
+                 await base44.entities.Debt.create({ ...data, household_id: selectedHouseholdId });
+               }
+               showToast('עודכן בהצלחה! ✨');
+             } catch(e) {}
+             setDebtFormOpen(false);
+             setEditItem(null);
+             handleRefresh();
           }}
           editItem={editItem}
         />
