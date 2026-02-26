@@ -136,8 +136,7 @@ function LayoutContent({ children, currentPageName }) {
       h.members && h.members.includes(user.email))
       );
     },
-    enabled: !!user,
-    refetchInterval: 2500
+    enabled: !!user
   });
 
   // WebSocket Subscriptions עם סנכרון משתמש
