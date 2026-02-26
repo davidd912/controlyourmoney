@@ -37,6 +37,7 @@ const expenseLabels = {
 };
 
 const generateGroupId = () => Math.random().toString(36).substring(2, 10);
+// הגדלנו את ההשהייה כדי להגן על השרת באופן מוחלט
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export default function Dashboard() {
@@ -52,6 +53,7 @@ export default function Dashboard() {
   const [toast, setToast] = useState(null);
   const [welcomeStep, setWelcomeStep] = useState('intro');
   const [newHouseholdName, setNewHouseholdName] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -77,42 +79,44 @@ export default function Dashboard() {
     }
   });
 
-  const { data: incomes = [] } = useQuery({ queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Income.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear }), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false });
-  const { data: expenses = [] } = useQuery({ queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear }), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false });
-  const { data: budgetSettings = [] } = useQuery({ queryKey: ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, is_budget: true, is_current: false }), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false });
-  const { data: debts = [] } = useQuery({ queryKey: ['debts', selectedHouseholdId], queryFn: () => base44.entities.Debt.filter({ household_id: selectedHouseholdId }), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false });
-  const { data: alerts = [] } = useQuery({ queryKey: ['alerts', selectedHouseholdId], queryFn: () => base44.entities.Alert.filter({ household_id: selectedHouseholdId }, '-created_date', 50), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false });
-  const { data: systemConfig = [] } = useQuery({ queryKey: ['systemConfig'], queryFn: () => base44.entities.SystemConfig.list(), refetchOnWindowFocus: false });
+  const { data: incomes = [] } = useQuery({ queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Income.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear }), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false, staleTime: 60000 });
+  const { data: expenses = [] } = useQuery({ queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear }), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false, staleTime: 60000 });
+  const { data: budgetSettings = [] } = useQuery({ queryKey: ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, is_budget: true, is_current: false }), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false, staleTime: 60000 });
+  const { data: debts = [] } = useQuery({ queryKey: ['debts', selectedHouseholdId], queryFn: () => base44.entities.Debt.filter({ household_id: selectedHouseholdId }), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false, staleTime: 60000 });
+  const { data: alerts = [] } = useQuery({ queryKey: ['alerts', selectedHouseholdId], queryFn: () => base44.entities.Alert.filter({ household_id: selectedHouseholdId }, '-created_date', 50), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false, staleTime: 60000 });
+  const { data: systemConfig = [] } = useQuery({ queryKey: ['systemConfig'], queryFn: () => base44.entities.SystemConfig.list(), refetchOnWindowFocus: false, staleTime: Infinity });
 
   const handleRefresh = async () => {
     queryClient.invalidateQueries({ queryKey: ['expenses'] });
-    await delay(200);
+    await delay(350);
     queryClient.invalidateQueries({ queryKey: ['incomes'] });
-    await delay(200);
+    await delay(350);
     queryClient.invalidateQueries({ queryKey: ['debts'] });
   };
 
   const handleDeleteItem = async (item, entityType) => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    
     try {
       const isRecurring = item.is_recurring || item.recurring_group_id;
       
       if (isRecurring) {
+        showToast('מוחק את כל הסדרה... ⏳');
         const allItems = await base44.entities[entityType].filter({ household_id: selectedHouseholdId });
         const futureItems = allItems.filter(e => {
           const sameGroup = item.recurring_group_id && e.recurring_group_id === item.recurring_group_id;
           const sameDesc = e.description === item.description && e.category === item.category;
-          
           const eYear = Number(e.year);
           const eMonth = Number(e.month);
           const iYear = Number(item.year);
           const iMonth = Number(item.month);
-          
           return (sameGroup || sameDesc) && (eYear > iYear || (eYear === iYear && eMonth >= iMonth));
         });
         
         for (const fItem of futureItems) {
             await base44.entities[entityType].delete(fItem.id);
-            await delay(250); 
+            await delay(350); // השהייה ארוכה להגנה מושלמת
         }
         showToast('הפעולה הקבועה נמחקה מכל החודשים הבאים! 🧹');
       } else {
@@ -124,49 +128,48 @@ export default function Dashboard() {
     if (entityType === 'Expense') queryClient.invalidateQueries({ queryKey: ['expenses'] });
     else if (entityType === 'Income') queryClient.invalidateQueries({ queryKey: ['incomes'] });
     else if (entityType === 'Debt') queryClient.invalidateQueries({ queryKey: ['debts'] });
+    
+    setIsProcessing(false);
   };
 
-  // --- מנוע העריכה החכם להוצאות ---
   const handleSaveExpense = async (data) => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    
     const isNowRecurring = data.is_recurring;
     const wasRecurring = editItem && editItem.is_recurring;
     const groupId = (editItem && editItem.recurring_group_id) ? editItem.recurring_group_id : generateGroupId();
 
     try {
       if (editItem) {
-        // עדכון הפריט הנוכחי (מסירים את תגית הקבוצה אם בוטלה הקביעות)
         await base44.entities.Expense.update(editItem.id, { 
-          ...data, 
-          household_id: selectedHouseholdId, 
-          month: selectedMonth, 
-          year: selectedYear, 
-          recurring_group_id: isNowRecurring ? groupId : null 
+          ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, recurring_group_id: isNowRecurring ? groupId : null 
         });
         
         const allExpenses = await base44.entities.Expense.filter({ household_id: selectedHouseholdId });
         const futureItems = allExpenses.filter(e => e.recurring_group_id === groupId && (Number(e.year) > selectedYear || (Number(e.year) === selectedYear && Number(e.month) > selectedMonth)));
 
         if (isNowRecurring && wasRecurring) {
-          // נשאר קבוע -> עדכן קדימה
+          showToast('מעדכן נתונים עתידיים... ⏳');
           for (const fItem of futureItems) {
               await base44.entities.Expense.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
-              await delay(250);
+              await delay(350);
           }
           showToast('עודכן לכל החודשים הבאים! ✨');
         } else if (isNowRecurring && !wasRecurring) {
-          // הפך לקבוע -> צור קדימה
-          const entries = [];
+          showToast('מייצר העתקים עתידיים... ⏳');
           const monthsLeftThisYear = 12 - selectedMonth;
           for (let i = 1; i <= monthsLeftThisYear; i++) {
-            entries.push({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
+             // שינוי קריטי: יצירה אחת-אחת במקום BulkCreate
+            await base44.entities.Expense.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
+            await delay(350);
           }
-          if (entries.length > 0) await base44.entities.Expense.bulkCreate(entries);
           showToast('הפך לקבוע! נוצרו העתקים עד סוף השנה. 📅');
         } else if (!isNowRecurring && wasRecurring) {
-          // הפך לרגיל -> מחק קדימה
+          showToast('מוחק קביעות עתידית... ⏳');
           for (const fItem of futureItems) {
               await base44.entities.Expense.delete(fItem.id);
-              await delay(250);
+              await delay(350);
           }
           showToast('הוסרה הקביעות ונמחקו העתקים עתידיים. 🗑️');
         } else {
@@ -174,14 +177,14 @@ export default function Dashboard() {
         }
 
       } else {
-        // יצירת הוצאה חדשה לגמרי
         if (data.is_recurring) {
-          const entries = [];
+          showToast('שומר נתונים לשאר השנה... ⏳');
           const monthsLeftThisYear = 12 - selectedMonth + 1;
           for (let i = 0; i < monthsLeftThisYear; i++) {
-            entries.push({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
+             // שינוי קריטי: יצירה אחת-אחת במקום BulkCreate
+            await base44.entities.Expense.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
+            await delay(350);
           }
-          await base44.entities.Expense.bulkCreate(entries);
           showToast(`נוספה הוצאה קבועה עד סוף השנה! 📅`);
         } else {
           await base44.entities.Expense.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
@@ -189,7 +192,6 @@ export default function Dashboard() {
         }
       }
 
-      // טיפול בחובות נשאר זהה עבור הוצאות חדשות
       if (data.category === 'obligations') {
         const matchingDebt = debts.find(d => d.creditor_name === data.description || data.description.includes(d.creditor_name));
         if (matchingDebt) {
@@ -199,19 +201,22 @@ export default function Dashboard() {
                amountToReduce = amountToReduce * monthsLeftThisYear;
            }
            const newAmount = Math.max(0, matchingDebt.total_amount - amountToReduce);
+           await delay(350);
            await base44.entities.Debt.update(matchingDebt.id, { total_amount: newAmount });
            showToast(`החוב ל-${matchingDebt.creditor_name} צומצם ל-₪${newAmount.toLocaleString()} 📉`);
            queryClient.invalidateQueries({ queryKey: ['debts'] }); 
         }
       }
-    } catch (e) { showToast('שגיאה בשמירה'); }
+    } catch (e) { showToast('שגיאה בשמירה, נסה שוב לאט יותר'); }
 
-    setExpenseFormOpen(false); setEditItem(null); 
+    setExpenseFormOpen(false); setEditItem(null); setIsProcessing(false);
     queryClient.invalidateQueries({ queryKey: ['expenses'] }); 
   };
 
-  // --- מנוע העריכה החכם להכנסות ---
   const handleSaveIncome = async (data) => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    
     const isNowRecurring = data.is_recurring;
     const wasRecurring = editItem && editItem.is_recurring;
     const groupId = (editItem && editItem.recurring_group_id) ? editItem.recurring_group_id : generateGroupId();
@@ -219,34 +224,32 @@ export default function Dashboard() {
     try {
       if (editItem) {
         await base44.entities.Income.update(editItem.id, { 
-          ...data, 
-          household_id: selectedHouseholdId, 
-          month: selectedMonth, 
-          year: selectedYear, 
-          recurring_group_id: isNowRecurring ? groupId : null 
+          ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, recurring_group_id: isNowRecurring ? groupId : null 
         });
 
         const allIncomes = await base44.entities.Income.filter({ household_id: selectedHouseholdId });
         const futureItems = allIncomes.filter(i => i.recurring_group_id === groupId && (Number(i.year) > selectedYear || (Number(i.year) === selectedYear && Number(i.month) > selectedMonth)));
 
         if (isNowRecurring && wasRecurring) {
+          showToast('מעדכן נתונים עתידיים... ⏳');
           for (const fItem of futureItems) {
               await base44.entities.Income.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
-              await delay(250);
+              await delay(350);
           }
           showToast('הכנסה קבועה עודכנה קדימה! ✨');
         } else if (isNowRecurring && !wasRecurring) {
-          const entries = [];
+          showToast('מייצר העתקים עתידיים... ⏳');
           const monthsLeftThisYear = 12 - selectedMonth;
           for (let i = 1; i <= monthsLeftThisYear; i++) {
-            entries.push({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
+            await base44.entities.Income.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
+            await delay(350);
           }
-          if (entries.length > 0) await base44.entities.Income.bulkCreate(entries);
           showToast('הפך לקבוע! נוצרו העתקים עד סוף השנה. 📅');
         } else if (!isNowRecurring && wasRecurring) {
+          showToast('מוחק קביעות עתידית... ⏳');
           for (const fItem of futureItems) {
               await base44.entities.Income.delete(fItem.id);
-              await delay(250);
+              await delay(350);
           }
           showToast('הוסרה הקביעות ונמחקו העתקים עתידיים. 🗑️');
         } else {
@@ -255,19 +258,21 @@ export default function Dashboard() {
 
       } else {
         if (data.is_recurring) {
-          const entries = [];
+          showToast('שומר נתונים לשאר השנה... ⏳');
           const monthsLeftThisYear = 12 - selectedMonth + 1;
-          for (let i = 0; i < monthsLeftThisYear; i++) entries.push({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
-          await base44.entities.Income.bulkCreate(entries);
+          for (let i = 0; i < monthsLeftThisYear; i++) {
+             await base44.entities.Income.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
+             await delay(350);
+          }
           showToast('נוספה הכנסה קבועה עד סוף השנה! 📅');
         } else {
           await base44.entities.Income.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
           showToast('נוסף בהצלחה! ✨');
         }
       }
-    } catch (e) { showToast('שגיאה בשמירה'); }
+    } catch (e) { showToast('שגיאה בשמירה, נסה שוב לאט יותר'); }
 
-    setIncomeFormOpen(false); setEditItem(null); 
+    setIncomeFormOpen(false); setEditItem(null); setIsProcessing(false);
     queryClient.invalidateQueries({ queryKey: ['incomes'] }); 
   };
 
@@ -277,14 +282,20 @@ export default function Dashboard() {
       const existing = await base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, is_budget: true, is_current: false });
       for (const b of existing) {
           await base44.entities.Expense.delete(b.id);
-          await delay(150); 
+          await delay(250); 
       }
+      
       const toCreate = Object.entries(budgets).filter(([_, v]) => parseFloat(v) > 0).map(([key, val]) => ({
         household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear,
         category: key.startsWith('custom_') ? 'custom' : key, custom_category_name: key.startsWith('custom_') ? key.replace('custom_', '') : null,
         amount: parseFloat(val), is_budget: true, is_current: false, description: 'תקציב חודשי'
       }));
-      if (toCreate.length > 0) await base44.entities.Expense.bulkCreate(toCreate);
+      
+      for (const b of toCreate) {
+        await base44.entities.Expense.create(b);
+        await delay(250);
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['budgetSettings'] });
       showToast('התקציב עודכן בהצלחה!');
     } catch (e) {showToast('שגיאה בשמירת התקציב');}
@@ -421,7 +432,7 @@ export default function Dashboard() {
                 <TabsContent value="income" className="space-y-3 md:space-y-4">
                   <div className="flex justify-between items-center mb-2 px-1">
                     <h2 className="text-base md:text-lg font-bold">פירוט הכנסות</h2>
-                    <Button onClick={() => {setEditItem(null);setIncomeFormOpen(true);}} className="bg-green-600 rounded-lg md:rounded-xl h-9 md:h-10 px-3 md:px-4 gap-1.5 md:gap-2 text-sm md:text-base">
+                    <Button onClick={() => {setEditItem(null);setIncomeFormOpen(true);}} disabled={isProcessing} className="bg-green-600 rounded-lg md:rounded-xl h-9 md:h-10 px-3 md:px-4 gap-1.5 md:gap-2 text-sm md:text-base">
                       <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" /> <span className="hidden sm:inline">הוסף</span> הכנסה
                     </Button>
                   </div>
@@ -435,7 +446,7 @@ export default function Dashboard() {
                 <TabsContent value="expenses" className="space-y-3 md:space-y-4">
                   <div className="flex justify-between items-center mb-2 px-1">
                     <h2 className="text-base md:text-lg font-bold">פירוט הוצאות</h2>
-                    <Button onClick={() => {setEditItem(null);setExpenseFormOpen(true);}} className="bg-orange-500 rounded-lg md:rounded-xl h-9 md:h-10 px-3 md:px-4 gap-1.5 md:gap-2 text-sm md:text-base">
+                    <Button onClick={() => {setEditItem(null);setExpenseFormOpen(true);}} disabled={isProcessing} className="bg-orange-500 rounded-lg md:rounded-xl h-9 md:h-10 px-3 md:px-4 gap-1.5 md:gap-2 text-sm md:text-base">
                       <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" /> <span className="hidden sm:inline">הוסף</span> הוצאה
                     </Button>
                   </div>
@@ -449,7 +460,7 @@ export default function Dashboard() {
                 <TabsContent value="debts" className="space-y-3 md:space-y-4">
                   <div className="flex justify-between items-center mb-2 px-1">
                     <h2 className="text-base md:text-lg font-bold">פירוט חובות</h2>
-                    <Button onClick={() => {setEditItem(null);setDebtFormOpen(true);}} className="bg-red-500 rounded-lg md:rounded-xl h-9 md:h-10 px-3 md:px-4 gap-1.5 md:gap-2 text-sm md:text-base">
+                    <Button onClick={() => {setEditItem(null);setDebtFormOpen(true);}} disabled={isProcessing} className="bg-red-500 rounded-lg md:rounded-xl h-9 md:h-10 px-3 md:px-4 gap-1.5 md:gap-2 text-sm md:text-base">
                       <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" /> <span className="hidden sm:inline">חוב</span> הוסף
                     </Button>
                   </div>
