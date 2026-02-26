@@ -402,6 +402,14 @@ export default function Dashboard() {
           onSave={async (data) => {
             if (editItem) {
               await base44.entities.Expense.update(editItem.id, { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
+            } else if (data.is_recurring) {
+              // יצירת הוצאה קבועה ל-12 חודשים קדימה
+              const entries = [];
+              for (let i = 0; i < 12; i++) {
+                const d = new Date(selectedYear, selectedMonth - 1 + i, 1);
+                entries.push({ ...data, household_id: selectedHouseholdId, month: d.getMonth() + 1, year: d.getFullYear() });
+              }
+              await base44.entities.Expense.bulkCreate(entries);
             } else {
               await base44.entities.Expense.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
             }
