@@ -36,10 +36,7 @@ const expenseLabels = {
   custom: "קטגוריה מותאמת אישית", other: "אחר"
 };
 
-// יצירת מזהה ייחודי לקבוצות
 const generateGroupId = () => Math.random().toString(36).substring(2, 10);
-
-// פונקציית השהייה כדי לא להציף את השרת בשגיאות 429
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export default function Dashboard() {
@@ -80,14 +77,22 @@ export default function Dashboard() {
     }
   });
 
-  const { data: incomes = [] } = useQuery({ queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Income.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear }), enabled: !!selectedHouseholdId });
-  const { data: expenses = [] } = useQuery({ queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear }), enabled: !!selectedHouseholdId });
-  const { data: budgetSettings = [] } = useQuery({ queryKey: ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, is_budget: true, is_current: false }), enabled: !!selectedHouseholdId });
-  const { data: debts = [] } = useQuery({ queryKey: ['debts', selectedHouseholdId], queryFn: () => base44.entities.Debt.filter({ household_id: selectedHouseholdId }), enabled: !!selectedHouseholdId });
-  const { data: alerts = [] } = useQuery({ queryKey: ['alerts', selectedHouseholdId], queryFn: () => base44.entities.Alert.filter({ household_id: selectedHouseholdId }, '-created_date', 50), enabled: !!selectedHouseholdId });
-  const { data: systemConfig = [] } = useQuery({ queryKey: ['systemConfig'], queryFn: () => base44.entities.SystemConfig.list() });
+  // מניעת רענון כפול - refetchOnWindowFocus: false שומר על השרת
+  const { data: incomes = [] } = useQuery({ queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Income.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear }), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false });
+  const { data: expenses = [] } = useQuery({ queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear }), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false });
+  const { data: budgetSettings = [] } = useQuery({ queryKey: ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, is_budget: true, is_current: false }), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false });
+  const { data: debts = [] } = useQuery({ queryKey: ['debts', selectedHouseholdId], queryFn: () => base44.entities.Debt.filter({ household_id: selectedHouseholdId }), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false });
+  const { data: alerts = [] } = useQuery({ queryKey: ['alerts', selectedHouseholdId], queryFn: () => base44.entities.Alert.filter({ household_id: selectedHouseholdId }, '-created_date', 50), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false });
+  const { data: systemConfig = [] } = useQuery({ queryKey: ['systemConfig'], queryFn: () => base44.entities.SystemConfig.list(), refetchOnWindowFocus: false });
 
-  // --- תיקון הלוגיקה והוספת השהיות (Throttling) נגד שגיאת 429 --- //
+  // פונקציית רענון מדורגת למשיכה חכמה
+  const handleRefresh = async () => {
+    queryClient.invalidateQueries({ queryKey: ['expenses'] });
+    await delay(200);
+    queryClient.invalidateQueries({ queryKey: ['incomes'] });
+    await delay(200);
+    queryClient.invalidateQueries({ queryKey: ['debts'] });
+  };
 
   const handleDeleteItem = async (item, entityType) => {
     try {
@@ -109,7 +114,7 @@ export default function Dashboard() {
         
         for (const fItem of futureItems) {
             await base44.entities[entityType].delete(fItem.id);
-            await delay(150); // השהייה כדי למנוע חסימה מהשרת
+            await delay(250); // העלינו ל-250ms כדי שהשרת יהיה בטוח
         }
         showToast('הפעולה הקבועה נמחקה מכל החודשים הבאים! 🧹');
       } else {
@@ -117,7 +122,11 @@ export default function Dashboard() {
         showToast('נמחק בהצלחה! 🗑️');
       }
     } catch (err) { showToast('שגיאה במחיקה'); }
-    handleRefresh();
+    
+    // רענון ממוקד בלבד במקום רענון כללי!
+    if (entityType === 'Expense') queryClient.invalidateQueries({ queryKey: ['expenses'] });
+    else if (entityType === 'Income') queryClient.invalidateQueries({ queryKey: ['incomes'] });
+    else if (entityType === 'Debt') queryClient.invalidateQueries({ queryKey: ['debts'] });
   };
 
   const handleSaveExpense = async (data) => {
@@ -134,7 +143,7 @@ export default function Dashboard() {
           
           for (const fItem of futureItems) {
               await base44.entities.Expense.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
-              await delay(150); // השהייה נגד חסימה
+              await delay(250);
           }
           showToast('עודכן לכל החודשים הבאים! ✨');
         } else {
@@ -146,7 +155,7 @@ export default function Dashboard() {
         for (let i = 0; i < monthsLeftThisYear; i++) {
           entries.push({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
         }
-        await base44.entities.Expense.bulkCreate(entries); // bulkCreate שולח הכל יחד אז לא צריך delay
+        await base44.entities.Expense.bulkCreate(entries);
         showToast(`נוספה הוצאה קבועה עד סוף השנה! 📅`);
       } else {
         await base44.entities.Expense.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
@@ -164,11 +173,13 @@ export default function Dashboard() {
            const newAmount = Math.max(0, matchingDebt.total_amount - amountToReduce);
            await base44.entities.Debt.update(matchingDebt.id, { total_amount: newAmount });
            showToast(`החוב ל-${matchingDebt.creditor_name} צומצם ל-₪${newAmount.toLocaleString()} 📉`);
+           queryClient.invalidateQueries({ queryKey: ['debts'] }); // רענון ממוקד לחובות
         }
       }
     } catch (e) { showToast('שגיאה בשמירה'); }
 
-    setExpenseFormOpen(false); setEditItem(null); handleRefresh();
+    setExpenseFormOpen(false); setEditItem(null); 
+    queryClient.invalidateQueries({ queryKey: ['expenses'] }); // רענון ממוקד להוצאות
   };
 
   const handleSaveIncome = async (data) => {
@@ -184,7 +195,7 @@ export default function Dashboard() {
           
           for (const fItem of futureItems) {
               await base44.entities.Income.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
-              await delay(150); // השהייה נגד חסימה
+              await delay(250);
           }
           showToast('הכנסה קבועה עודכנה קדימה! ✨');
         } else showToast('עודכן בהצלחה! ✨');
@@ -200,10 +211,9 @@ export default function Dashboard() {
       }
     } catch (e) { showToast('שגיאה בשמירה'); }
 
-    setIncomeFormOpen(false); setEditItem(null); handleRefresh();
+    setIncomeFormOpen(false); setEditItem(null); 
+    queryClient.invalidateQueries({ queryKey: ['incomes'] }); // רענון ממוקד להכנסות
   };
-
-  // --- סוף אזור התיקון --- //
 
   const handleSaveBudgetSettings = async (payload) => {
     try {
@@ -211,7 +221,7 @@ export default function Dashboard() {
       const existing = await base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, is_budget: true, is_current: false });
       for (const b of existing) {
           await base44.entities.Expense.delete(b.id);
-          await delay(100); // השהייה קטנה גם פה ליתר ביטחון בעדכון תקציבים
+          await delay(150); 
       }
       const toCreate = Object.entries(budgets).filter(([_, v]) => parseFloat(v) > 0).map(([key, val]) => ({
         household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear,
@@ -243,8 +253,6 @@ export default function Dashboard() {
   const totalIncome = incomes.reduce((sum, i) => sum + (i.amount || 0), 0);
   const totalExpenses = expenses.filter((e) => !e.is_budget || e.is_current).reduce((sum, e) => sum + (e.amount || 0), 0);
   const monthlyBalance = totalIncome - totalExpenses;
-
-  const handleRefresh = async () => queryClient.invalidateQueries();
 
   if (loadingHouseholds) return <div className="flex items-center justify-center min-h-screen"><div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>;
 
@@ -392,7 +400,7 @@ export default function Dashboard() {
                   <DataTable data={debts} columns={[
                     { key: 'creditor_name', label: 'נושה' },
                     { key: 'total_amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` }
-                  ]} onDelete={async (d) => { try { await base44.entities.Debt.delete(d.id); showToast('נמחק בהצלחה! 🗑️'); } catch(err) {} handleRefresh(); }} onEdit={(d) => {setEditItem(d);setDebtFormOpen(true);}} />
+                  ]} onDelete={async (d) => { try { await base44.entities.Debt.delete(d.id); showToast('נמחק בהצלחה! 🗑️'); } catch(err) {} queryClient.invalidateQueries({ queryKey: ['debts'] }); }} onEdit={(d) => {setEditItem(d);setDebtFormOpen(true);}} />
                 </TabsContent>
 
               </motion.div>
@@ -417,7 +425,7 @@ export default function Dashboard() {
                else await base44.entities.Debt.create({ ...data, household_id: selectedHouseholdId });
                showToast('עודכן בהצלחה! ✨');
              } catch(e) {}
-             setDebtFormOpen(false); setEditItem(null); handleRefresh();
+             setDebtFormOpen(false); setEditItem(null); queryClient.invalidateQueries({ queryKey: ['debts'] });
           }} editItem={editItem} />
       </div>
     </PullToRefresh>
