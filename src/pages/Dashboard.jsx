@@ -77,7 +77,6 @@ export default function Dashboard() {
     }
   });
 
-  // מניעת רענון כפול - refetchOnWindowFocus: false שומר על השרת
   const { data: incomes = [] } = useQuery({ queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Income.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear }), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false });
   const { data: expenses = [] } = useQuery({ queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear }), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false });
   const { data: budgetSettings = [] } = useQuery({ queryKey: ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, is_budget: true, is_current: false }), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false });
@@ -85,7 +84,6 @@ export default function Dashboard() {
   const { data: alerts = [] } = useQuery({ queryKey: ['alerts', selectedHouseholdId], queryFn: () => base44.entities.Alert.filter({ household_id: selectedHouseholdId }, '-created_date', 50), enabled: !!selectedHouseholdId, refetchOnWindowFocus: false });
   const { data: systemConfig = [] } = useQuery({ queryKey: ['systemConfig'], queryFn: () => base44.entities.SystemConfig.list(), refetchOnWindowFocus: false });
 
-  // פונקציית רענון מדורגת למשיכה חכמה
   const handleRefresh = async () => {
     queryClient.invalidateQueries({ queryKey: ['expenses'] });
     await delay(200);
@@ -114,7 +112,7 @@ export default function Dashboard() {
         
         for (const fItem of futureItems) {
             await base44.entities[entityType].delete(fItem.id);
-            await delay(250); // העלינו ל-250ms כדי שהשרת יהיה בטוח
+            await delay(250); 
         }
         showToast('הפעולה הקבועה נמחקה מכל החודשים הבאים! 🧹');
       } else {
@@ -123,45 +121,75 @@ export default function Dashboard() {
       }
     } catch (err) { showToast('שגיאה במחיקה'); }
     
-    // רענון ממוקד בלבד במקום רענון כללי!
     if (entityType === 'Expense') queryClient.invalidateQueries({ queryKey: ['expenses'] });
     else if (entityType === 'Income') queryClient.invalidateQueries({ queryKey: ['incomes'] });
     else if (entityType === 'Debt') queryClient.invalidateQueries({ queryKey: ['debts'] });
   };
 
+  // --- מנוע העריכה החכם להוצאות ---
   const handleSaveExpense = async (data) => {
-    const isRecurring = data.is_recurring || (editItem && editItem.is_recurring);
+    const isNowRecurring = data.is_recurring;
+    const wasRecurring = editItem && editItem.is_recurring;
     const groupId = (editItem && editItem.recurring_group_id) ? editItem.recurring_group_id : generateGroupId();
 
     try {
       if (editItem) {
-        await base44.entities.Expense.update(editItem.id, { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, recurring_group_id: groupId });
+        // עדכון הפריט הנוכחי (מסירים את תגית הקבוצה אם בוטלה הקביעות)
+        await base44.entities.Expense.update(editItem.id, { 
+          ...data, 
+          household_id: selectedHouseholdId, 
+          month: selectedMonth, 
+          year: selectedYear, 
+          recurring_group_id: isNowRecurring ? groupId : null 
+        });
         
-        if (isRecurring) {
-          const allExpenses = await base44.entities.Expense.filter({ household_id: selectedHouseholdId });
-          const futureItems = allExpenses.filter(e => e.recurring_group_id === groupId && (Number(e.year) > selectedYear || (Number(e.year) === selectedYear && Number(e.month) > selectedMonth)));
-          
+        const allExpenses = await base44.entities.Expense.filter({ household_id: selectedHouseholdId });
+        const futureItems = allExpenses.filter(e => e.recurring_group_id === groupId && (Number(e.year) > selectedYear || (Number(e.year) === selectedYear && Number(e.month) > selectedMonth)));
+
+        if (isNowRecurring && wasRecurring) {
+          // נשאר קבוע -> עדכן קדימה
           for (const fItem of futureItems) {
               await base44.entities.Expense.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
               await delay(250);
           }
           showToast('עודכן לכל החודשים הבאים! ✨');
+        } else if (isNowRecurring && !wasRecurring) {
+          // הפך לקבוע -> צור קדימה
+          const entries = [];
+          const monthsLeftThisYear = 12 - selectedMonth;
+          for (let i = 1; i <= monthsLeftThisYear; i++) {
+            entries.push({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
+          }
+          if (entries.length > 0) await base44.entities.Expense.bulkCreate(entries);
+          showToast('הפך לקבוע! נוצרו העתקים עד סוף השנה. 📅');
+        } else if (!isNowRecurring && wasRecurring) {
+          // הפך לרגיל -> מחק קדימה
+          for (const fItem of futureItems) {
+              await base44.entities.Expense.delete(fItem.id);
+              await delay(250);
+          }
+          showToast('הוסרה הקביעות ונמחקו העתקים עתידיים. 🗑️');
         } else {
           showToast('עודכן בהצלחה! ✨');
         }
-      } else if (data.is_recurring) {
-        const entries = [];
-        const monthsLeftThisYear = 12 - selectedMonth + 1;
-        for (let i = 0; i < monthsLeftThisYear; i++) {
-          entries.push({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
-        }
-        await base44.entities.Expense.bulkCreate(entries);
-        showToast(`נוספה הוצאה קבועה עד סוף השנה! 📅`);
+
       } else {
-        await base44.entities.Expense.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
-        showToast('נוסף בהצלחה! ✨');
+        // יצירת הוצאה חדשה לגמרי
+        if (data.is_recurring) {
+          const entries = [];
+          const monthsLeftThisYear = 12 - selectedMonth + 1;
+          for (let i = 0; i < monthsLeftThisYear; i++) {
+            entries.push({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
+          }
+          await base44.entities.Expense.bulkCreate(entries);
+          showToast(`נוספה הוצאה קבועה עד סוף השנה! 📅`);
+        } else {
+          await base44.entities.Expense.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
+          showToast('נוסף בהצלחה! ✨');
+        }
       }
 
+      // טיפול בחובות נשאר זהה עבור הוצאות חדשות
       if (data.category === 'obligations') {
         const matchingDebt = debts.find(d => d.creditor_name === data.description || data.description.includes(d.creditor_name));
         if (matchingDebt) {
@@ -173,46 +201,74 @@ export default function Dashboard() {
            const newAmount = Math.max(0, matchingDebt.total_amount - amountToReduce);
            await base44.entities.Debt.update(matchingDebt.id, { total_amount: newAmount });
            showToast(`החוב ל-${matchingDebt.creditor_name} צומצם ל-₪${newAmount.toLocaleString()} 📉`);
-           queryClient.invalidateQueries({ queryKey: ['debts'] }); // רענון ממוקד לחובות
+           queryClient.invalidateQueries({ queryKey: ['debts'] }); 
         }
       }
     } catch (e) { showToast('שגיאה בשמירה'); }
 
     setExpenseFormOpen(false); setEditItem(null); 
-    queryClient.invalidateQueries({ queryKey: ['expenses'] }); // רענון ממוקד להוצאות
+    queryClient.invalidateQueries({ queryKey: ['expenses'] }); 
   };
 
+  // --- מנוע העריכה החכם להכנסות ---
   const handleSaveIncome = async (data) => {
-    const isRecurring = data.is_recurring || (editItem && editItem.is_recurring);
+    const isNowRecurring = data.is_recurring;
+    const wasRecurring = editItem && editItem.is_recurring;
     const groupId = (editItem && editItem.recurring_group_id) ? editItem.recurring_group_id : generateGroupId();
 
     try {
       if (editItem) {
-        await base44.entities.Income.update(editItem.id, { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, recurring_group_id: groupId });
-        if (isRecurring) {
-          const allIncomes = await base44.entities.Income.filter({ household_id: selectedHouseholdId });
-          const futureItems = allIncomes.filter(i => i.recurring_group_id === groupId && (Number(i.year) > selectedYear || (Number(i.year) === selectedYear && Number(i.month) > selectedMonth)));
-          
+        await base44.entities.Income.update(editItem.id, { 
+          ...data, 
+          household_id: selectedHouseholdId, 
+          month: selectedMonth, 
+          year: selectedYear, 
+          recurring_group_id: isNowRecurring ? groupId : null 
+        });
+
+        const allIncomes = await base44.entities.Income.filter({ household_id: selectedHouseholdId });
+        const futureItems = allIncomes.filter(i => i.recurring_group_id === groupId && (Number(i.year) > selectedYear || (Number(i.year) === selectedYear && Number(i.month) > selectedMonth)));
+
+        if (isNowRecurring && wasRecurring) {
           for (const fItem of futureItems) {
               await base44.entities.Income.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
               await delay(250);
           }
           showToast('הכנסה קבועה עודכנה קדימה! ✨');
-        } else showToast('עודכן בהצלחה! ✨');
-      } else if (data.is_recurring) {
-        const entries = [];
-        const monthsLeftThisYear = 12 - selectedMonth + 1;
-        for (let i = 0; i < monthsLeftThisYear; i++) entries.push({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
-        await base44.entities.Income.bulkCreate(entries);
-        showToast('נוספה הכנסה קבועה עד סוף השנה! 📅');
+        } else if (isNowRecurring && !wasRecurring) {
+          const entries = [];
+          const monthsLeftThisYear = 12 - selectedMonth;
+          for (let i = 1; i <= monthsLeftThisYear; i++) {
+            entries.push({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
+          }
+          if (entries.length > 0) await base44.entities.Income.bulkCreate(entries);
+          showToast('הפך לקבוע! נוצרו העתקים עד סוף השנה. 📅');
+        } else if (!isNowRecurring && wasRecurring) {
+          for (const fItem of futureItems) {
+              await base44.entities.Income.delete(fItem.id);
+              await delay(250);
+          }
+          showToast('הוסרה הקביעות ונמחקו העתקים עתידיים. 🗑️');
+        } else {
+          showToast('עודכן בהצלחה! ✨');
+        }
+
       } else {
-        await base44.entities.Income.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
-        showToast('נוסף בהצלחה! ✨');
+        if (data.is_recurring) {
+          const entries = [];
+          const monthsLeftThisYear = 12 - selectedMonth + 1;
+          for (let i = 0; i < monthsLeftThisYear; i++) entries.push({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
+          await base44.entities.Income.bulkCreate(entries);
+          showToast('נוספה הכנסה קבועה עד סוף השנה! 📅');
+        } else {
+          await base44.entities.Income.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
+          showToast('נוסף בהצלחה! ✨');
+        }
       }
     } catch (e) { showToast('שגיאה בשמירה'); }
 
     setIncomeFormOpen(false); setEditItem(null); 
-    queryClient.invalidateQueries({ queryKey: ['incomes'] }); // רענון ממוקד להכנסות
+    queryClient.invalidateQueries({ queryKey: ['incomes'] }); 
   };
 
   const handleSaveBudgetSettings = async (payload) => {
