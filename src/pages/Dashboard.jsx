@@ -36,7 +36,11 @@ const expenseLabels = {
   custom: "קטגוריה מותאמת אישית", other: "אחר"
 };
 
+// יצירת מזהה ייחודי לקבוצות
 const generateGroupId = () => Math.random().toString(36).substring(2, 10);
+
+// פונקציית השהייה כדי לא להציף את השרת בשגיאות 429
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export default function Dashboard() {
   const currentDate = new Date();
@@ -83,7 +87,7 @@ export default function Dashboard() {
   const { data: alerts = [] } = useQuery({ queryKey: ['alerts', selectedHouseholdId], queryFn: () => base44.entities.Alert.filter({ household_id: selectedHouseholdId }, '-created_date', 50), enabled: !!selectedHouseholdId });
   const { data: systemConfig = [] } = useQuery({ queryKey: ['systemConfig'], queryFn: () => base44.entities.SystemConfig.list() });
 
-  // --- תיקון הלוגיקה --- //
+  // --- תיקון הלוגיקה והוספת השהיות (Throttling) נגד שגיאת 429 --- //
 
   const handleDeleteItem = async (item, entityType) => {
     try {
@@ -103,7 +107,10 @@ export default function Dashboard() {
           return (sameGroup || sameDesc) && (eYear > iYear || (eYear === iYear && eMonth >= iMonth));
         });
         
-        for (const fItem of futureItems) await base44.entities[entityType].delete(fItem.id);
+        for (const fItem of futureItems) {
+            await base44.entities[entityType].delete(fItem.id);
+            await delay(150); // השהייה כדי למנוע חסימה מהשרת
+        }
         showToast('הפעולה הקבועה נמחקה מכל החודשים הבאים! 🧹');
       } else {
         await base44.entities[entityType].delete(item.id);
@@ -124,7 +131,11 @@ export default function Dashboard() {
         if (isRecurring) {
           const allExpenses = await base44.entities.Expense.filter({ household_id: selectedHouseholdId });
           const futureItems = allExpenses.filter(e => e.recurring_group_id === groupId && (Number(e.year) > selectedYear || (Number(e.year) === selectedYear && Number(e.month) > selectedMonth)));
-          for (const fItem of futureItems) await base44.entities.Expense.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
+          
+          for (const fItem of futureItems) {
+              await base44.entities.Expense.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
+              await delay(150); // השהייה נגד חסימה
+          }
           showToast('עודכן לכל החודשים הבאים! ✨');
         } else {
           showToast('עודכן בהצלחה! ✨');
@@ -135,7 +146,7 @@ export default function Dashboard() {
         for (let i = 0; i < monthsLeftThisYear; i++) {
           entries.push({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
         }
-        await base44.entities.Expense.bulkCreate(entries);
+        await base44.entities.Expense.bulkCreate(entries); // bulkCreate שולח הכל יחד אז לא צריך delay
         showToast(`נוספה הוצאה קבועה עד סוף השנה! 📅`);
       } else {
         await base44.entities.Expense.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
@@ -170,7 +181,11 @@ export default function Dashboard() {
         if (isRecurring) {
           const allIncomes = await base44.entities.Income.filter({ household_id: selectedHouseholdId });
           const futureItems = allIncomes.filter(i => i.recurring_group_id === groupId && (Number(i.year) > selectedYear || (Number(i.year) === selectedYear && Number(i.month) > selectedMonth)));
-          for (const fItem of futureItems) await base44.entities.Income.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
+          
+          for (const fItem of futureItems) {
+              await base44.entities.Income.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
+              await delay(150); // השהייה נגד חסימה
+          }
           showToast('הכנסה קבועה עודכנה קדימה! ✨');
         } else showToast('עודכן בהצלחה! ✨');
       } else if (data.is_recurring) {
@@ -194,7 +209,10 @@ export default function Dashboard() {
     try {
       const { budgets } = payload;
       const existing = await base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, is_budget: true, is_current: false });
-      for (const b of existing) await base44.entities.Expense.delete(b.id);
+      for (const b of existing) {
+          await base44.entities.Expense.delete(b.id);
+          await delay(100); // השהייה קטנה גם פה ליתר ביטחון בעדכון תקציבים
+      }
       const toCreate = Object.entries(budgets).filter(([_, v]) => parseFloat(v) > 0).map(([key, val]) => ({
         household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear,
         category: key.startsWith('custom_') ? 'custom' : key, custom_category_name: key.startsWith('custom_') ? key.replace('custom_', '') : null,
