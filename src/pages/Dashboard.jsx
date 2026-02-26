@@ -349,7 +349,7 @@ export default function Dashboard() {
                     { key: 'category', label: 'קטגוריה', render: (val, item) => item.category === 'custom' ? item.custom_category_name : expenseLabels[val] || val },
                     { key: 'description', label: 'תיאור' }, // העמודה החדשה
                     { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` }
-                  ]} onDelete={(e) => base44.entities.Expense.delete(e.id).then(handleRefresh)} onEdit={(e) => {setEditItem(e);setExpenseFormOpen(true);}} />
+                  ]} onDelete={async (e) => { try { await base44.entities.Expense.delete(e.id); } catch(err) {} handleRefresh(); }} onEdit={(e) => {setEditItem(e);setExpenseFormOpen(true);}} />
                 </TabsContent>
 
                 <TabsContent value="debts" className="space-y-3 md:space-y-4">
