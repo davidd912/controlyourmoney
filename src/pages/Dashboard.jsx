@@ -1,15 +1,13 @@
 import React, { useState, useContext } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import {
-  Plus, TrendingUp, TrendingDown, Wallet, CreditCard, PiggyBank,
-  AlertCircle, MessageCircle, Send, Zap, CheckCircle, Settings, Edit2, Trash2,
-  Home, Sparkles, ArrowRight, Loader2 } from
+  Plus, TrendingUp, TrendingDown, Wallet, PiggyBank,
+  MessageCircle, Send, Zap, CheckCircle, Home, Sparkles, ArrowRight, Loader2 } from
 "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +18,6 @@ import CategoryBreakdown from "@/components/budget/CategoryBreakdown";
 import IncomeForm from "@/components/budget/IncomeForm";
 import ExpenseForm from "@/components/budget/ExpenseForm";
 import DebtForm from "@/components/budget/DebtForm";
-import AssetForm from "@/components/budget/AssetForm";
 import DataTable from "@/components/budget/DataTable";
 import AlertPanel from "@/components/budget/AlertPanel";
 import HouseholdSelector from "@/components/budget/HouseholdSelector";
@@ -38,9 +35,7 @@ const expenseLabels = {
   housing: "דיור", obligations: "התחייבויות", assets: "נכסים", finance: "פיננסים",
   custom: "קטגוריה מותאמת אישית", other: "אחר"
 };
-const debtLabels = { gmach: "גמ\"ח", friends: "חברים", bank_loan: "בנק הלוואה", family: "משפחה", other: "אחר" };
 
-// פונקציית עזר ליצירת מזהה קבוצה ייחודי לפעולות קבועות
 const generateGroupId = () => Math.random().toString(36).substring(2, 10);
 
 export default function Dashboard() {
@@ -69,84 +64,52 @@ export default function Dashboard() {
   const createHousehold = useMutation({
     mutationFn: async (name) => {
       return base44.entities.Household.create({
-        name,
-        owner_email: user.email,
-        members: [user.email],
-        subscription_type: 'trial',
-        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        name, owner_email: user.email, members: [user.email],
+        subscription_type: 'trial', expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       });
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['households'] });
       if (data?.id) setSelectedHouseholdId(data.id);
-      import('canvas-confetti').then((confetti) => {
-        confetti.default({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
-      });
+      import('canvas-confetti').then((confetti) => confetti.default({ particleCount: 120, spread: 80, origin: { y: 0.6 } }));
       showToast('משק הבית הוקם בהצלחה! 🎉');
     }
   });
 
-  // Queries
-  const { data: incomes = [] } = useQuery({
-    queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear],
-    queryFn: () => base44.entities.Income.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear }),
-    enabled: !!selectedHouseholdId
-  });
+  const { data: incomes = [] } = useQuery({ queryKey: ['incomes', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Income.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear }), enabled: !!selectedHouseholdId });
+  const { data: expenses = [] } = useQuery({ queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear }), enabled: !!selectedHouseholdId });
+  const { data: budgetSettings = [] } = useQuery({ queryKey: ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear], queryFn: () => base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, is_budget: true, is_current: false }), enabled: !!selectedHouseholdId });
+  const { data: debts = [] } = useQuery({ queryKey: ['debts', selectedHouseholdId], queryFn: () => base44.entities.Debt.filter({ household_id: selectedHouseholdId }), enabled: !!selectedHouseholdId });
+  const { data: alerts = [] } = useQuery({ queryKey: ['alerts', selectedHouseholdId], queryFn: () => base44.entities.Alert.filter({ household_id: selectedHouseholdId }, '-created_date', 50), enabled: !!selectedHouseholdId });
+  const { data: systemConfig = [] } = useQuery({ queryKey: ['systemConfig'], queryFn: () => base44.entities.SystemConfig.list() });
 
-  const { data: expenses = [] } = useQuery({
-    queryKey: ['expenses', selectedHouseholdId, selectedMonth, selectedYear],
-    queryFn: () => base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear }),
-    enabled: !!selectedHouseholdId
-  });
-
-  const { data: budgetSettings = [] } = useQuery({
-    queryKey: ['budgetSettings', selectedHouseholdId, selectedMonth, selectedYear],
-    queryFn: () => base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, is_budget: true, is_current: false }),
-    enabled: !!selectedHouseholdId
-  });
-
-  const { data: debts = [] } = useQuery({
-    queryKey: ['debts', selectedHouseholdId],
-    queryFn: () => base44.entities.Debt.filter({ household_id: selectedHouseholdId }),
-    enabled: !!selectedHouseholdId
-  });
-
-  const { data: alerts = [] } = useQuery({
-    queryKey: ['alerts', selectedHouseholdId],
-    queryFn: () => base44.entities.Alert.filter({ household_id: selectedHouseholdId }, '-created_date', 50),
-    enabled: !!selectedHouseholdId
-  });
-
-  const { data: systemConfig = [] } = useQuery({
-    queryKey: ['systemConfig'],
-    queryFn: () => base44.entities.SystemConfig.list()
-  });
-
-  // --- לוגיקה חכמה: מחיקה, הכנסה והוצאה --- //
+  // --- תיקון הלוגיקה --- //
 
   const handleDeleteItem = async (item, entityType) => {
     try {
       const isRecurring = item.is_recurring || item.recurring_group_id;
       
       if (isRecurring) {
-        // מחיקה חכמה של כל המופעים מהחודש הנוכחי והלאה
         const allItems = await base44.entities[entityType].filter({ household_id: selectedHouseholdId });
-        const futureItems = allItems.filter(e => 
-          (e.recurring_group_id === item.recurring_group_id || (e.description === item.description && e.category === item.category && e.is_recurring)) &&
-          (e.year > item.year || (e.year === item.year && e.month >= item.month))
-        );
+        const futureItems = allItems.filter(e => {
+          const sameGroup = item.recurring_group_id && e.recurring_group_id === item.recurring_group_id;
+          const sameDesc = e.description === item.description && e.category === item.category;
+          
+          const eYear = Number(e.year);
+          const eMonth = Number(e.month);
+          const iYear = Number(item.year);
+          const iMonth = Number(item.month);
+          
+          return (sameGroup || sameDesc) && (eYear > iYear || (eYear === iYear && eMonth >= iMonth));
+        });
         
-        for (const fItem of futureItems) {
-          await base44.entities[entityType].delete(fItem.id);
-        }
+        for (const fItem of futureItems) await base44.entities[entityType].delete(fItem.id);
         showToast('הפעולה הקבועה נמחקה מכל החודשים הבאים! 🧹');
       } else {
         await base44.entities[entityType].delete(item.id);
         showToast('נמחק בהצלחה! 🗑️');
       }
-    } catch (err) {
-      showToast('שגיאה במחיקה');
-    }
+    } catch (err) { showToast('שגיאה במחיקה'); }
     handleRefresh();
   };
 
@@ -160,29 +123,17 @@ export default function Dashboard() {
         
         if (isRecurring) {
           const allExpenses = await base44.entities.Expense.filter({ household_id: selectedHouseholdId });
-          const futureItems = allExpenses.filter(e => 
-            e.recurring_group_id === groupId && 
-            (e.year > selectedYear || (e.year === selectedYear && e.month > selectedMonth))
-          );
-          for (const fItem of futureItems) {
-            await base44.entities.Expense.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
-          }
+          const futureItems = allExpenses.filter(e => e.recurring_group_id === groupId && (Number(e.year) > selectedYear || (Number(e.year) === selectedYear && Number(e.month) > selectedMonth)));
+          for (const fItem of futureItems) await base44.entities.Expense.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
           showToast('עודכן לכל החודשים הבאים! ✨');
         } else {
           showToast('עודכן בהצלחה! ✨');
         }
       } else if (data.is_recurring) {
         const entries = [];
-        const monthsLeftThisYear = 12 - selectedMonth + 1; // מחשב כמה חודשים נשארו עד סוף השנה
-        
+        const monthsLeftThisYear = 12 - selectedMonth + 1;
         for (let i = 0; i < monthsLeftThisYear; i++) {
-          entries.push({ 
-            ...data, 
-            household_id: selectedHouseholdId, 
-            month: selectedMonth + i, 
-            year: selectedYear, 
-            recurring_group_id: groupId 
-          });
+          entries.push({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
         }
         await base44.entities.Expense.bulkCreate(entries);
         showToast(`נוספה הוצאה קבועה עד סוף השנה! 📅`);
@@ -191,20 +142,22 @@ export default function Dashboard() {
         showToast('נוסף בהצלחה! ✨');
       }
 
-      // חיתוך חובות אוטומטי
       if (data.category === 'obligations') {
         const matchingDebt = debts.find(d => d.creditor_name === data.description || data.description.includes(d.creditor_name));
         if (matchingDebt) {
-           const newAmount = Math.max(0, matchingDebt.total_amount - data.amount);
+           let amountToReduce = Number(data.amount) || 0;
+           if (!editItem && data.is_recurring) {
+               const monthsLeftThisYear = 12 - selectedMonth + 1;
+               amountToReduce = amountToReduce * monthsLeftThisYear;
+           }
+           const newAmount = Math.max(0, matchingDebt.total_amount - amountToReduce);
            await base44.entities.Debt.update(matchingDebt.id, { total_amount: newAmount });
            showToast(`החוב ל-${matchingDebt.creditor_name} צומצם ל-₪${newAmount.toLocaleString()} 📉`);
         }
       }
     } catch (e) { showToast('שגיאה בשמירה'); }
 
-    setExpenseFormOpen(false);
-    setEditItem(null);
-    handleRefresh();
+    setExpenseFormOpen(false); setEditItem(null); handleRefresh();
   };
 
   const handleSaveIncome = async (data) => {
@@ -214,33 +167,16 @@ export default function Dashboard() {
     try {
       if (editItem) {
         await base44.entities.Income.update(editItem.id, { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, recurring_group_id: groupId });
-        
         if (isRecurring) {
           const allIncomes = await base44.entities.Income.filter({ household_id: selectedHouseholdId });
-          const futureItems = allIncomes.filter(i => 
-            i.recurring_group_id === groupId && 
-            (i.year > selectedYear || (i.year === selectedYear && i.month > selectedMonth))
-          );
-          for (const fItem of futureItems) {
-            await base44.entities.Income.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
-          }
+          const futureItems = allIncomes.filter(i => i.recurring_group_id === groupId && (Number(i.year) > selectedYear || (Number(i.year) === selectedYear && Number(i.month) > selectedMonth)));
+          for (const fItem of futureItems) await base44.entities.Income.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
           showToast('הכנסה קבועה עודכנה קדימה! ✨');
-        } else {
-          showToast('עודכן בהצלחה! ✨');
-        }
+        } else showToast('עודכן בהצלחה! ✨');
       } else if (data.is_recurring) {
         const entries = [];
         const monthsLeftThisYear = 12 - selectedMonth + 1;
-        
-        for (let i = 0; i < monthsLeftThisYear; i++) {
-          entries.push({ 
-            ...data, 
-            household_id: selectedHouseholdId, 
-            month: selectedMonth + i, 
-            year: selectedYear, 
-            recurring_group_id: groupId 
-          });
-        }
+        for (let i = 0; i < monthsLeftThisYear; i++) entries.push({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
         await base44.entities.Income.bulkCreate(entries);
         showToast('נוספה הכנסה קבועה עד סוף השנה! 📅');
       } else {
@@ -249,12 +185,10 @@ export default function Dashboard() {
       }
     } catch (e) { showToast('שגיאה בשמירה'); }
 
-    setIncomeFormOpen(false);
-    setEditItem(null);
-    handleRefresh();
+    setIncomeFormOpen(false); setEditItem(null); handleRefresh();
   };
 
-  // --- סוף לוגיקה חכמה --- //
+  // --- סוף אזור התיקון --- //
 
   const handleSaveBudgetSettings = async (payload) => {
     try {
@@ -263,8 +197,7 @@ export default function Dashboard() {
       for (const b of existing) await base44.entities.Expense.delete(b.id);
       const toCreate = Object.entries(budgets).filter(([_, v]) => parseFloat(v) > 0).map(([key, val]) => ({
         household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear,
-        category: key.startsWith('custom_') ? 'custom' : key,
-        custom_category_name: key.startsWith('custom_') ? key.replace('custom_', '') : null,
+        category: key.startsWith('custom_') ? 'custom' : key, custom_category_name: key.startsWith('custom_') ? key.replace('custom_', '') : null,
         amount: parseFloat(val), is_budget: true, is_current: false, description: 'תקציב חודשי'
       }));
       if (toCreate.length > 0) await base44.entities.Expense.bulkCreate(toCreate);
@@ -295,89 +228,42 @@ export default function Dashboard() {
 
   const handleRefresh = async () => queryClient.invalidateQueries();
 
-  if (loadingHouseholds) return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
+  if (loadingHouseholds) return <div className="flex items-center justify-center min-h-screen"><div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>;
 
   if (!loadingHouseholds && households.length === 0) {
     return (
       <div dir="rtl" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-950 p-6 relative overflow-hidden">
         <div className="absolute top-10 right-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20" />
         <div className="absolute bottom-10 left-10 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20" />
-
         <div className="max-w-md w-full relative z-10">
           <AnimatePresence mode="wait">
             {welcomeStep === 'intro' && (
-              <motion.div
-                key="intro"
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: -20 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                className="text-center space-y-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/30"
-              >
+              <motion.div key="intro" initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: -20 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="text-center space-y-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/30">
                 <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-blue-500/30">
                   <Sparkles className="w-10 h-10 text-white" />
                 </div>
                 <div className="space-y-3">
                   <h1 className="text-3xl font-black text-gray-900 dark:text-white">איזה כיף שהצטרפת! 👋</h1>
-                  <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed">
-                    כדי שנוכל להתחיל לנהל את הכסף בחכמה,<br />נקים את משק הבית הראשון שלך במערכת.
-                  </p>
+                  <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed">כדי שנוכל להתחיל לנהל את הכסף בחכמה,<br />נקים את משק הבית הראשון שלך במערכת.</p>
                 </div>
-                <Button
-                  onClick={() => setWelcomeStep('nameInput')}
-                  className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-lg font-bold gap-2 shadow-lg hover:shadow-xl transition-all"
-                >
+                <Button onClick={() => setWelcomeStep('nameInput')} className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-lg font-bold gap-2 shadow-lg hover:shadow-xl transition-all">
                   בואו נתחיל <ArrowRight className="w-5 h-5" />
                 </Button>
               </motion.div>
             )}
-
             {welcomeStep === 'nameInput' && (
-              <motion.div
-                key="nameInput"
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: -20 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/30"
-              >
-                <button
-                  onClick={() => setWelcomeStep('intro')}
-                  className="text-gray-400 hover:text-gray-600 text-sm mb-4 flex items-center gap-1"
-                >
-                  <ArrowRight className="w-4 h-4" /> חזרה
-                </button>
+              <motion.div key="nameInput" initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: -20 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/30">
+                <button onClick={() => setWelcomeStep('intro')} className="text-gray-400 hover:text-gray-600 text-sm mb-4 flex items-center gap-1"><ArrowRight className="w-4 h-4" /> חזרה</button>
                 <div className="text-center space-y-6">
-                  <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 rounded-2xl flex items-center justify-center mx-auto">
-                    <Home className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
-                  </div>
+                  <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 rounded-2xl flex items-center justify-center mx-auto"><Home className="w-8 h-8 text-indigo-600 dark:text-indigo-400" /></div>
                   <div className="space-y-2">
                     <h2 className="text-2xl font-black text-gray-900 dark:text-white">איך נקרא לבית שלכם?</h2>
                     <p className="text-gray-500 dark:text-gray-400 text-sm">לדוגמה: "משפחת ישראלי", "הדירה בת"א" או "העסק שלי"</p>
                   </div>
                   <div className="space-y-4">
-                    <Input
-                      autoFocus
-                      placeholder="הקלידו שם כאן..."
-                      className="h-14 text-center text-lg font-medium rounded-2xl border-2 border-indigo-100 focus:border-indigo-500 bg-white/70"
-                      value={newHouseholdName}
-                      onChange={(e) => setNewHouseholdName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && newHouseholdName.trim()) createHousehold.mutate(newHouseholdName.trim());
-                      }}
-                    />
-                    <Button
-                      onClick={() => createHousehold.mutate(newHouseholdName.trim())}
-                      disabled={!newHouseholdName.trim() || createHousehold.isPending}
-                      className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-lg font-bold gap-2 shadow-lg"
-                    >
-                      {createHousehold.isPending
-                        ? <><Loader2 className="w-5 h-5 animate-spin" /> מקים משק בית...</>
-                        : <><Plus className="w-5 h-5" /> יצירה וסיום</>}
+                    <Input autoFocus placeholder="הקלידו שם כאן..." className="h-14 text-center text-lg font-medium rounded-2xl border-2 border-indigo-100 focus:border-indigo-500 bg-white/70" value={newHouseholdName} onChange={(e) => setNewHouseholdName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && newHouseholdName.trim()) createHousehold.mutate(newHouseholdName.trim()); }} />
+                    <Button onClick={() => createHousehold.mutate(newHouseholdName.trim())} disabled={!newHouseholdName.trim() || createHousehold.isPending} className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-lg font-bold gap-2 shadow-lg">
+                      {createHousehold.isPending ? <><Loader2 className="w-5 h-5 animate-spin" /> מקים משק בית...</> : <><Plus className="w-5 h-5" /> יצירה וסיום</>}
                     </Button>
                   </div>
                 </div>
@@ -391,27 +277,19 @@ export default function Dashboard() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      {/* שמירה על ה- pb-32 כדי שהתפריט התחתון לא יסתיר */}
       <div dir="rtl" className="min-h-screen bg-[#f8fafc] dark:bg-gray-950 relative pb-32">
         <AnnouncementTicker />
 
         <div className="max-w-7xl mx-auto p-2 md:p-6 space-y-3 md:space-y-6">
-          
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4">
             <div className="flex justify-between items-center">
               <div className="text-right">
                 <h1 className="text-gray-900 text-4xl font-black dark:text-white">ניהול תקציב משפחתי</h1>
-                <p className="text-gray-950 mt-1 text-2xl dark:text-gray-400">
-                  {households.find((h) => h.id === selectedHouseholdId)?.name || 'משק בית'}
-                </p>
+                <p className="text-gray-950 mt-1 text-2xl dark:text-gray-400">{households.find((h) => h.id === selectedHouseholdId)?.name || 'משק בית'}</p>
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleWhatsAppConnect} className="bg-green-500 hover:bg-green-600 text-white h-10 px-4 rounded-lg text-sm font-bold shadow-md flex items-center gap-2">
-                  <MessageCircle className="w-4 h-4" /> WhatsApp
-                </Button>
-                <Button onClick={handleTelegramConnect} className="bg-blue-500 hover:bg-blue-600 text-white h-10 px-4 rounded-lg text-sm font-bold shadow-md flex items-center gap-2">
-                  <Send className="w-4 h-4" /> Telegram
-                </Button>
+                <Button onClick={handleWhatsAppConnect} className="bg-green-500 hover:bg-green-600 text-white h-10 px-4 rounded-lg text-sm font-bold shadow-md flex items-center gap-2"><MessageCircle className="w-4 h-4" /> WhatsApp</Button>
+                <Button onClick={handleTelegramConnect} className="bg-blue-500 hover:bg-blue-600 text-white h-10 px-4 rounded-lg text-sm font-bold shadow-md flex items-center gap-2"><Send className="w-4 h-4" /> Telegram</Button>
               </div>
             </div>
           </div>
@@ -513,38 +391,16 @@ export default function Dashboard() {
           }
         </AnimatePresence>
 
-        <IncomeForm
-          open={incomeFormOpen}
-          onClose={() => { setIncomeFormOpen(false); setEditItem(null); }}
-          onSave={handleSaveIncome}
-          editItem={editItem}
-        />
-        <ExpenseForm
-          open={expenseFormOpen}
-          onClose={() => { setExpenseFormOpen(false); setEditItem(null); }}
-          onSave={handleSaveExpense}
-          editItem={editItem}
-          remainingBudgetByCategory={{}}
-          customCategories={[]}
-        />
-        <DebtForm
-          open={debtFormOpen}
-          onClose={() => { setDebtFormOpen(false); setEditItem(null); }}
-          onSave={async (data) => {
+        <IncomeForm open={incomeFormOpen} onClose={() => { setIncomeFormOpen(false); setEditItem(null); }} onSave={handleSaveIncome} editItem={editItem} />
+        <ExpenseForm open={expenseFormOpen} onClose={() => { setExpenseFormOpen(false); setEditItem(null); }} onSave={handleSaveExpense} editItem={editItem} remainingBudgetByCategory={{}} customCategories={[]} />
+        <DebtForm open={debtFormOpen} onClose={() => { setDebtFormOpen(false); setEditItem(null); }} onSave={async (data) => {
              try {
-               if (editItem) {
-                 await base44.entities.Debt.update(editItem.id, { ...data, household_id: selectedHouseholdId });
-               } else {
-                 await base44.entities.Debt.create({ ...data, household_id: selectedHouseholdId });
-               }
+               if (editItem) await base44.entities.Debt.update(editItem.id, { ...data, household_id: selectedHouseholdId });
+               else await base44.entities.Debt.create({ ...data, household_id: selectedHouseholdId });
                showToast('עודכן בהצלחה! ✨');
              } catch(e) {}
-             setDebtFormOpen(false);
-             setEditItem(null);
-             handleRefresh();
-          }}
-          editItem={editItem}
-        />
+             setDebtFormOpen(false); setEditItem(null); handleRefresh();
+          }} editItem={editItem} />
       </div>
     </PullToRefresh>
   );
