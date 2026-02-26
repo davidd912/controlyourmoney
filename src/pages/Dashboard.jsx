@@ -362,7 +362,7 @@ export default function Dashboard() {
                   <DataTable data={debts} columns={[
                     { key: 'creditor_name', label: 'נושה' },
                     { key: 'total_amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` }
-                  ]} onDelete={(d) => base44.entities.Debt.delete(d.id).then(handleRefresh)} onEdit={(d) => {setEditItem(d);setDebtFormOpen(true);}} />
+                  ]} onDelete={async (d) => { try { await base44.entities.Debt.delete(d.id); } catch(err) {} handleRefresh(); }} onEdit={(d) => {setEditItem(d);setDebtFormOpen(true);}} />
                 </TabsContent>
 
               </motion.div>
