@@ -30,15 +30,12 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60000, // דקה אחת - מאפשר רענון מהיר יותר בין מכשירים
+      staleTime: 30000, // 30 שניות - מונע בקשות חוזרות מיותרות
       gcTime: 600000,
-      refetchOnWindowFocus: true, // קריטי! גורם לטלפון להתעדכן מיד כשפותחים אותו
+      refetchOnWindowFocus: false, // מונע הצפת שרת כשמשתמש עובר בין אפליקציות בטלפון
       refetchOnMount: true,
       refetchOnReconnect: true,
-      retry: (failureCount, error) => {
-        if (error?.response?.status === 429) return false;
-        return failureCount < 3;
-      }
+      retry: 1, // ניסיון אחד בלבד - מונע הצפת שרת בשגיאות
     },
     mutations: {
       retry: (failureCount, error) => {
