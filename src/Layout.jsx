@@ -77,6 +77,32 @@ function LayoutContent({ children, currentPageName }) {
   const [showWhatsappButton, setShowWhatsappButton] = useState(true);
   const [selectedHouseholdId, setSelectedHouseholdId] = useState(null);
 
+  // הזרקת תגיות PWA ל-iOS בזמן אמת
+  useEffect(() => {
+    const metaTags = [
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
+      { name: 'apple-mobile-web-app-title', content: 'קונטרול' },
+      { name: 'theme-color', content: '#2563eb' }
+    ];
+
+    metaTags.forEach(({ name, content }) => {
+      if (!document.querySelector(`meta[name="${name}"]`)) {
+        const meta = document.createElement('meta');
+        meta.name = name;
+        meta.content = content;
+        document.head.appendChild(meta);
+      }
+    });
+
+    if (!document.querySelector('link[rel="apple-touch-icon"]')) {
+      const link = document.createElement('link');
+      link.rel = 'apple-touch-icon';
+      link.href = '/favicon.ico';
+      document.head.appendChild(link);
+    }
+  }, []);
+
   const location = useLocation();
   const navigate = useNavigate();
   const prefersReducedMotion = useReducedMotion();
