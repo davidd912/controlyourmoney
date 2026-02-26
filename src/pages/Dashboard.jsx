@@ -3,11 +3,13 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
   Plus, TrendingUp, TrendingDown, Wallet, CreditCard, PiggyBank,
-  AlertCircle, MessageCircle, Send, Zap, CheckCircle, Settings, Edit2, Trash2 } from
+  AlertCircle, MessageCircle, Send, Zap, CheckCircle, Settings, Edit2, Trash2,
+  Home, Sparkles, ArrowRight, Loader2 } from
 "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -49,6 +51,8 @@ export default function Dashboard() {
   const [debtFormOpen, setDebtFormOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [toast, setToast] = useState(null);
+  const [welcomeStep, setWelcomeStep] = useState('intro');
+  const [newHouseholdName, setNewHouseholdName] = useState('');
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -58,6 +62,27 @@ export default function Dashboard() {
     setToast(message);
     setTimeout(() => setToast(null), 3000);
   };
+
+  const createHousehold = useMutation({
+    mutationFn: async (name) => {
+      return base44.entities.Household.create({
+        name,
+        owner_email: user.email,
+        members: [user.email],
+        subscription_type: 'trial',
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['households'] });
+      if (data?.id) setSelectedHouseholdId(data.id);
+      // קונפטי 🎉
+      import('canvas-confetti').then((confetti) => {
+        confetti.default({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+      });
+      showToast('משק הבית הוקם בהצלחה! 🎉');
+    }
+  });
 
   // Queries
   const { data: incomes = [] } = useQuery({
@@ -134,7 +159,99 @@ export default function Dashboard() {
 
   const handleRefresh = async () => queryClient.invalidateQueries();
 
-  if (loadingHouseholds || !selectedHouseholdId) return <div className="p-10 text-center font-bold">טוען נתונים...</div>;
+  if (loadingHouseholds) return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  if (!loadingHouseholds && households.length === 0) {
+    return (
+      <div dir="rtl" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-950 p-6 relative overflow-hidden">
+        <div className="absolute top-10 right-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20" />
+        <div className="absolute bottom-10 left-10 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20" />
+
+        <div className="max-w-md w-full relative z-10">
+          <AnimatePresence mode="wait">
+            {welcomeStep === 'intro' && (
+              <motion.div
+                key="intro"
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: -20 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                className="text-center space-y-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/30"
+              >
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-blue-500/30">
+                  <Sparkles className="w-10 h-10 text-white" />
+                </div>
+                <div className="space-y-3">
+                  <h1 className="text-3xl font-black text-gray-900 dark:text-white">איזה כיף שהצטרפת! 👋</h1>
+                  <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed">
+                    כדי שנוכל להתחיל לנהל את הכסף בחכמה,<br />נקים את משק הבית הראשון שלך במערכת.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => setWelcomeStep('nameInput')}
+                  className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-lg font-bold gap-2 shadow-lg hover:shadow-xl transition-all"
+                >
+                  בואו נתחיל <ArrowRight className="w-5 h-5" />
+                </Button>
+              </motion.div>
+            )}
+
+            {welcomeStep === 'nameInput' && (
+              <motion.div
+                key="nameInput"
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: -20 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/30"
+              >
+                <button
+                  onClick={() => setWelcomeStep('intro')}
+                  className="text-gray-400 hover:text-gray-600 text-sm mb-4 flex items-center gap-1"
+                >
+                  <ArrowRight className="w-4 h-4" /> חזרה
+                </button>
+                <div className="text-center space-y-6">
+                  <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 rounded-2xl flex items-center justify-center mx-auto">
+                    <Home className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-black text-gray-900 dark:text-white">איך נקרא לבית שלכם?</h2>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">לדוגמה: "משפחת ישראלי", "הדירה בת"א" או "העסק שלי"</p>
+                  </div>
+                  <div className="space-y-4">
+                    <Input
+                      autoFocus
+                      placeholder="הקלידו שם כאן..."
+                      className="h-14 text-center text-lg font-medium rounded-2xl border-2 border-indigo-100 focus:border-indigo-500 bg-white/70"
+                      value={newHouseholdName}
+                      onChange={(e) => setNewHouseholdName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && newHouseholdName.trim()) createHousehold.mutate(newHouseholdName.trim());
+                      }}
+                    />
+                    <Button
+                      onClick={() => createHousehold.mutate(newHouseholdName.trim())}
+                      disabled={!newHouseholdName.trim() || createHousehold.isPending}
+                      className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-lg font-bold gap-2 shadow-lg"
+                    >
+                      {createHousehold.isPending
+                        ? <><Loader2 className="w-5 h-5 animate-spin" /> מקים משק בית...</>
+                        : <><Plus className="w-5 h-5" /> יצירה וסיום</>}
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
