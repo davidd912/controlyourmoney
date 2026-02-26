@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
           const targetHousehold = matching[0];
           const updateData = {
             activation_code: null, activation_code_expires: null,
-            expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() // נותן 14 ימי ניסיון בחיבור הראשוני
+            expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
           };
           if (platform === 'whatsapp') {
             updateData.whatsapp_numbers = [...new Set([...(targetHousehold.whatsapp_numbers || []), cleanFrom])];
@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
     const now = new Date();
 
     // ==========================================
-    // 2. חומת התשלום (Paywall) - חסימת משתמשים ללא מנוי
+    // 2. חומת התשלום (Paywall)
     // ==========================================
     const subscriptionType = household.subscription_type || 'trial';
     const expiresAt = household.expires_at ? new Date(household.expires_at) : null;
@@ -112,28 +112,22 @@ Deno.serve(async (req) => {
     if (subscriptionType !== 'manual_premium') {
       if (!expiresAt || now > expiresAt) {
         console.log(`[${platform.toUpperCase()}] Household ${household.id} access expired.`);
-        
         const upgradeMsg = `🔒 *שירות הבוט פתוח למנויי פרימיום בלבד!*\n\nתקופת הניסיון או המנוי שלך הסתיימו. כדי להמשיך לנהל את התקציב בקלות ישירות מכאן, אנא שדרג את החשבון שלך.`;
         
         let upgradeButtons = null;
         if (platform === 'telegram') {
-          // בטלגרם נציג כפתור שלוקח ישירות לאתר
-          upgradeButtons = {
-            inline_keyboard: [[{ text: "⭐ שדרג עכשיו לפרימיום", url: "https://controlyourmoney.info" }]]
-          };
+          upgradeButtons = { inline_keyboard: [[{ text: "⭐ שדרג עכשיו לפרימיום", url: "https://controlyourmoney.info" }]] };
         } else {
-          // בוואטסאפ פשוט נוסיף את הלינק כטקסט
           await replyToUser(upgradeMsg + `\n\nלשדרוג לחץ כאן: https://controlyourmoney.info`);
           return new Response("OK");
         }
 
         await replyToUser(upgradeMsg, upgradeButtons);
-        return new Response("OK"); // עוצר את הריצה - ה-AI לא יופעל והנתונים לא יישמרו!
+        return new Response("OK");
       }
     }
-    // ==========================================
 
-    // 3. הגדרות המוח המלאכותי
+    // 3. הגדרות המוח המלאכותי (Prompt משודרג)
     const categoryLabels = {
       food: "מזון ופארמה", leisure: "פנאי ובילוי", clothing: "ביגוד והנעלה", household_items: "תכולת בית", 
       home_maintenance: "אחזקת בית", grooming: "טיפוח", education: "חינוך", events: "אירועים ותרומות", 
@@ -145,18 +139,19 @@ Deno.serve(async (req) => {
       prompt: `אתה מנהל תקציב גאון. המשתמש כתב: "${messageBody}".
 
       דוגמאות חובה ללמידה:
-      - "סופר 50 שקל" -> intent: "add_expense", amount: 50, category: "food"
-      - "נטפליקס 200 שקל" -> intent: "add_expense", amount: 200, category: "leisure"
-      - "מה מצב התקציב שלי?", "מצב תקציב" -> intent: "get_budget_status"
+      - "סופר 50 שקל" -> intent: "add_expense", amount: 50, category: "food", description: "סופר"
+      - "נטפליקס 200 שקל" -> intent: "add_expense", amount: 200, category: "leisure", description: "נטפליקס"
+      - "מה מצב התקציב שלי?", "מצב תקציב", "מה המצב" -> intent: "get_budget_status"
       - "כמה הוצאתי היום על בגדים?" -> intent: "get_summary_expenses", period: "today", summary_category: "clothing"
       - "כמה הוצאתי השבוע?" -> intent: "get_summary_expenses", period: "week"
-      - "סיכום חודשי" -> intent: "get_summary_expenses", period: "month"
+      - "סיכום חודשי", "כמה הוצאתי החודש?", "מה ההוצאות שלי החודש", "כמה בזבזתי" -> intent: "get_summary_expenses", period: "month"
       - "ביטול הוצאה" -> intent: "undo_expense"
       - "תפריט", "עזרה", "היי" -> intent: "show_menu"
 
       חוקי ברזל: 
       1. אסור לך להמציא קטגוריות! השתמש אך ורק בקטגוריות המאושרות באנגלית.
-      2. אם זה "היום" או "החודש" בסיכום, עדכן את period.
+      2. חלץ תיאור קצר (description) לכל הוצאה.
+      3. אם המשתמש שואל "כמה הוצאתי" באופן כללי על החודש הנוכחי, הגדר period: "month".
 
       החזר JSON:`,
       response_json_schema: {
@@ -206,8 +201,28 @@ Deno.serve(async (req) => {
       });
       
       const categoryLabel = categoryLabels[finalCategory];
-      finalReply = `✅ רשמתי ₪${finalAmount} ל-${categoryLabel}.`;
+      finalReply = `✅ רשמתי ₪${finalAmount.toLocaleString()} ל-${categoryLabel}.`;
       
+      // תוספת חכמה: בדיקת תקציב שנותר בעת הוספת הוצאה
+      if (entityName === 'Expense') {
+        const budgets = await base44.asServiceRole.entities.Expense.filter({ 
+          household_id: household.id, month: now.getMonth() + 1, year: now.getFullYear(), is_budget: true, category: finalCategory 
+        });
+        
+        if (budgets && budgets.length > 0) {
+          const budgetAmount = budgets[0].amount || 0;
+          const categoryExpenses = await base44.asServiceRole.entities.Expense.filter({ 
+            household_id: household.id, month: now.getMonth() + 1, year: now.getFullYear(), is_current: true, category: finalCategory 
+          });
+          
+          const totalSpent = categoryExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+          const remaining = budgetAmount - totalSpent;
+          
+          const icon = remaining < 0 ? "⚠️" : remaining < (budgetAmount * 0.2) ? "🔥" : "🎯";
+          finalReply += `\n${icon} נותר בתקציב ${categoryLabel}: ₪${remaining.toLocaleString()} (מתוך ₪${budgetAmount.toLocaleString()})`;
+        }
+      }
+
       if (platform === 'telegram') {
         optionalTelegramButtons = {
           inline_keyboard: [
@@ -293,7 +308,7 @@ Deno.serve(async (req) => {
         const total = filteredItems.reduce((s, i) => s + (i.amount || 0), 0);
         finalReply = `📊 סיכום ${typeLabel}${categoryLabelForText} עבור ${periodLabel}:\n\n💰 סה"כ: ₪${total.toLocaleString()}\n📝 פריטים: ${filteredItems.length}`;
         const itemsList = filteredItems.slice(-7).reverse().map(i => `• ${i.description || (categoryLabels[i.category] || i.category)}: ₪${(i.amount || 0).toLocaleString()}`).join('\n');
-        if (itemsList) finalReply += `\n\n📋 פירוט:\n${itemsList}`;
+        if (itemsList) finalReply += `\n\n📋 פירוט (אחרונים):\n${itemsList}`;
       }
       if (platform === 'telegram') optionalTelegramButtons = telegramMainMenu;
     }
