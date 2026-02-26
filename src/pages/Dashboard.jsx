@@ -334,7 +334,7 @@ export default function Dashboard() {
                     { key: 'category', label: 'קטגוריה', render: (val) => incomeLabels[val] || val },
                     { key: 'description', label: 'תיאור' }, // העמודה החדשה
                     { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` }
-                  ]} onDelete={(i) => base44.entities.Income.delete(i.id).then(handleRefresh)} onEdit={(i) => {setEditItem(i);setIncomeFormOpen(true);}} />
+                  ]} onDelete={async (i) => { try { await base44.entities.Income.delete(i.id); } catch(e) {} handleRefresh(); }} onEdit={(i) => {setEditItem(i);setIncomeFormOpen(true);}} />
                 </TabsContent>
 
                 {/* הוצאות - עם עמודת תיאור */}
