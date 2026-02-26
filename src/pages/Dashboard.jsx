@@ -381,9 +381,53 @@ export default function Dashboard() {
         </AnimatePresence>
 
         {/* טפסים */}
-        <IncomeForm open={incomeFormOpen} onClose={() => setIncomeFormOpen(false)} onSave={() => handleRefresh()} editItem={editItem} />
-        <ExpenseForm open={expenseFormOpen} onClose={() => setExpenseFormOpen(false)} onSave={() => handleRefresh()} editItem={editItem} remainingBudgetByCategory={{}} customCategories={[]} />
-        <DebtForm open={debtFormOpen} onClose={() => setDebtFormOpen(false)} onSave={() => handleRefresh()} editItem={editItem} />
+        <IncomeForm
+          open={incomeFormOpen}
+          onClose={() => { setIncomeFormOpen(false); setEditItem(null); }}
+          onSave={async (data) => {
+            if (editItem) {
+              await base44.entities.Income.update(editItem.id, { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
+            } else {
+              await base44.entities.Income.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
+            }
+            setIncomeFormOpen(false);
+            setEditItem(null);
+            queryClient.invalidateQueries({ queryKey: ['incomes', selectedHouseholdId] });
+          }}
+          editItem={editItem}
+        />
+        <ExpenseForm
+          open={expenseFormOpen}
+          onClose={() => { setExpenseFormOpen(false); setEditItem(null); }}
+          onSave={async (data) => {
+            if (editItem) {
+              await base44.entities.Expense.update(editItem.id, { ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
+            } else {
+              await base44.entities.Expense.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
+            }
+            setExpenseFormOpen(false);
+            setEditItem(null);
+            queryClient.invalidateQueries({ queryKey: ['expenses', selectedHouseholdId] });
+          }}
+          editItem={editItem}
+          remainingBudgetByCategory={{}}
+          customCategories={[]}
+        />
+        <DebtForm
+          open={debtFormOpen}
+          onClose={() => { setDebtFormOpen(false); setEditItem(null); }}
+          onSave={async (data) => {
+            if (editItem) {
+              await base44.entities.Debt.update(editItem.id, { ...data, household_id: selectedHouseholdId });
+            } else {
+              await base44.entities.Debt.create({ ...data, household_id: selectedHouseholdId });
+            }
+            setDebtFormOpen(false);
+            setEditItem(null);
+            queryClient.invalidateQueries({ queryKey: ['debts', selectedHouseholdId] });
+          }}
+          editItem={editItem}
+        />
       </div>
     </PullToRefresh>
   );
