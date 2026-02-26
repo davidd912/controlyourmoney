@@ -193,14 +193,17 @@ function LayoutContent({ children, currentPageName }) {
   const isAuthenticated = !!user;
 
   useEffect(() => {
-    if (!loadingUser) {
+    if (!loadingUser && !loadingHouseholds) {
       if (isAuthenticated && currentPageName === 'LandingPage') {
         navigate(createPageUrl('Dashboard'), { replace: true });
       } else if (!isAuthenticated && currentPageName !== 'LandingPage') {
         navigate(createPageUrl('LandingPage'), { replace: true });
+      } else if (isAuthenticated && households.length === 0 && currentPageName !== 'UserSettings') {
+        // משתמש חדש ללא משקי בית - ניווט להגדרות כדי ליצור משק בית
+        navigate(createPageUrl('UserSettings'), { replace: true });
       }
     }
-  }, [isAuthenticated, currentPageName, navigate, loadingUser]);
+  }, [isAuthenticated, currentPageName, navigate, loadingUser, loadingHouseholds, households.length]);
 
   if (loadingUser || loadingHouseholds || userError) {
     if (!loadingUser && userError) {
