@@ -70,6 +70,8 @@ const navigation = [
 export const HouseholdContext = createContext(null);
 
 function LayoutContent({ children, currentPageName }) {
+  const { t } = useTranslation();
+  const { lang, changeLanguage } = useLocale();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [fabMenuOpen, setFabMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
