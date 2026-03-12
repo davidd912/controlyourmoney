@@ -28,6 +28,7 @@ const expenseCategories = {
 };
 
 export default function BudgetSettingsTab({
+
   householdId,
   month,
   year,
