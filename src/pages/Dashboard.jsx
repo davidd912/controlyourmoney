@@ -468,9 +468,9 @@ export default function Dashboard() {
                     </Button>
                   </div>
                   <DataTable data={debts} columns={[
-                    { key: 'creditor_name', label: 'נושה' },
-                    { key: 'total_amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` }
-                  ]} onDelete={async (d) => { try { await base44.entities.Debt.delete(d.id); showToast('נמחק בהצלחה! 🗑️'); } catch(err) {} queryClient.invalidateQueries({ queryKey: ['debts'] }); }} onEdit={(d) => {setEditItem(d);setDebtFormOpen(true);}} />
+                    { key: 'creditor_name', label: t('creditor') },
+                    { key: 'total_amount', label: t('amount'), render: (val) => formatCurrency(val, currency) }
+                  ]} onDelete={async (d) => { try { await base44.entities.Debt.delete(d.id); showToast(t('toast_deleted')); } catch(err) {} queryClient.invalidateQueries({ queryKey: ['debts'] }); }} onEdit={(d) => {setEditItem(d);setDebtFormOpen(true);}} />
                 </TabsContent>
 
               </motion.div>
