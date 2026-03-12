@@ -234,46 +234,46 @@ export default function Dashboard() {
         const futureItems = allIncomes.filter(i => i.recurring_group_id === groupId && (Number(i.year) > selectedYear || (Number(i.year) === selectedYear && Number(i.month) > selectedMonth)));
 
         if (isNowRecurring && wasRecurring) {
-          showToast('מעדכן נתונים עתידיים... ⏳');
+          showToast(t('toast_updating_future'));
           for (const fItem of futureItems) {
               await base44.entities.Income.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
               await delay(350);
           }
-          showToast('הכנסה קבועה עודכנה קדימה! ✨');
+          showToast(t('income_recurring_updated'));
         } else if (isNowRecurring && !wasRecurring) {
-          showToast('מייצר העתקים עתידיים... ⏳');
+          showToast(t('toast_creating_copies'));
           const monthsLeftThisYear = 12 - selectedMonth;
           for (let i = 1; i <= monthsLeftThisYear; i++) {
             await base44.entities.Income.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
             await delay(350);
           }
-          showToast('הפך לקבוע! נוצרו העתקים עד סוף השנה. 📅');
+          showToast(t('toast_became_recurring'));
         } else if (!isNowRecurring && wasRecurring) {
-          showToast('מוחק קביעות עתידית... ⏳');
+          showToast(t('toast_deleting_recurring'));
           for (const fItem of futureItems) {
               await base44.entities.Income.delete(fItem.id);
               await delay(350);
           }
-          showToast('הוסרה הקביעות ונמחקו העתקים עתידיים. 🗑️');
+          showToast(t('toast_recurring_removed'));
         } else {
-          showToast('עודכן בהצלחה! ✨');
+          showToast(t('toast_updated'));
         }
 
       } else {
         if (data.is_recurring) {
-          showToast('שומר נתונים לשאר השנה... ⏳');
+          showToast(t('toast_saving_year'));
           const monthsLeftThisYear = 12 - selectedMonth + 1;
           for (let i = 0; i < monthsLeftThisYear; i++) {
              await base44.entities.Income.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
              await delay(350);
           }
-          showToast('נוספה הכנסה קבועה עד סוף השנה! 📅');
+          showToast(t('toast_added_recurring_income'));
         } else {
           await base44.entities.Income.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear });
-          showToast('נוסף בהצלחה! ✨');
+          showToast(t('toast_added'));
         }
       }
-    } catch (e) { showToast('שגיאה בשמירה, נסה שוב לאט יותר'); }
+    } catch (e) { showToast(t('toast_save_error')); }
 
     setIncomeFormOpen(false); setEditItem(null); setIsProcessing(false);
     queryClient.invalidateQueries({ queryKey: ['incomes'] }); 
