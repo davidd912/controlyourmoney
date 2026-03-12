@@ -33,6 +33,8 @@ const debtTypes = {
 };
 
 export default function DebtForm({ open, onClose, onSave, editItem }) {
+  const { t } = useTranslation();
+  const { currency } = useLocale();
   const [formData, setFormData] = useState({
     creditor_name: '',
     debt_type: '',

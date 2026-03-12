@@ -100,6 +100,8 @@ const expenseCategories = {
 };
 
 export default function ExpenseForm({ open, onClose, onSave, editItem, remainingBudgetByCategory = {}, customCategories = [] }) {
+  const { t } = useTranslation();
+  const { currency } = useLocale();
   const [formData, setFormData] = useState({
     category: '',
     custom_category_name: '',

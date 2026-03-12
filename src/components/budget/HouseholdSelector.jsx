@@ -1,6 +1,8 @@
 import React from 'react';
 import MobileSelect from '@/components/budget/MobileSelect';
 import { Home } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import '@/components/i18n';
 
 export default function HouseholdSelector({ households, selectedId, onSelect, currentUserEmail }) {
   if (households.length <= 1) return null;

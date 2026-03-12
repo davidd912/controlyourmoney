@@ -1,6 +1,8 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { useTranslation } from 'react-i18next';
+import '@/components/i18n';
 
 const categoryLabels = {
   food: "מזון ופארמה",

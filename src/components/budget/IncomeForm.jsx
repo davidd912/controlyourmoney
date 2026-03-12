@@ -25,6 +25,7 @@ const incomeCategories = {
 };
 
 export default function IncomeForm({ open, onClose, onSave, editItem }) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState(editItem || {
     category: '',
     subcategory: '',
