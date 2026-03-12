@@ -349,7 +349,7 @@ export default function Dashboard() {
             )}
             {welcomeStep === 'nameInput' && (
               <motion.div key="nameInput" initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: -20 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/30">
-                <button onClick={() => setWelcomeStep('intro')} className="text-gray-400 hover:text-gray-600 text-sm mb-4 flex items-center gap-1"><ArrowRight className="w-4 h-4" /> חזרה</button>
+                <button onClick={() => setWelcomeStep('intro')} className="text-gray-400 hover:text-gray-600 text-sm mb-4 flex items-center gap-1"><ArrowRight className="w-4 h-4" /> {t('back')}</button>
                 <div className="text-center space-y-6">
                   <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 rounded-2xl flex items-center justify-center mx-auto"><Home className="w-8 h-8 text-indigo-600 dark:text-indigo-400" /></div>
                   <div className="space-y-2">
