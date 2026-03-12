@@ -359,7 +359,7 @@ export default function Dashboard() {
                   <div className="space-y-4">
                     <Input autoFocus placeholder={t('name_placeholder')} className="h-14 text-center text-lg font-medium rounded-2xl border-2 border-indigo-100 focus:border-indigo-500 bg-white/70" value={newHouseholdName} onChange={(e) => setNewHouseholdName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && newHouseholdName.trim()) createHousehold.mutate(newHouseholdName.trim()); }} />
                     <Button onClick={() => createHousehold.mutate(newHouseholdName.trim())} disabled={!newHouseholdName.trim() || createHousehold.isPending} className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-lg font-bold gap-2 shadow-lg">
-                      {createHousehold.isPending ? <><Loader2 className="w-5 h-5 animate-spin" /> מקים משק בית...</> : <><Plus className="w-5 h-5" /> יצירה וסיום</>}
+                      {createHousehold.isPending ? <><Loader2 className="w-5 h-5 animate-spin" /> {t('creating')}</> : <><Plus className="w-5 h-5" /> {t('create_finish')}</>}
                     </Button>
                   </div>
                 </div>
