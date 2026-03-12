@@ -11,6 +11,7 @@ const HEBREW_MONTHS = [
 ];
 
 export default function MonthYearSelector({ month, year, onMonthChange, onYearChange }) {
+  const { t } = useTranslation();
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth() + 1;
   const currentYear = currentDate.getFullYear();
@@ -62,7 +63,7 @@ export default function MonthYearSelector({ month, year, onMonthChange, onYearCh
           value={month.toString()}
           onValueChange={(val) => onMonthChange(parseInt(val))}
           placeholder={HEBREW_MONTHS[month - 1]}
-          label="בחר חודש"
+          label={t('select_month')}
           options={HEBREW_MONTHS.map((monthName, index) => ({
             value: (index + 1).toString(),
             label: monthName
@@ -73,7 +74,7 @@ export default function MonthYearSelector({ month, year, onMonthChange, onYearCh
           value={year.toString()}
           onValueChange={(val) => onYearChange(parseInt(val))}
           placeholder={year.toString()}
-          label="בחר שנה"
+          label={t('select_year')}
           options={yearOptions.map((y) => ({
             value: y.toString(),
             label: y.toString()
@@ -98,7 +99,7 @@ export default function MonthYearSelector({ month, year, onMonthChange, onYearCh
           className="gap-2"
         >
           <Calendar className="h-4 w-4" />
-          חודש נוכחי
+          {t('current_month')}
         </Button>
       )}
     </div>

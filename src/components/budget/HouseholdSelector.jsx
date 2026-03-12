@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import '@/components/i18n';
 
 export default function HouseholdSelector({ households, selectedId, onSelect, currentUserEmail }) {
+  const { t } = useTranslation();
   if (households.length <= 1) return null;
 
   const options = households.map((household) => {
@@ -12,8 +13,8 @@ export default function HouseholdSelector({ households, selectedId, onSelect, cu
     const memberCount = household.members?.length || 0;
     
     let label = household.name;
-    if (memberCount > 1) label += ` (${memberCount} חברים)`;
-    if (isOwner) label += ' - בעלים';
+    if (memberCount > 1) label += ` (${memberCount} ${t('owner_suffix').replace('בעלים', t('members_count', { count: memberCount }).replace(` (${memberCount} חברים)`, 'חברים'))})`;
+    if (isOwner) label += ` - ${t('owner_suffix')}`;
     
     return {
       value: household.id,
@@ -26,8 +27,8 @@ export default function HouseholdSelector({ households, selectedId, onSelect, cu
       <MobileSelect
         value={selectedId || ''}
         onValueChange={onSelect}
-        placeholder="בחר משק בית"
-        label="בחר משק בית"
+        placeholder={t('select_household')}
+        label={t('select_household')}
         options={options}
       />
     </div>
