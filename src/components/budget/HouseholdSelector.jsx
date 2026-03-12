@@ -13,7 +13,7 @@ export default function HouseholdSelector({ households, selectedId, onSelect, cu
     const memberCount = household.members?.length || 0;
     
     let label = household.name;
-    if (memberCount > 1) label += ` (${memberCount} ${t('owner_suffix').replace('בעלים', t('members_count', { count: memberCount }).replace(` (${memberCount} חברים)`, 'חברים'))})`;
+    if (memberCount > 1) label += ` (${memberCount} ${t('members_label', 'חברים')})`;
     if (isOwner) label += ` - ${t('owner_suffix')}`;
     
     return {
