@@ -300,8 +300,8 @@ export default function Dashboard() {
       }
       
       queryClient.invalidateQueries({ queryKey: ['budgetSettings'] });
-      showToast('התקציב עודכן בהצלחה!');
-    } catch (e) {showToast('שגיאה בשמירת התקציב');}
+      showToast(t('toast_budget_updated'));
+    } catch (e) { showToast(t('toast_budget_error')); }
   };
 
   const handleWhatsAppConnect = async () => {
