@@ -440,9 +440,9 @@ export default function Dashboard() {
                     </Button>
                   </div>
                   <DataTable data={incomes} columns={[
-                    { key: 'category', label: 'קטגוריה', render: (val) => incomeLabels[val] || val },
-                    { key: 'description', label: 'תיאור' },
-                    { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` }
+                    { key: 'category', label: t('category'), render: (val) => t(`income_cat.${val}`, incomeLabels[val] || val) },
+                    { key: 'description', label: t('description') },
+                    { key: 'amount', label: t('amount'), render: (val) => formatCurrency(val, currency) }
                   ]} onDelete={(i) => handleDeleteItem(i, 'Income')} onEdit={(i) => {setEditItem(i);setIncomeFormOpen(true);}} />
                 </TabsContent>
 
