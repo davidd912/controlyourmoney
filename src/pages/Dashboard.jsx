@@ -123,12 +123,12 @@ export default function Dashboard() {
             await base44.entities[entityType].delete(fItem.id);
             await delay(350); // השהייה ארוכה להגנה מושלמת
         }
-        showToast('הפעולה הקבועה נמחקה מכל החודשים הבאים! 🧹');
+        showToast(t('toast_series_deleted'));
       } else {
         await base44.entities[entityType].delete(item.id);
-        showToast('נמחק בהצלחה! 🗑️');
+        showToast(t('toast_deleted'));
       }
-    } catch (err) { showToast('שגיאה במחיקה'); }
+    } catch (err) { showToast(t('toast_delete_error')); }
     
     if (entityType === 'Expense') queryClient.invalidateQueries({ queryKey: ['expenses'] });
     else if (entityType === 'Income') queryClient.invalidateQueries({ queryKey: ['incomes'] });
