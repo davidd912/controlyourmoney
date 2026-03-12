@@ -144,12 +144,12 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto dark:bg-gray-800 dark:border-gray-700" dir="rtl">
         <DialogHeader>
           <DialogTitle className="text-right">
-            {editItem ? 'עריכת הוצאה' : 'הוספת הוצאה'}
+            {editItem ? t('edit_expense') : t('add_expense_title')}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="expense-category">קטגוריה</Label>
+            <Label htmlFor="expense-category">{t('category')}</Label>
             <Select
               value={
                 formData.category === 'custom' && formData.custom_category_name 
@@ -167,7 +167,7 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
               }}
             >
               <SelectTrigger id="expense-category">
-                <SelectValue placeholder="בחר קטגוריה" />
+                <SelectValue placeholder={t('select_category')} />
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(expenseCategories).map(([key, { label, icon }]) => (
@@ -181,7 +181,7 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
                 {customCategories.length > 0 && (
                   <>
                     <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 bg-gray-100">
-                      קטגוריות מותאמות אישית
+                      {t('custom_categories')}
                     </div>
                     {customCategories.map((categoryName) => (
                       <SelectItem key={`custom_${categoryName}`} value={`custom_${categoryName}`}>
@@ -215,8 +215,8 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
                         : 'text-red-700'
                     }`}>
                       {remainingBudgetByCategory[categoryKey] >= 0 
-                        ? `💰 נותר בתקציב: ₪${remainingBudgetByCategory[categoryKey].toLocaleString()}`
-                        : `⚠️ חריגה מהתקציב: ₪${Math.abs(remainingBudgetByCategory[categoryKey]).toLocaleString()}`
+                        ? `💰 ${t('budget_remaining', { amount: formatCurrency(remainingBudgetByCategory[categoryKey], currency) })}`
+                        : `⚠️ ${t('budget_exceeded', { amount: formatCurrency(Math.abs(remainingBudgetByCategory[categoryKey]), currency) })}`
                       }
                     </p>
                   </div>
@@ -224,13 +224,13 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
               })()}
               {formData.category !== 'custom' && expenseCategories[formData.category]?.subcategories?.length > 0 && (
                 <div className="space-y-2">
-                  <Label htmlFor="expense-subcategory">תת-קטגוריה</Label>
+                  <Label htmlFor="expense-subcategory">{t('subcategory')}</Label>
                   <Select
                     value={formData.subcategory || ''}
                     onValueChange={(value) => setFormData({ ...formData, subcategory: value })}
                   >
                     <SelectTrigger id="expense-subcategory">
-                      <SelectValue placeholder="בחר תת-קטגוריה" />
+                      <SelectValue placeholder={t('select_subcategory')} />
                     </SelectTrigger>
                     <SelectContent>
                       {expenseCategories[formData.category].subcategories.map((sub) => (
@@ -244,7 +244,7 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="expense-amount">סכום חודשי (₪)</Label>
+            <Label htmlFor="expense-amount">{t('monthly_amount')}</Label>
             <Input
               id="expense-amount"
               type="number"
@@ -258,7 +258,7 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
           </div>
 
           <div className="space-y-2">
-            <Label>עדיפות לצמצום</Label>
+            <Label>{t('reduction_priority')}</Label>
             <RadioGroup
               value={formData.priority?.toString()}
               onValueChange={(value) => setFormData({ ...formData, priority: value })}
@@ -266,26 +266,26 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
             >
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="1" id="p1" />
-                <Label htmlFor="p1" className="text-sm cursor-pointer">קל לצמצם</Label>
+                <Label htmlFor="p1" className="text-sm cursor-pointer">{t('easy_to_cut')}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="2" id="p2" />
-                <Label htmlFor="p2" className="text-sm cursor-pointer">קשה אך אפשרי</Label>
+                <Label htmlFor="p2" className="text-sm cursor-pointer">{t('hard_but_possible')}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="3" id="p3" />
-                <Label htmlFor="p3" className="text-sm cursor-pointer">לא נוגעים</Label>
+                <Label htmlFor="p3" className="text-sm cursor-pointer">{t('dont_touch')}</Label>
               </div>
             </RadioGroup>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="expense-description">תיאור (אופציונלי)</Label>
+            <Label htmlFor="expense-description">{t('description_optional')}</Label>
             <Input
               id="expense-description"
               value={formData.description || ''}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="הערות נוספות..."
+              placeholder={t('notes_placeholder')}
             />
           </div>
 
@@ -296,16 +296,16 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
               onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked })}
             />
             <Label htmlFor="recurring" className="cursor-pointer font-normal text-foreground">
-              הוצאה קבועה (תועתק אוטומטית לחודשים הבאים)
+              {t('recurring_expense')}
             </Label>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
             <Button type="button" variant="outline" onClick={onClose}>
-              ביטול
+              {t('cancel')}
             </Button>
             <Button type="submit" className="bg-orange-500 hover:bg-orange-600">
-              {editItem ? 'עדכן' : 'הוסף'}
+              {editItem ? t('update') : t('add')}
             </Button>
           </DialogFooter>
         </form>
