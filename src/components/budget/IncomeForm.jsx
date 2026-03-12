@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import MobileSelect from "@/components/budget/MobileSelect";
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '@/components/LocaleContext';
-import '@/components/i18n.js';
+import '@/components/i18n';
 
 const incomeCategories = {
   salary: {

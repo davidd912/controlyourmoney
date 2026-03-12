@@ -9,7 +9,7 @@ import MobileSelect from "@/components/budget/MobileSelect";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslation } from 'react-i18next';
 import { useLocale, formatCurrency } from '@/components/LocaleContext';
-import '@/components/i18n.js';
+import '@/components/i18n';
 
 const expenseCategories = {
   food: {
