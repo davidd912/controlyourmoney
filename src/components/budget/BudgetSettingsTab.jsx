@@ -28,7 +28,6 @@ const expenseCategories = {
 };
 
 export default function BudgetSettingsTab({
-
   householdId,
   month,
   year,
@@ -39,6 +38,7 @@ export default function BudgetSettingsTab({
   const [budgets, setBudgets] = useState({});
   const [customCategories, setCustomCategories] = useState([]);
   const [newCustomCategory, setNewCustomCategory] = useState('');
+  const { t } = useTranslation();
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -104,14 +104,14 @@ export default function BudgetSettingsTab({
       <Card className="border-0 shadow-lg dark:bg-gray-800 dark:border-gray-700">
         <CardHeader>
           <CardTitle className="text-lg flex items-center justify-between dark:text-white">
-            <span className="text-gray-950">הגדרת תקציב חודשי לפי קטגוריות</span>
+            <span className="text-gray-950">{t('budget_settings_title')}</span>
             <Button
               onClick={handleSave}
               disabled={isSaving}
               className="bg-blue-600 hover:bg-blue-700">
 
               <Save className="w-4 h-4 ml-2" />
-              {isSaving ? 'שומר...' : 'שמור תקציב'}
+              {isSaving ? t('saving') : t('save_budget')}
             </Button>
           </CardTitle>
         </CardHeader>
@@ -119,13 +119,13 @@ export default function BudgetSettingsTab({
           {/* Add Custom Category Section */}
           <div className="mb-6 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 rounded-lg border-2 border-dashed border-blue-300 dark:border-blue-700">
             <Label className="text-base font-semibold text-blue-900 dark:text-blue-200 mb-3 block">
-              ✨ הוסף קטגוריה מותאמת אישית
+              ✨ {t('add_custom_category')}
             </Label>
             <div className="flex gap-2">
               <Input
                 value={newCustomCategory}
                 onChange={(e) => setNewCustomCategory(e.target.value)}
-                placeholder="שם הקטגוריה החדשה..."
+                placeholder={t('new_category_placeholder')}
                 onKeyPress={(e) => e.key === 'Enter' && handleAddCustomCategory()}
                 className="flex-1" />
 
@@ -134,7 +134,7 @@ export default function BudgetSettingsTab({
                 disabled={!newCustomCategory.trim()}
                 className="bg-blue-600 hover:bg-blue-700">
 
-                הוסף
+                {t('add')}
               </Button>
             </div>
           </div>
@@ -157,7 +157,7 @@ export default function BudgetSettingsTab({
                   type="number"
                   value={budgets[key] || ''}
                   onChange={(e) => handleBudgetChange(key, e.target.value)}
-                  placeholder="הזן תקציב..."
+                  placeholder={t('enter_budget')}
                   className="text-left pr-8"
                   dir="ltr" />
 
@@ -187,7 +187,7 @@ export default function BudgetSettingsTab({
                   <button
                     onClick={() => handleRemoveCustomCategory(categoryName)}
                     className="absolute top-2 left-2 w-6 h-6 bg-red-500 dark:bg-red-600 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 dark:hover:bg-red-700 transition-colors"
-                    title="מחק קטגוריה">
+                    title={t('delete_category')}>
 
                     ×
                   </button>
@@ -200,7 +200,7 @@ export default function BudgetSettingsTab({
                       type="number"
                       value={budgets[customKey] || ''}
                       onChange={(e) => handleBudgetChange(customKey, e.target.value)}
-                      placeholder="הזן תקציב..."
+                      placeholder={t('enter_budget')}
                       className="text-left pr-8"
                       dir="ltr" />
 
@@ -225,10 +225,9 @@ export default function BudgetSettingsTab({
           <div className="flex items-start gap-3">
             <div className="text-2xl">💡</div>
             <div>
-              <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-1">טיפ להגדרת תקציב</h4>
+              <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-1">{t('budget_tip_title')}</h4>
               <p className="text-sm text-blue-800 dark:text-blue-300">
-                הגדר תקציב ריאלי לכל קטגוריה בהתאם להוצאות החודשיות שלך. 
-                בסקירה הכללית תוכל לראות את ההתקדמות שלך ביחס לתקציב שהגדרת.
+                {t('budget_tip_text')}
               </p>
             </div>
           </div>
