@@ -261,15 +261,17 @@ function LayoutContent({ children, currentPageName }) {
             <nav className="hidden md:flex items-center gap-1">
               {navigation.map((item) =>
               <Link key={item.page} to={createPageUrl(item.page)} className={`px-4 py-2 rounded-lg text-sm font-medium ${currentPageName === item.page ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>
-                  {item.name}
+                  {t(`nav.${item.page}`)}
                 </Link>
               )}
+              <LanguageToggle />
               <Button variant="ghost" size="icon" onClick={() => setDarkMode(!darkMode)}>
                 {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </Button>
             </nav>
 
-            <div className="flex items-center md:hidden">
+            <div className="flex items-center gap-1 md:hidden">
+              <LanguageToggle />
               <Button variant="ghost" size="icon" onClick={() => setDarkMode(!darkMode)}>
                 {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </Button>
