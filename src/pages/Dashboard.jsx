@@ -412,11 +412,11 @@ export default function Dashboard() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 md:space-y-4">
             <div className="sticky top-14 md:top-16 z-30 bg-[#f8fafc]/80 dark:bg-gray-950/80 backdrop-blur-sm py-1.5 md:py-2">
               <TabsList className="w-full justify-start bg-white dark:bg-gray-900 border border-gray-100 rounded-full h-9 md:h-11 overflow-x-auto no-scrollbar px-1">
-                <TabsTrigger value="overview" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">סקירה</TabsTrigger>
-                <TabsTrigger value="budget" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">תקציב</TabsTrigger>
-                <TabsTrigger value="income" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">הכנסות</TabsTrigger>
-                <TabsTrigger value="expenses" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">הוצאות</TabsTrigger>
-                <TabsTrigger value="debts" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">חובות</TabsTrigger>
+                <TabsTrigger value="overview" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">{t('overview')}</TabsTrigger>
+                <TabsTrigger value="budget" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">{t('budget')}</TabsTrigger>
+                <TabsTrigger value="income" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">{t('income')}</TabsTrigger>
+                <TabsTrigger value="expenses" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">{t('expenses')}</TabsTrigger>
+                <TabsTrigger value="debts" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">{t('debts')}</TabsTrigger>
               </TabsList>
             </div>
 
