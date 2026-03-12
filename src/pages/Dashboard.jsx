@@ -80,7 +80,7 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ['households'] });
       if (data?.id) setSelectedHouseholdId(data.id);
       import('canvas-confetti').then((confetti) => confetti.default({ particleCount: 120, spread: 80, origin: { y: 0.6 } }));
-      showToast('משק הבית הוקם בהצלחה! 🎉');
+      showToast(t('toast_household_created'));
     }
   });
 
