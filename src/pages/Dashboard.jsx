@@ -343,7 +343,7 @@ export default function Dashboard() {
                   <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed">{t('welcome_subtitle')}</p>
                 </div>
                 <Button onClick={() => setWelcomeStep('nameInput')} className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-lg font-bold gap-2 shadow-lg hover:shadow-xl transition-all">
-                  בואו נתחיל <ArrowRight className="w-5 h-5" />
+                  {t('lets_start')} <ArrowRight className="w-5 h-5" />
                 </Button>
               </motion.div>
             )}
