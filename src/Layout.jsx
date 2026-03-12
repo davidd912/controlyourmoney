@@ -248,7 +248,7 @@ function LayoutContent({ children, currentPageName }) {
 
   return (
     <HouseholdContext.Provider value={{ user, households, selectedHouseholdId, setSelectedHouseholdId, loadingHouseholds }}>
-      <div dir="rtl" className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900" lang="he">
+      <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900" lang={lang}>
         <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
             <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3">
