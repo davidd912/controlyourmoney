@@ -380,8 +380,8 @@ export default function Dashboard() {
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4">
             <div className="flex justify-between items-center">
               <div className="text-right">
-                <h1 className="text-gray-900 text-4xl font-black dark:text-white">ניהול תקציב משפחתי</h1>
-                <p className="text-gray-950 mt-1 text-2xl dark:text-gray-400">{households.find((h) => h.id === selectedHouseholdId)?.name || 'משק בית'}</p>
+                <h1 className="text-gray-900 text-4xl font-black dark:text-white">{t('app_title')}</h1>
+                <p className="text-gray-950 mt-1 text-2xl dark:text-gray-400">{households.find((h) => h.id === selectedHouseholdId)?.name || t('household')}</p>
               </div>
               <div className="flex gap-2">
                 <Button onClick={handleWhatsAppConnect} className="bg-green-500 hover:bg-green-600 text-white h-10 px-4 rounded-lg text-sm font-bold shadow-md flex items-center gap-2"><MessageCircle className="w-4 h-4" /> WhatsApp</Button>
