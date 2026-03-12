@@ -90,29 +90,29 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto dark:bg-gray-800 dark:border-gray-700" dir="rtl">
         <DialogHeader>
           <DialogTitle className="text-right">
-            {editItem ? 'עריכת חוב' : 'הוספת חוב'}
+            {editItem ? t('edit_debt') : t('add_debt_title')}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="creditor-name">שם הנושה</Label>
+              <Label htmlFor="creditor-name">{t('creditor_name')}</Label>
               <Input
                 id="creditor-name"
                 value={formData.creditor_name}
                 onChange={(e) => setFormData({ ...formData, creditor_name: e.target.value })}
-                placeholder="לדוגמה: בנק הפועלים"
+                placeholder={t('creditor_placeholder')}
                 aria-required="true"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="debt-type">סוג החוב</Label>
+              <Label htmlFor="debt-type">{t('debt_type')}</Label>
               <MobileSelect
                 id="debt-type"
                 value={formData.debt_type}
                 onValueChange={(value) => setFormData({ ...formData, debt_type: value })}
-                placeholder="בחר סוג"
-                label="סוג החוב"
+                placeholder={t('select_type')}
+                label={t('debt_type')}
                 options={Object.entries(debtTypes).map(([key, label]) => ({
                   value: key,
                   label: label
@@ -123,7 +123,7 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="debt-amount">סכום החוב (₪)</Label>
+              <Label htmlFor="debt-amount">{t('debt_amount')}</Label>
               <Input
                 id="debt-amount"
                 type="number"
@@ -135,7 +135,7 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="debt-date">נכון ליום</Label>
+              <Label htmlFor="debt-date">{t('as_of_date')}</Label>
               <Input
                 id="debt-date"
                 type="date"
@@ -148,7 +148,7 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label>אחוז ריבית</Label>
+              <Label>{t('interest_rate')}</Label>
               <Input
                 type="number"
                 step="0.1"
@@ -159,7 +159,7 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
               />
             </div>
             <div className="space-y-2">
-              <Label>תשלומים נותרים</Label>
+              <Label>{t('remaining_payments')}</Label>
               <Input
                 type="number"
                 value={formData.remaining_payments}
@@ -169,7 +169,7 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
               />
             </div>
             <div className="space-y-2">
-              <Label>החזר חודשי (₪)</Label>
+              <Label>{t('monthly_payment')}</Label>
               <Input
                 type="number"
                 value={formData.monthly_payment}
@@ -182,7 +182,7 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>נותר לתשלום (₪)</Label>
+              <Label>{t('remaining_balance')}</Label>
               <Input
                 type="number"
                 value={formData.remaining_balance}
@@ -197,17 +197,17 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
                   checked={formData.is_arranged}
                   onCheckedChange={(checked) => setFormData({ ...formData, is_arranged: checked })}
                 />
-                <Label>חוב בהסדר</Label>
+                <Label>{t('debt_arranged')}</Label>
               </div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>הערות</Label>
+            <Label>{t('notes')}</Label>
             <Textarea
               value={formData.notes || ''}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="הערות נוספות..."
+              placeholder={t('notes_placeholder')}
               rows={2}
             />
           </div>
@@ -219,16 +219,16 @@ export default function DebtForm({ open, onClose, onSave, editItem }) {
               onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked })}
             />
             <Label htmlFor="recurring" className="cursor-pointer font-normal text-foreground">
-              חוב קבוע (רוב החובות קבועים)
+              {t('recurring_debt')}
             </Label>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
             <Button type="button" variant="outline" onClick={onClose}>
-              ביטול
+              {t('cancel')}
             </Button>
             <Button type="submit" className="bg-red-500 hover:bg-red-600">
-              {editItem ? 'עדכן' : 'הוסף'}
+              {editItem ? t('update') : t('add')}
             </Button>
           </DialogFooter>
         </form>
