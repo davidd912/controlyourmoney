@@ -338,7 +338,9 @@ function LayoutContent({ children, currentPageName }) {
 export default function Layout({ children, currentPageName }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <LayoutContent children={children} currentPageName={currentPageName} />
+      <LocaleProvider>
+        <LayoutContent children={children} currentPageName={currentPageName} />
+      </LocaleProvider>
     </QueryClientProvider>);
 
 }
