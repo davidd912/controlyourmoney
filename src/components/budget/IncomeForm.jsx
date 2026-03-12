@@ -63,18 +63,18 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
       <DialogContent className="sm:max-w-md dark:bg-gray-800 dark:border-gray-700" dir="rtl">
         <DialogHeader>
           <DialogTitle className="text-right">
-            {editItem ? 'עריכת הכנסה' : 'הוספת הכנסה'}
+            {editItem ? t('edit_income') : t('add_income_title')}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="income-category">קטגוריה</Label>
+            <Label htmlFor="income-category">{t('category')}</Label>
             <MobileSelect
               id="income-category"
               value={formData.category}
               onValueChange={(value) => setFormData({ ...formData, category: value, subcategory: '' })}
-              placeholder="בחר קטגוריה"
-              label="בחר קטגוריה"
+              placeholder={t('select_category')}
+              label={t('select_category')}
               options={Object.entries(incomeCategories).map(([key, { label }]) => ({
                 value: key,
                 label: label
@@ -84,13 +84,13 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
 
           {formData.category && (
             <div className="space-y-2">
-              <Label htmlFor="income-subcategory">תת-קטגוריה</Label>
+              <Label htmlFor="income-subcategory">{t('subcategory')}</Label>
               <MobileSelect
                 id="income-subcategory"
                 value={formData.subcategory}
                 onValueChange={(value) => setFormData({ ...formData, subcategory: value })}
-                placeholder="בחר תת-קטגוריה"
-                label="בחר תת-קטגוריה"
+                placeholder={t('select_subcategory')}
+                label={t('select_subcategory')}
                 options={incomeCategories[formData.category]?.subcategories.map((sub) => ({
                   value: sub,
                   label: sub
@@ -100,7 +100,7 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="income-amount">סכום חודשי (₪)</Label>
+            <Label htmlFor="income-amount">{t('monthly_amount')}</Label>
             <Input
               id="income-amount"
               type="number"
@@ -114,12 +114,12 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="income-description">תיאור (אופציונלי)</Label>
+            <Label htmlFor="income-description">{t('description_optional')}</Label>
             <Input
               id="income-description"
               value={formData.description || ''}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="הערות נוספות..."
+              placeholder={t('notes_placeholder')}
             />
           </div>
 
@@ -130,16 +130,16 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
               onCheckedChange={(checked) => setFormData({ ...formData, is_recurring: checked })}
             />
             <Label htmlFor="recurring" className="cursor-pointer font-normal text-foreground">
-              הכנסה קבועה (תועתק אוטומטית לחודשים הבאים)
+              {t('recurring_income')}
             </Label>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
             <Button type="button" variant="outline" onClick={onClose}>
-              ביטול
+              {t('cancel')}
             </Button>
             <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-              {editItem ? 'עדכן' : 'הוסף'}
+              {editItem ? t('update') : t('add')}
             </Button>
           </DialogFooter>
         </form>
