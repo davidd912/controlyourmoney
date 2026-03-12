@@ -454,9 +454,9 @@ export default function Dashboard() {
                     </Button>
                   </div>
                   <DataTable data={expenses.filter((e) => !e.is_budget || e.is_current)} columns={[
-                    { key: 'category', label: 'קטגוריה', render: (val, item) => item.category === 'custom' ? item.custom_category_name : expenseLabels[val] || val },
-                    { key: 'description', label: 'תיאור' },
-                    { key: 'amount', label: 'סכום', render: (val) => `₪${(val || 0).toLocaleString()}` }
+                    { key: 'category', label: t('category'), render: (val, item) => item.category === 'custom' ? item.custom_category_name : t(`exp_cat.${val}`, expenseLabels[val] || val) },
+                    { key: 'description', label: t('description') },
+                    { key: 'amount', label: t('amount'), render: (val) => formatCurrency(val, currency) }
                   ]} onDelete={(e) => handleDeleteItem(e, 'Expense')} onEdit={(e) => {setEditItem(e);setExpenseFormOpen(true);}} />
                 </TabsContent>
 
