@@ -25,6 +25,10 @@ import {
   MessageCircle } from
 "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { useTranslation, I18nextProvider } from 'react-i18next';
+import { LocaleProvider, useLocale } from '@/components/LocaleContext';
+import '@/components/i18n.js';
+import LanguageToggle from '@/components/LanguageToggle';
 
 // Global QueryClient עם סנכרון אקטיבי בין מכשירים
 const queryClient = new QueryClient({

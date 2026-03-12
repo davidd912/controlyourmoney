@@ -12,6 +12,9 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { HouseholdContext } from '../Layout';
+import { useTranslation } from 'react-i18next';
+import { useLocale, formatCurrency } from '@/components/LocaleContext';
+import '@/components/i18n.js';
 
 import SummaryCard from "@/components/budget/SummaryCard";
 import CategoryBreakdown from "@/components/budget/CategoryBreakdown";

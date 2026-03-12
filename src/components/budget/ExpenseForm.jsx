@@ -7,6 +7,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import MobileSelect from "@/components/budget/MobileSelect";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useTranslation } from 'react-i18next';
+import { useLocale, formatCurrency } from '@/components/LocaleContext';
+import '@/components/i18n.js';
 
 const expenseCategories = {
   food: {

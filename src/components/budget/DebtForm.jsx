@@ -7,6 +7,9 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import MobileSelect from "@/components/budget/MobileSelect";
+import { useTranslation } from 'react-i18next';
+import { useLocale, formatCurrency } from '@/components/LocaleContext';
+import '@/components/i18n.js';
 
 const debtTypes = {
   gmach: "גמ\"ח",

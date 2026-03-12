@@ -5,6 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import MobileSelect from "@/components/budget/MobileSelect";
+import { useTranslation } from 'react-i18next';
+import { useLocale } from '@/components/LocaleContext';
+import '@/components/i18n.js';
 
 const incomeCategories = {
   salary: {
