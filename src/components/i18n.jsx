@@ -125,6 +125,7 @@ const he = {
   alert_amount: 'סכום: {{amount}}',
   recommendation: 'המלצה:',
   members_count: '({{count}} חברים)',
+  members_label: 'חברים',
   owner_suffix: 'בעלים',
   select_household: 'בחר משק בית',
   select_month: 'בחר חודש',
