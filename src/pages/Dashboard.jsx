@@ -384,6 +384,7 @@ export default function Dashboard() {
                 <p className="text-gray-950 mt-1 text-2xl dark:text-gray-400">{households.find((h) => h.id === selectedHouseholdId)?.name || t('household')}</p>
               </div>
               <div className="flex gap-2">
+                <Button onClick={() => alert('Test button clicked!')} className="bg-yellow-500 hover:bg-yellow-600 text-white h-10 px-4 rounded-lg text-sm font-bold shadow-md">Test</Button>
                 <Button onClick={handleWhatsAppConnect} className="bg-green-500 hover:bg-green-600 text-white h-10 px-4 rounded-lg text-sm font-bold shadow-md flex items-center gap-2"><MessageCircle className="w-4 h-4" /> WhatsApp</Button>
                 <Button onClick={handleTelegramConnect} className="bg-blue-500 hover:bg-blue-600 text-white h-10 px-4 rounded-lg text-sm font-bold shadow-md flex items-center gap-2"><Send className="w-4 h-4" /> Telegram</Button>
               </div>
