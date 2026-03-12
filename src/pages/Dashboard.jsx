@@ -405,7 +405,7 @@ export default function Dashboard() {
           <Card className="bg-indigo-600 text-white border-none shadow-md">
             <CardContent className="p-3 md:p-4 flex items-center gap-2 md:gap-3">
               <Zap className="w-4 h-4 md:w-5 md:h-5 text-yellow-300 shrink-0" />
-              <p className="text-xs md:text-sm font-medium">{monthlyBalance >= 0 ? `נשארו לכם ₪${(monthlyBalance || 0).toLocaleString()} לניצול החודש.` : `חרגתם ב-₪${Math.abs(monthlyBalance || 0).toLocaleString()}.`}</p>
+              <p className="text-xs md:text-sm font-medium">{monthlyBalance >= 0 ? t('balance_positive', { amount: formatCurrency(monthlyBalance, currency) }) : t('balance_negative', { amount: formatCurrency(Math.abs(monthlyBalance), currency) })}</p>
             </CardContent>
           </Card>
 
