@@ -396,10 +396,10 @@ export default function Dashboard() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-            <SummaryCard title="הכנסות" value={totalIncome} icon={TrendingUp} color="green" />
-            <SummaryCard title="הוצאות" value={totalExpenses} icon={TrendingDown} color="orange" />
-            <SummaryCard title="יתרה" value={monthlyBalance} icon={Wallet} color={monthlyBalance >= 0 ? "blue" : "red"} />
-            <SummaryCard title="נכסים" value={0} icon={PiggyBank} color="purple" />
+            <SummaryCard title={t('income')} value={totalIncome} icon={TrendingUp} color="green" currency={currency} />
+            <SummaryCard title={t('expenses')} value={totalExpenses} icon={TrendingDown} color="orange" currency={currency} />
+            <SummaryCard title={t('balance')} value={monthlyBalance} icon={Wallet} color={monthlyBalance >= 0 ? "blue" : "red"} currency={currency} />
+            <SummaryCard title={t('assets')} value={0} icon={PiggyBank} color="purple" currency={currency} />
           </div>
 
           <Card className="bg-indigo-600 text-white border-none shadow-md">
