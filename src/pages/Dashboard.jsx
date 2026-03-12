@@ -353,8 +353,8 @@ export default function Dashboard() {
                 <div className="text-center space-y-6">
                   <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 rounded-2xl flex items-center justify-center mx-auto"><Home className="w-8 h-8 text-indigo-600 dark:text-indigo-400" /></div>
                   <div className="space-y-2">
-                    <h2 className="text-2xl font-black text-gray-900 dark:text-white">איך נקרא לבית שלכם?</h2>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">לדוגמה: "משפחת ישראלי", "הדירה בת"א" או "העסק שלי"</p>
+                    <h2 className="text-2xl font-black text-gray-900 dark:text-white">{t('name_your_house')}</h2>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">{t('name_example')}</p>
                   </div>
                   <div className="space-y-4">
                     <Input autoFocus placeholder="הקלידו שם כאן..." className="h-14 text-center text-lg font-medium rounded-2xl border-2 border-indigo-100 focus:border-indigo-500 bg-white/70" value={newHouseholdName} onChange={(e) => setNewHouseholdName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && newHouseholdName.trim()) createHousehold.mutate(newHouseholdName.trim()); }} />
