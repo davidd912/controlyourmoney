@@ -107,7 +107,7 @@ export default function Dashboard() {
       const isRecurring = item.is_recurring || item.recurring_group_id;
       
       if (isRecurring) {
-        showToast('מוחק את כל הסדרה... ⏳');
+        showToast(t('toast_deleting_series'));
         const allItems = await base44.entities[entityType].filter({ household_id: selectedHouseholdId });
         const futureItems = allItems.filter(e => {
           const sameGroup = item.recurring_group_id && e.recurring_group_id === item.recurring_group_id;
