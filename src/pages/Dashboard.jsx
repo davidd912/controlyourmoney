@@ -448,9 +448,9 @@ export default function Dashboard() {
 
                 <TabsContent value="expenses" className="space-y-3 md:space-y-4">
                   <div className="flex justify-between items-center mb-2 px-1">
-                    <h2 className="text-base md:text-lg font-bold">פירוט הוצאות</h2>
+                    <h2 className="text-base md:text-lg font-bold">{t('expense_details')}</h2>
                     <Button onClick={() => {setEditItem(null);setExpenseFormOpen(true);}} disabled={isProcessing} className="bg-orange-500 rounded-lg md:rounded-xl h-9 md:h-10 px-3 md:px-4 gap-1.5 md:gap-2 text-sm md:text-base">
-                      <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" /> <span className="hidden sm:inline">הוסף</span> הוצאה
+                      <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" /> {t('add_expense')}
                     </Button>
                   </div>
                   <DataTable data={expenses.filter((e) => !e.is_budget || e.is_current)} columns={[
