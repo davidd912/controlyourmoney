@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import '../components/i18n.js';
+import './i18n.js';
 import i18n from 'i18next';
 
 export const LocaleContext = createContext(null);

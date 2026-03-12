@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe } from 'lucide-react';
-import { useLocale } from '@/lib/LocaleContext';
+import { useLocale } from '@/components/LocaleContext';
 import { Button } from '@/components/ui/button';
 
 export default function LanguageToggle() {
