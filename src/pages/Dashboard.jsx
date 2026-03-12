@@ -339,8 +339,8 @@ export default function Dashboard() {
                   <Sparkles className="w-10 h-10 text-white" />
                 </div>
                 <div className="space-y-3">
-                  <h1 className="text-3xl font-black text-gray-900 dark:text-white">איזה כיף שהצטרפת! 👋</h1>
-                  <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed">כדי שנוכל להתחיל לנהל את הכסף בחכמה,<br />נקים את משק הבית הראשון שלך במערכת.</p>
+                  <h1 className="text-3xl font-black text-gray-900 dark:text-white">{t('welcome_title')}</h1>
+                  <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed">{t('welcome_subtitle')}</p>
                 </div>
                 <Button onClick={() => setWelcomeStep('nameInput')} className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-lg font-bold gap-2 shadow-lg hover:shadow-xl transition-all">
                   בואו נתחיל <ArrowRight className="w-5 h-5" />
