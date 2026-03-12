@@ -61,6 +61,8 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user, households, selectedHouseholdId, setSelectedHouseholdId, loadingHouseholds } = useContext(HouseholdContext);
+  const { t } = useTranslation();
+  const { currency } = useLocale();
 
   const showToast = (message) => {
     setToast(message);
