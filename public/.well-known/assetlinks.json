@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "info.controlyourmoney.twa",
+    "sha256_cert_fingerprints": ["40:D2:9C:D5:12:79:20:07:65:AC:FD:6B:BB:86:36:34:42:8E:8D:9A:55:11:99:E5:B4:AD:C1:54:22:FD:F1:F4"]
+  }
+}]
