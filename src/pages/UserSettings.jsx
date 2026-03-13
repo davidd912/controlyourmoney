@@ -14,7 +14,7 @@ import { HouseholdContext } from '../Layout';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useTranslation } from 'react-i18next';
-import { useLocale } from '@/hooks/useLocale';
+import { useLocale } from '@/components/LocaleContext';
 
 export default function UserSettings() {
   const { t } = useTranslation();
