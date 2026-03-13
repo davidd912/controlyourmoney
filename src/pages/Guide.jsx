@@ -1,738 +1,424 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import {
-  BookOpen,
-  Home,
-  TrendingUp,
-  TrendingDown,
-  CreditCard,
-  PiggyBank,
-  Users,
-  Target,
-  AlertCircle,
-  Download,
-  UserPlus,
-  Award,
-  MessageCircle
-} from "lucide-react";
+import { BookOpen, Home, TrendingUp, TrendingDown, CreditCard, PiggyBank, Users, Target, AlertCircle, Download, UserPlus, Award, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslation } from 'react-i18next';
 
 export default function Guide() {
-  return (
-    <div dir="rtl" className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 md:p-6 pb-8">
-      <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8">
+  const { t } = useTranslation();
 
+  return (
+    <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 md:p-6 pb-8">
+      <div className="max-w-4xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
             <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-            מדריך למשתמש
+            {t('guide_page_title')}
           </h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            כל מה שאתם צריכים לדעת על ניהול תקציב משפחתי חכם
-          </p>
+          <p className="text-gray-500 dark:text-gray-400">{t('guide_page_subtitle')}</p>
         </motion.div>
 
         <Card className="mb-6 dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 dark:text-white">
               <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              על האפליקציה
+              {t('guide_about_section')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-right space-y-4">
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-              אפליקציית ניהול התקציב המשפחתי נועדה לעזור לכם לקבל שליטה מלאה על המצב הכלכלי שלכם. 
-              המערכת מאפשרת לכם לעקוב אחר הכנסות והוצאות, לנהל חובות ונכסים, ולקבל התראות חכמות 
-              שיעזרו לכם לשפר את המצב הפיננסי שלכם.
-            </p>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-              האפליקציה פועלת בשני מצבים עיקריים:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 mr-4">
-              <li><strong>שיקוף מצב נוכחי</strong> - תיעוד ההכנסות וההוצאות בפועל</li>
-              <li><strong>בניית תקציב</strong> - תכנון תקציב עתידי והגדרת יעדים</li>
+          <CardContent className="text-start space-y-4">
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{t('guide_about_p1')}</p>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{t('guide_about_p2')}</p>
+            <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 ps-4">
+              <li><strong>{t('guide_mode_current')}</strong> - {t('guide_mode_current_desc')}</li>
+              <li><strong>{t('guide_mode_budget')}</strong> - {t('guide_mode_budget_desc')}</li>
             </ul>
           </CardContent>
         </Card>
 
         <Accordion type="single" collapsible className="space-y-4">
-          {/* משקי בית */}
+
+          {/* Households */}
           <AccordionItem value="households" className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm">
             <AccordionTrigger className="px-6 hover:no-underline text-gray-900 dark:text-white">
               <div className="flex items-center gap-3">
                 <Home className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                <span className="font-semibold">משקי בית - ניהול משותף</span>
+                <span className="font-semibold">{t('guide_households_section')}</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
+            <AccordionContent className="px-6 pb-6 space-y-4 text-start">
               <div>
-                <h4 className="font-semibold mb-2 flex items-center gap-2 text-gray-900 dark:text-white">
-                  <Users className="w-4 h-4" />
-                  מה זה משק בית?
-                </h4>
-                <p className="text-gray-700 dark:text-gray-300 mb-4">
-                  משק בית הוא יחידה תקציבית משותפת. כאשר אתם יוצרים משק בית, אתם יכולים להזמין 
-                  בן/בת זוג או שותפים אחרים לנהל את התקציב ביחד. כל הנתונים (הכנסות, הוצאות, חובות, נכסים) 
-                  שייכים למשק הבית ונגישים לכל החברים.
-                </p>
+                <h4 className="font-semibold mb-2 flex items-center gap-2 text-gray-900 dark:text-white"><Users className="w-4 h-4" />{t('guide_what_is_hh')}</h4>
+                <p className="text-gray-700 dark:text-gray-300 mb-4">{t('guide_what_is_hh_desc')}</p>
               </div>
-
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">איך ליצור משק בית?</h4>
-                <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 mr-4">
-                  <li>היכנסו לעמוד "משקי בית" דרך התפריט</li>
-                  <li>לחצו על "צור משק בית חדש"</li>
-                  <li>הזינו שם למשק הבית (לדוגמה: "משפחת כהן")</li>
-                  <li>לחצו "צור משק בית"</li>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_how_create_hh')}</h4>
+                <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 ps-4">
+                  {(t('guide_how_create_steps', { returnObjects: true }) || []).map((s, i) => <li key={i}>{s}</li>)}
                 </ol>
               </div>
-
               <div>
-                <h4 className="font-semibold mb-2 flex items-center gap-2 text-gray-900 dark:text-white">
-                  <UserPlus className="w-4 h-4" />
-                  איך להזמין חברים למשק בית?
-                </h4>
-                <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 mr-4">
-                  <li>בעמוד "משקי בית", בחרו את משק הבית הרצוי</li>
-                  <li>בחלק "הזמן חבר חדש", הזינו את כתובת האימייל של השותף</li>
-                  <li>לחצו "שלח הזמנה"</li>
-                  <li>אם המשתמש עדיין לא רשום למערכת, הוא יקבל הזמנה להרשם</li>
-                  <li>לאחר ההרשמה, השותף יראה את משק הבית המשותף בדשבורד שלו</li>
+                <h4 className="font-semibold mb-2 flex items-center gap-2 text-gray-900 dark:text-white"><UserPlus className="w-4 h-4" />{t('guide_how_invite')}</h4>
+                <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 ps-4">
+                  {(t('guide_how_invite_steps', { returnObjects: true }) || []).map((s, i) => <li key={i}>{s}</li>)}
                 </ol>
               </div>
-
               <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  <strong>💡 טיפ:</strong> אם אתם חברים במספר משקי בית (למשל, תקציב משפחתי ותקציב עסקי), 
-                  תוכלו לעבור ביניהם בדשבורד דרך התפריט הנפתח.
-                </p>
+                <p className="text-sm text-blue-800 dark:text-blue-200">{t('guide_hh_tip')}</p>
               </div>
             </AccordionContent>
           </AccordionItem>
 
-          {/* הכנסות */}
+          {/* Income */}
           <AccordionItem value="income" className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm">
             <AccordionTrigger className="px-6 hover:no-underline text-gray-900 dark:text-white">
               <div className="flex items-center gap-3">
                 <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
-                <span className="font-semibold">ניהול הכנסות</span>
+                <span className="font-semibold">{t('guide_income_section')}</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
-              <p className="text-gray-700 dark:text-gray-300">
-                עקבו אחר כל מקורות ההכנסה החודשיים שלכם - משכורות, קצבאות, והכנסות נוספות.
-              </p>
-
+            <AccordionContent className="px-6 pb-6 space-y-4 text-start">
+              <p className="text-gray-700 dark:text-gray-300">{t('guide_income_desc')}</p>
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">קטגוריות הכנסה:</h4>
-                <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 mr-4">
-                  <li><strong>שכר</strong> - משכורת מעבודה</li>
-                  <li><strong>קצבאות</strong> - קצבת זקנה, נכות, אבטלה וכד'</li>
-                  <li><strong>הכנסות שונות</strong> - השכרת דירה, השקעות, הכנסות נוספות</li>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_income_cats_title')}</h4>
+                <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 ps-4">
+                  <li><strong>{t('guide_income_cat_salary_title')}</strong> - {t('guide_income_cat_salary_desc')}</li>
+                  <li><strong>{t('guide_income_cat_allowance_title')}</strong> - {t('guide_income_cat_allowance_desc')}</li>
+                  <li><strong>{t('guide_income_cat_other_title')}</strong> - {t('guide_income_cat_other_desc')}</li>
                 </ul>
               </div>
-
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">איך להוסיף הכנסה?</h4>
-                <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 mr-4">
-                  <li>בדשבורד, עברו ללשונית "הכנסות"</li>
-                  <li>לחצו על "הוסף הכנסה"</li>
-                  <li>בחרו קטגוריה ותת-קטגוריה</li>
-                  <li>הזינו את הסכום החודשי</li>
-                  <li>הוסיפו תיאור (אופציונלי)</li>
-                  <li>לחצו "שמור"</li>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_how_add_income')}</h4>
+                <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 ps-4">
+                  {(t('guide_how_add_income_steps', { returnObjects: true }) || []).map((s, i) => <li key={i}>{s}</li>)}
                 </ol>
               </div>
-
               <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
-                <p className="text-sm text-green-800 dark:text-green-200">
-                  <strong>💡 טיפ:</strong> השתמשו בתת-קטגוריות כדי לזהות במדויק את מקור ההכנסה 
-                  (למשל: "משכורת - חברה X", "קצבת זקנה - ביטוח לאומי").
-                </p>
+                <p className="text-sm text-green-800 dark:text-green-200">{t('guide_income_tip')}</p>
               </div>
             </AccordionContent>
           </AccordionItem>
 
-          {/* הוצאות */}
+          {/* Expenses */}
           <AccordionItem value="expenses" className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm">
             <AccordionTrigger className="px-6 hover:no-underline text-gray-900 dark:text-white">
               <div className="flex items-center gap-3">
                 <TrendingDown className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                <span className="font-semibold">ניהול הוצאות</span>
+                <span className="font-semibold">{t('guide_expenses_section')}</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
-              <p className="text-gray-700 dark:text-gray-300">
-                תעדו את כל ההוצאות החודשיות שלכם בחלוקה לקטגוריות מפורטות.
-              </p>
-
+            <AccordionContent className="px-6 pb-6 space-y-4 text-start">
+              <p className="text-gray-700 dark:text-gray-300">{t('guide_expenses_desc')}</p>
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">קטגוריות הוצאות עיקריות:</h4>
-                <ul className="grid grid-cols-2 gap-2 text-sm text-gray-700 dark:text-gray-300 mr-4">
-                  <li>🍽️ מזון ופארמה</li>
-                  <li>🎭 פנאי ובילוי</li>
-                  <li>👕 ביגוד והנעלה</li>
-                  <li>🏠 תכולת בית</li>
-                  <li>🔧 אחזקת בית</li>
-                  <li>💇 טיפוח</li>
-                  <li>📚 חינוך</li>
-                  <li>🎉 אירועים ותרומות</li>
-                  <li>⚕️ בריאות</li>
-                  <li>🚗 תחבורה</li>
-                  <li>👨‍👩‍👧 משפחה</li>
-                  <li>📱 תקשורת</li>
-                  <li>🏡 דיור</li>
-                  <li>📋 התחייבויות</li>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_expense_cats_title')}</h4>
+                <ul className="grid grid-cols-2 gap-2 text-sm text-gray-700 dark:text-gray-300 ps-4">
+                  {(t('guide_expense_cat_list', { returnObjects: true }) || []).map((item, i) => <li key={i}>{item}</li>)}
                 </ul>
               </div>
-
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">סולם עדיפויות:</h4>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_priority_title')}</h4>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 p-2 bg-green-50 dark:bg-green-950 rounded">
-                    <span className="font-semibold text-green-700 dark:text-green-300">1 - קל לצמצם</span>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">הוצאות שניתן בקלות לוותר עליהן</span>
+                    <span className="font-semibold text-green-700 dark:text-green-300">{t('guide_priority_1')}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('guide_priority_1_desc')}</span>
                   </div>
                   <div className="flex items-center gap-2 p-2 bg-yellow-50 dark:bg-yellow-950 rounded">
-                    <span className="font-semibold text-yellow-700 dark:text-yellow-300">2 - קשה אך אפשרי</span>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">הוצאות שדורשות מאמץ לצמצם</span>
+                    <span className="font-semibold text-yellow-700 dark:text-yellow-300">{t('guide_priority_2')}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('guide_priority_2_desc')}</span>
                   </div>
                   <div className="flex items-center gap-2 p-2 bg-red-50 dark:bg-red-950 rounded">
-                    <span className="font-semibold text-red-700 dark:text-red-300">3 - לא נוגעים</span>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">הוצאות חיוניות שאי אפשר לצמצם</span>
+                    <span className="font-semibold text-red-700 dark:text-red-300">{t('guide_priority_3')}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('guide_priority_3_desc')}</span>
                   </div>
                 </div>
               </div>
-
               <div className="bg-orange-50 dark:bg-orange-950 p-4 rounded-lg">
-                <p className="text-sm text-orange-800 dark:text-orange-200">
-                  <strong>💡 טיפ:</strong> הגדירו עדיפות נכונה לכל הוצאה - זה יעזור למערכת לזהות 
-                  הזדמנויות לחיסכון ולהמליץ על אופטימיזציה של התקציב.
-                </p>
+                <p className="text-sm text-orange-800 dark:text-orange-200">{t('guide_expenses_tip')}</p>
               </div>
             </AccordionContent>
           </AccordionItem>
 
-          {/* חובות */}
+          {/* Debts */}
           <AccordionItem value="debts" className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm">
             <AccordionTrigger className="px-6 hover:no-underline text-gray-900 dark:text-white">
               <div className="flex items-center gap-3">
                 <CreditCard className="w-5 h-5 text-red-600 dark:text-red-400" />
-                <span className="font-semibold">ניהול חובות</span>
+                <span className="font-semibold">{t('guide_debts_section')}</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
-              <p className="text-gray-700 dark:text-gray-300">
-                נהלו את כל החובות שלכם במקום אחד - בנקים, כרטיסי אשראי, הלוואות ועוד.
-              </p>
-
+            <AccordionContent className="px-6 pb-6 space-y-4 text-start">
+              <p className="text-gray-700 dark:text-gray-300">{t('guide_debts_desc')}</p>
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">סוגי חובות במערכת:</h4>
-                <ul className="grid grid-cols-2 gap-2 text-sm text-gray-700 dark:text-gray-300 mr-4">
-                  <li>💳 כרטיס אשראי</li>
-                  <li>🏦 בנק - הלוואה</li>
-                  <li>🏦 משיכת יתר</li>
-                  <li>🏠 פיגורי משכנתה</li>
-                  <li>📋 ארנונה</li>
-                  <li>💰 מע"ם</li>
-                  <li>💼 מס הכנסה</li>
-                  <li>👥 ביטוח לאומי</li>
-                  <li>🤝 גמ"ח</li>
-                  <li>👨‍👩‍👧 משפחה/חברים</li>
-                  <li>⚖️ הוצאה לפועל</li>
-                  <li>📄 אחר</li>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_debt_types_title')}</h4>
+                <ul className="grid grid-cols-2 gap-2 text-sm text-gray-700 dark:text-gray-300 ps-4">
+                  {(t('guide_debt_type_list', { returnObjects: true }) || []).map((item, i) => <li key={i}>{item}</li>)}
                 </ul>
               </div>
-
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">מידע חשוב לתעד:</h4>
-                <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 mr-4">
-                  <li>שם הנושה (הגוף שלקחתם ממנו הלוואה)</li>
-                  <li>סכום החוב המקורי</li>
-                  <li>יתרת החוב הנוכחית</li>
-                  <li>החזר חודשי</li>
-                  <li>אחוז ריבית (אם רלוונטי)</li>
-                  <li>האם החוב בהסדר</li>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_debt_info_title')}</h4>
+                <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 ps-4">
+                  {(t('guide_debt_info_items', { returnObjects: true }) || []).map((item, i) => <li key={i}>{item}</li>)}
                 </ul>
               </div>
-
               <div className="bg-red-50 dark:bg-red-950 p-4 rounded-lg">
-                <p className="text-sm text-red-800 dark:text-red-200">
-                  <strong>⚠️ חשוב:</strong> סמנו "בהסדר" רק אם החוב מוסדר רשמית עם הנושה. 
-                  המערכת תזהה חובות לא מוסדרים ותתריע עליהם.
-                </p>
+                <p className="text-sm text-red-800 dark:text-red-200">{t('guide_debt_warning')}</p>
               </div>
             </AccordionContent>
           </AccordionItem>
 
-          {/* נכסים */}
+          {/* Assets */}
           <AccordionItem value="assets" className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm">
             <AccordionTrigger className="px-6 hover:no-underline text-gray-900 dark:text-white">
               <div className="flex items-center gap-3">
                 <PiggyBank className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                <span className="font-semibold">חסכונות ונכסים</span>
+                <span className="font-semibold">{t('guide_assets_section')}</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
-              <p className="text-gray-700 dark:text-gray-300">
-                תעדו את כל הנכסים והחסכונות שלכם כדי לקבל תמונה מלאה על המצב הפיננסי.
-              </p>
-
+            <AccordionContent className="px-6 pb-6 space-y-4 text-start">
+              <p className="text-gray-700 dark:text-gray-300">{t('guide_assets_desc')}</p>
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">סוגי נכסים:</h4>
-                <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 mr-4">
-                  <li><strong>חיסכון 1 וחיסכון 2</strong> - חשבונות חיסכון, פיקדונות</li>
-                  <li><strong>נדל"ן למגורים</strong> - דירה או בית בבעלותכם</li>
-                  <li><strong>נדל"ן להשקעה</strong> - נכס שמניב הכנסה</li>
-                  <li><strong>רכב</strong> - רכב פרטי או מסחרי</li>
-                  <li><strong>פנסיה</strong> - קרן פנסיה או גמל</li>
-                  <li><strong>קרן השתלמות</strong> - קרן להשתלמות</li>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_asset_types_title')}</h4>
+                <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 ps-4">
+                  {(t('guide_asset_type_list', { returnObjects: true }) || []).map((item, i) => <li key={i}>{item}</li>)}
                 </ul>
               </div>
-
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">מה לתעד?</h4>
-                <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 mr-4">
-                  <li>שם הנכס או החיסכון</li>
-                  <li>שווי נוכחי (ערך משוער)</li>
-                  <li>הפקדה חודשית (אם רלוונטי)</li>
-                  <li>הערות נוספות</li>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_asset_record_title')}</h4>
+                <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 ps-4">
+                  {(t('guide_asset_record_items', { returnObjects: true }) || []).map((item, i) => <li key={i}>{item}</li>)}
                 </ul>
               </div>
-
               <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg">
-                <p className="text-sm text-purple-800 dark:text-purple-200">
-                  <strong>💡 טיפ:</strong> עדכנו את שווי הנכסים באופן תקופתי (כל 6-12 חודשים) 
-                  כדי לקבל תמונה מדויקת של המצב הפיננסי שלכם.
-                </p>
+                <p className="text-sm text-purple-800 dark:text-purple-200">{t('guide_assets_tip')}</p>
               </div>
             </AccordionContent>
           </AccordionItem>
 
-          {/* תכנון AI */}
+          {/* AI Planning */}
           <AccordionItem value="ai-planning" className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm">
             <AccordionTrigger className="px-6 hover:no-underline text-gray-900 dark:text-white">
               <div className="flex items-center gap-3">
                 <div className="w-5 h-5 text-purple-600 dark:text-purple-400">✨</div>
-                <span className="font-semibold">תכנון AI חכם</span>
+                <span className="font-semibold">{t('guide_ai_section')}</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
-              <p className="text-gray-700 dark:text-gray-300">
-                כלי התכנון החכם משתמש בבינה מלאכותית כדי לספק לכם המלצות פיננסיות מותאמות אישית, 
-                תחזיות עתידיות וניתוח תרחישים.
-              </p>
-
+            <AccordionContent className="px-6 pb-6 space-y-4 text-start">
+              <p className="text-gray-700 dark:text-gray-300">{t('guide_ai_desc')}</p>
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">3 כלים עוצמתיים:</h4>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_ai_tools_title')}</h4>
                 <div className="space-y-3">
                   <div className="p-3 bg-purple-50 dark:bg-purple-950 rounded-lg">
-                    <p className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">💡 המלצות פיננסיות</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">המערכת מנתחת את התקציב שלכם ומציעה המלצות קונקרטיות לשיפור</p>
+                    <p className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">{t('guide_ai_tool1_title')}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">{t('guide_ai_tool1_desc')}</p>
                   </div>
                   <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                    <p className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">📈 תחזית פיננסית</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">תחזית חכמה להכנסות והוצאות ל-12 החודשים הקרובים</p>
+                    <p className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">{t('guide_ai_tool2_title')}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">{t('guide_ai_tool2_desc')}</p>
                   </div>
                   <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg">
-                    <p className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">🔮 ניתוח תרחישים</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">בדקו מראש מה יקרה אם תשנו הכנסות או הוצאות</p>
+                    <p className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">{t('guide_ai_tool3_title')}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">{t('guide_ai_tool3_desc')}</p>
                   </div>
                 </div>
               </div>
-
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">איך להשתמש בהמלצות פיננסיות?</h4>
-                <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 mr-4">
-                  <li>עברו לעמוד "תכנון AI" דרך התפריט</li>
-                  <li>וודאו שיש לכם נתונים עדכניים של הכנסות והוצאות</li>
-                  <li>לחצו על "צור המלצות חכמות"</li>
-                  <li>המערכת תנתח את המצב ותציע המלצות מותאמות אישית</li>
-                  <li>כל המלצה כוללת הסבר ופעולות מומלצות</li>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_how_use_recs')}</h4>
+                <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 ps-4">
+                  {(t('guide_how_use_recs_steps', { returnObjects: true }) || []).map((s, i) => <li key={i}>{s}</li>)}
                 </ol>
               </div>
-
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">איך להשתמש בתחזית פיננסית?</h4>
-                <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 mr-4">
-                  <li>בעמוד "תכנון AI", עברו ללשונית "תחזית עתידית"</li>
-                  <li>לחצו על "צור תחזית"</li>
-                  <li>המערכת תנתח את ההכנסות וההוצאות ההיסטוריות שלכם</li>
-                  <li>תקבלו תחזית חודשית ל-12 חודשים קדימה</li>
-                  <li>התחזית כוללת הכנסות צפויות, הוצאות צפויות ויתרה חודשית</li>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_how_use_forecast')}</h4>
+                <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 ps-4">
+                  {(t('guide_how_use_forecast_steps', { returnObjects: true }) || []).map((s, i) => <li key={i}>{s}</li>)}
                 </ol>
               </div>
-
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">איך להשתמש בניתוח תרחישים?</h4>
-                <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 mr-4">
-                  <li>בעמוד "תכנון AI", עברו ללשונית "ניתוח תרחישים"</li>
-                  <li>הזינו שינוי צפוי (למשל: "העלאת שכר של 2000 ש״ח")</li>
-                  <li>לחצו על "נתח תרחיש"</li>
-                  <li>המערכת תראה לכם את ההשפעה על התקציב החודשי והשנתי</li>
-                  <li>השתמשו בכך לקבלת החלטות מושכלות לפני שינויים גדולים</li>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_how_use_scenarios')}</h4>
+                <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 ps-4">
+                  {(t('guide_how_use_scenarios_steps', { returnObjects: true }) || []).map((s, i) => <li key={i}>{s}</li>)}
                 </ol>
               </div>
-
               <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg">
-                <p className="text-sm text-purple-800 dark:text-purple-200">
-                  <strong>💡 טיפ:</strong> ככל שיש יותר נתונים היסטוריים במערכת (לפחות 2-3 חודשים), 
-                  כך התחזיות וההמלצות יהיו מדויקות ורלוונטיות יותר. עדכנו באופן קבוע!
-                </p>
+                <p className="text-sm text-purple-800 dark:text-purple-200">{t('guide_ai_tip')}</p>
               </div>
-
               <div className="bg-yellow-50 dark:bg-yellow-950 p-4 rounded-lg">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  <strong>⚠️ חשוב לזכור:</strong> המלצות ה-AI הן כלי עזר בלבד. השתמשו בשיקול דעת אישי 
-                  ובהתייעצות עם יועץ פיננסי מוסמך לפני קבלת החלטות פיננסיות משמעותיות.
-                </p>
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">{t('guide_ai_warning')}</p>
               </div>
             </AccordionContent>
           </AccordionItem>
 
-          {/* התראות חכמות */}
+          {/* Alerts */}
           <AccordionItem value="alerts" className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm">
             <AccordionTrigger className="px-6 hover:no-underline text-gray-900 dark:text-white">
               <div className="flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                <span className="font-semibold">התראות חכמות</span>
+                <span className="font-semibold">{t('guide_alerts_section')}</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
-              <p className="text-gray-700 dark:text-gray-300">
-                המערכת מנתחת את הנתונים שלכם באופן חכם ומתריעה על בעיות, סיכונים והזדמנויות.
-              </p>
-
+            <AccordionContent className="px-6 pb-6 space-y-4 text-start">
+              <p className="text-gray-700 dark:text-gray-300">{t('guide_alerts_desc')}</p>
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">סוגי התראות:</h4>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_alert_types_title')}</h4>
                 <div className="space-y-2">
-                  <div className="flex items-start gap-2 p-3 border dark:border-gray-700 rounded-lg">
-                    <span className="text-lg">🔴</span>
-                    <div>
-                      <p className="font-semibold text-sm text-gray-900 dark:text-white">חריגת תקציב</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">התראה כאשר ההוצאות עולות על ההכנסות</p>
+                  {(t('guide_alert_type_list', { returnObjects: true }) || []).map((item, i) => (
+                    <div key={i} className="flex items-start gap-2 p-3 border dark:border-gray-700 rounded-lg">
+                      <span className="text-lg">{item.icon}</span>
+                      <div>
+                        <p className="font-semibold text-sm text-gray-900 dark:text-white">{item.title}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">{item.desc}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-2 p-3 border dark:border-gray-700 rounded-lg">
-                    <span className="text-lg">🟡</span>
-                    <div>
-                      <p className="font-semibold text-sm text-gray-900 dark:text-white">הוצאה גבוהה</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">זיהוי הוצאות גבוהות מהרגיל בקטגוריות ספציפיות</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2 p-3 border dark:border-gray-700 rounded-lg">
-                    <span className="text-lg">⚠️</span>
-                    <div>
-                      <p className="font-semibold text-sm text-gray-900 dark:text-white">תזכורת חוב</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">תזכורות על חובות לא מוסדרים ותשלומים</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2 p-3 border dark:border-gray-700 rounded-lg">
-                    <span className="text-lg">💡</span>
-                    <div>
-                      <p className="font-semibold text-sm text-gray-900 dark:text-white">הזדמנות לחיסכון</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">המלצות קונקרטיות לחיסכון בהתבסס על הנתונים</p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
-
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">איך להשתמש בהתראות?</h4>
-                <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 mr-4">
-                  <li>לחצו על "רענן התראות" בלשונית הסקירה הכללית</li>
-                  <li>המערכת תנתח את הנתונים שלכם בעזרת בינה מלאכותית</li>
-                  <li>קיבלתם התראה? קראו את ההמלצה בקפידה</li>
-                  <li>סמנו התראות כ"נקרא" או "בוטל" לניהול נוח</li>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_how_use_alerts')}</h4>
+                <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 ps-4">
+                  {(t('guide_how_use_alerts_steps', { returnObjects: true }) || []).map((s, i) => <li key={i}>{s}</li>)}
                 </ol>
               </div>
-
               <div className="bg-yellow-50 dark:bg-yellow-950 p-4 rounded-lg">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  <strong>💡 טיפ:</strong> רעננו את ההתראות באופן קבוע (פעם בשבוע או בחודש) 
-                  כדי לקבל תובנות עדכניות על המצב הפיננסי שלכם.
-                </p>
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">{t('guide_alerts_tip')}</p>
               </div>
             </AccordionContent>
           </AccordionItem>
 
-          {/* ייצוא נתונים */}
+          {/* Export */}
           <AccordionItem value="export" className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm">
             <AccordionTrigger className="px-6 hover:no-underline text-gray-900 dark:text-white">
               <div className="flex items-center gap-3">
                 <Download className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                <span className="font-semibold">ייצוא נתונים</span>
+                <span className="font-semibold">{t('guide_export_section')}</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
-              <p className="text-gray-700 dark:text-gray-300">
-                ייצאו את הנתונים שלכם לקובץ CSV (Excel) לצורך גיבוי או עיבוד נוסף.
-              </p>
-
+            <AccordionContent className="px-6 pb-6 space-y-4 text-start">
+              <p className="text-gray-700 dark:text-gray-300">{t('guide_export_desc')}</p>
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">אפשרויות ייצוא:</h4>
-                <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 mr-4">
-                  <li><strong>ייצוא לפי לשונית</strong> - כל לשונית (הכנסות, הוצאות, חובות, נכסים) כוללת כפתור "ייצא ל-CSV"</li>
-                  <li><strong>ייצוא מלא</strong> - בראש הדשבורד, כפתור "ייצא הכל ל-CSV" מייצא את כל הנתונים לקובץ אחד</li>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_export_options_title')}</h4>
+                <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 ps-4">
+                  {(t('guide_export_options', { returnObjects: true }) || []).map((item, i) => (
+                    <li key={i}><strong>{item.title}</strong> - {item.desc}</li>
+                  ))}
                 </ul>
               </div>
-
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">למה לייצא נתונים?</h4>
-                <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 mr-4">
-                  <li>גיבוי של המידע שלכם</li>
-                  <li>עיבוד נוסף באקסל או Google Sheets</li>
-                  <li>שיתוף עם יועץ פיננסי</li>
-                  <li>הכנת דוחות ומצגות</li>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_why_export_title')}</h4>
+                <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 ps-4">
+                  {(t('guide_why_export_items', { returnObjects: true }) || []).map((item, i) => <li key={i}>{item}</li>)}
                 </ul>
               </div>
-
               <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <strong>💡 טיפ:</strong> קובצי ה-CSV שנוצרים תומכים בעברית באקסל. 
-                  אם אתם רואים תווים משובשים, פתחו את הקובץ דרך "נתונים" → "מטקסט/CSV" באקסל.
-                </p>
+                <p className="text-sm text-gray-700 dark:text-gray-300">{t('guide_export_tip')}</p>
               </div>
             </AccordionContent>
           </AccordionItem>
 
-          {/* הטבות וזכויות */}
+          {/* Benefits */}
           <AccordionItem value="benefits" className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm">
             <AccordionTrigger className="px-6 hover:no-underline text-gray-900 dark:text-white">
               <div className="flex items-center gap-3">
                 <Award className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                <span className="font-semibold">הטבות וזכויות</span>
+                <span className="font-semibold">{t('guide_benefits_section')}</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
-              <p className="text-gray-700 dark:text-gray-300">
-                בדקו אילו הטבות וזכויות סוציאליות מגיעות לכם ממשרדי הממשלה השונים.
-              </p>
-
+            <AccordionContent className="px-6 pb-6 space-y-4 text-start">
+              <p className="text-gray-700 dark:text-gray-300">{t('guide_benefits_desc')}</p>
               <div>
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">איך להשתמש בכלי?</h4>
-                <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 mr-4">
-                  <li>עברו לעמוד "הטבות וזכויות" דרך התפריט</li>
-                  <li>מלאו את הטופס עם הפרטים האישיים שלכם</li>
-                  <li>לחצו על "בדוק זכאות"</li>
-                  <li>קבלו רשימה מפורטת של הטבות שעשויות להתאים לכם</li>
-                  <li>לכל הטבה יש קישור למידע נוסף ולאופן ההגשה</li>
+                <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_how_use_benefits')}</h4>
+                <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 ps-4">
+                  {(t('guide_how_use_benefits_steps', { returnObjects: true }) || []).map((s, i) => <li key={i}>{s}</li>)}
                 </ol>
               </div>
-
               <div className="bg-indigo-50 dark:bg-indigo-950 p-4 rounded-lg">
-                <p className="text-sm text-indigo-800 dark:text-indigo-200">
-                  <strong>💡 טיפ:</strong> בדקו זכאות באופן תקופתי - זכויות והטבות משתנות 
-                  ועשויות להיות רלוונטיות למצב החדש שלכם.
-                </p>
+                <p className="text-sm text-indigo-800 dark:text-indigo-200">{t('guide_benefits_tip')}</p>
               </div>
             </AccordionContent>
           </AccordionItem>
 
-          {/* ניהול דרך WhatsApp */}
+          {/* WhatsApp */}
           <AccordionItem value="whatsapp" className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm">
             <AccordionTrigger className="px-6 hover:no-underline text-gray-900 dark:text-white">
               <div className="flex items-center gap-3">
                 <MessageCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-                <span className="font-semibold">ניהול תקציב חכם באמצעות WhatsApp</span>
+                <span className="font-semibold">{t('guide_whatsapp_section')}</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4 text-right">
-              <p className="text-gray-700 dark:text-gray-300">
-                נהלו את התקציב שלכם בצורה הכי נוחה - ישירות דרך WhatsApp! רשמו הוצאות והכנסות, 
-                קבלו סיכומים ושאלו שאלות בכל זמן, בלי צורך להיכנס לאפליקציה.
-              </p>
-
+            <AccordionContent className="px-6 pb-6 space-y-4 text-start">
+              <p className="text-gray-700 dark:text-gray-300">{t('guide_whatsapp_desc')}</p>
               <div>
                 <h4 className="font-semibold mb-2 flex items-center gap-2 text-gray-900 dark:text-white">
-                  <span className="text-green-600 dark:text-green-400">🔗</span>
-                  איך מתחברים?
+                  <span className="text-green-600 dark:text-green-400">🔗</span>{t('guide_how_connect')}
                 </h4>
-                <p className="text-gray-700 dark:text-gray-300 mb-3">
-                  החיבור לשירות ה-WhatsApp זמין בכמה דרכים:
-                </p>
-                <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 mr-4">
-                  <li><strong>באמצעות כפתור בדאשבורד:</strong> בחרו באפשרות 'WhatsApp' ישירות מלוח הבקרה (Dashboard)</li>
-                  <li><strong>בדף הגדרות המשתמש:</strong> ניתן למצוא את אפשרות החיבור גם בדף הגדרות המשתמש</li>
+                <p className="text-gray-700 dark:text-gray-300 mb-3">{t('guide_how_connect_desc')}</p>
+                <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 ps-4">
+                  {(t('guide_how_connect_options', { returnObjects: true }) || []).map((item, i) => (
+                    <li key={i}><strong>{item.title}</strong> {item.desc}</li>
+                  ))}
                 </ul>
-                <p className="text-gray-700 dark:text-gray-300 mt-3">
-                  לאחר לחיצה על הכפתור המתאים, המערכת תציג קוד אקטיבציה ייחודי. עליכם לשלוח את הקוד הזה 
-                  ישירות למספר ה-WhatsApp של הבוט שלנו. המערכת תזהה אתכם ותקשר את מספר הטלפון שלכם 
-                  למשק הבית שבחרתם.
-                </p>
+                <p className="text-gray-700 dark:text-gray-300 mt-3">{t('guide_how_connect_note')}</p>
                 <div className="bg-yellow-50 dark:bg-yellow-950 p-3 rounded-lg mt-3">
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                    <strong>⚠️ שימו לב:</strong> קוד האקטיבציה תקף לזמן מוגבל בלבד. 
-                    אם הוא פג תוקפו, יהיה עליכם ליצור קוד חדש באפליקציה.
-                  </p>
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">{t('guide_code_warning')}</p>
                 </div>
               </div>
-
               <div>
                 <h4 className="font-semibold mb-2 flex items-center gap-2 text-gray-900 dark:text-white">
-                  <span className="text-blue-600 dark:text-blue-400">💬</span>
-                  מה ניתן לשאול ולבקש מהבוט?
+                  <span className="text-blue-600 dark:text-blue-400">💬</span>{t('guide_bot_capabilities')}
                 </h4>
                 <div className="space-y-3">
-                  <div className="p-3 border dark:border-gray-700 rounded-lg">
-                    <p className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">📝 רישום הוצאות והכנסות</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                      דווחו על הוצאות והכנסות בקלות ובמהירות. לדוגמה:
-                    </p>
-                    <ul className="text-xs text-gray-500 dark:text-gray-400 mr-4 space-y-1">
-                      <li>"קניתי בגדים ב-250 ש"ח"</li>
-                      <li>"הפקדתי משכורת 8000 ש"ח"</li>
-                      <li>"שילמתי חשבון אינטרנט 120"</li>
-                    </ul>
-                  </div>
-                  
-                  <div className="p-3 border dark:border-gray-700 rounded-lg">
-                    <p className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">📊 שאלות סיכום</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                      קבלו סיכומים מפורטים על ההוצאות או ההכנסות שלכם. לדוגמה:
-                    </p>
-                    <ul className="text-xs text-gray-500 dark:text-gray-400 mr-4 space-y-1">
-                      <li>"מה היו הוצאות המזון החודש?"</li>
-                      <li>"כמה הכנסות היו לי השבוע?"</li>
-                      <li>"סיכום הוצאות אתמול"</li>
-                    </ul>
-                  </div>
-
-                  <div className="p-3 border dark:border-gray-700 rounded-lg">
-                    <p className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">💭 שיחות כלליות</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                      הבוט יכול לענות גם על שאלות כלליות בנוגע ליכולותיו או לניהול התקציב. לדוגמה:
-                    </p>
-                    <ul className="text-xs text-gray-500 dark:text-gray-400 mr-4 space-y-1">
-                      <li>"מה אתה יודע לעשות?"</li>
-                      <li>"עזרה"</li>
-                      <li>"תודה"</li>
-                    </ul>
-                  </div>
+                  {(t('guide_bot_cap_list', { returnObjects: true }) || []).map((cap, i) => (
+                    <div key={i} className="p-3 border dark:border-gray-700 rounded-lg">
+                      <p className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">{cap.title}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{cap.desc}</p>
+                      <ul className="text-xs text-gray-500 dark:text-gray-400 ps-4 space-y-1">
+                        {cap.examples.map((ex, j) => <li key={j}>"{ex}"</li>)}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
               </div>
-
               <div>
                 <h4 className="font-semibold mb-2 flex items-center gap-2 text-gray-900 dark:text-white">
-                  <span className="text-purple-600 dark:text-purple-400">⚙️</span>
-                  איך זה עובד ומהן המגבלות?
+                  <span className="text-purple-600 dark:text-purple-400">⚙️</span>{t('guide_how_it_works')}
                 </h4>
                 <div className="space-y-3">
-                  <div className="flex items-start gap-2">
-                    <span className="text-lg shrink-0">🤖</span>
-                    <div>
-                      <p className="font-semibold text-sm text-gray-900 dark:text-white">זיהוי חכם</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        הבוט משתמש בבינה מלאכותית מתקדמת כדי לנתח את ההודעות שלכם, 
-                        לזהות את כוונתכם (הוספת הוצאה, בקשת סיכום וכו') ולשייך אותה 
-                        לקטגוריה המתאימה ביותר.
-                      </p>
+                  {(t('guide_how_it_works_items', { returnObjects: true }) || []).map((item, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="text-lg shrink-0">{item.icon}</span>
+                      <div>
+                        <p className="font-semibold text-sm text-gray-900 dark:text-white">{item.title}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{item.desc}</p>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="flex items-start gap-2">
-                    <span className="text-lg shrink-0">🔔</span>
-                    <div>
-                      <p className="font-semibold text-sm text-gray-900 dark:text-white">התראות תקציב</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        כאשר אתם רושמים הוצאה, הבוט יבדוק אוטומטית אם חרגתם מהתקציב 
-                        שהגדרתם לקטגוריה זו ויודיע לכם בהתאם.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-2">
-                    <span className="text-lg shrink-0">📚</span>
-                    <div>
-                      <p className="font-semibold text-sm text-gray-900 dark:text-white">למידה עצמית</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        המערכת לומדת ומשתפרת עם כל אינטראקציה, ועם הזמן תהפוך למדויקת 
-                        יותר בזיהוי קטגוריות וסוחרים ספציפיים.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-2">
-                    <span className="text-lg shrink-0">⚠️</span>
-                    <div>
-                      <p className="font-semibold text-sm text-gray-900 dark:text-white">מגבלות</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        שירות ה-WhatsApp עשוי להיות כפוף למגבלות שימוש (לדוגמה, למנויי 
-                        פרימיום בלבד או לתקופת ניסיון). כמו כן, ייתכנו הגבלות על אורך 
-                        ההודעות או מורכבות השאלות שהבוט יכול לעבד.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-2">
-                    <span className="text-lg shrink-0">🔒</span>
-                    <div>
-                      <p className="font-semibold text-sm text-gray-900 dark:text-white">פרטיות ואבטחה</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        הפרטיות שלכם חשובה לנו. הבוט ניגש רק להודעות שנשלחות אליו באופן 
-                        ישיר ואינו יכול לצפות בשיחותיכם האישיות.
-                      </p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
-
               <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
-                <p className="text-sm text-green-800 dark:text-green-200">
-                  <strong>💡 טיפ:</strong> השתמשו בשירות WhatsApp לרישום מהיר בזמן אמת - 
-                  למשל, מיד אחרי קניה בסופרמרקט או תשלום חשבון. כך לא תשכחו לתעד הוצאות 
-                  ותקבלו תמונה מדויקת של המצב הפיננסי שלכם.
-                </p>
+                <p className="text-sm text-green-800 dark:text-green-200">{t('guide_whatsapp_tip')}</p>
               </div>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
 
-        {/* עצות כלליות */}
+        {/* General Tips */}
         <Card className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-blue-200 dark:border-blue-800">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 dark:text-white">
-              💡 עצות לניהול תקציב מוצלח
+              💡 {t('guide_tips_section')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-right">
-            <div className="flex items-start gap-2">
-              <span className="text-lg">1️⃣</span>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                <strong>עדכנו באופן קבוע</strong> - תעדו הכנסות והוצאות באופן שוטף, לפחות פעם בשבוע
-              </p>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-lg">2️⃣</span>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                <strong>היו מדויקים</strong> - ככל שהנתונים מדויקים יותר, כך ההתראות וההמלצות יהיו טובות יותר
-              </p>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-lg">3️⃣</span>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                <strong>השתמשו בשני המצבים</strong> - שקפו את המצב הנוכחי, ובנו תקציב עתידי להשוואה
-              </p>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-lg">4️⃣</span>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                <strong>הגדירו יעדים</strong> - בנו תקציב עם יעדי חיסכון ברורים והשוו למצב הנוכחי
-              </p>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-lg">5️⃣</span>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                <strong>עקבו אחר ההתראות</strong> - למדו מההתראות החכמות ושפרו את הרגלי הצריכה שלכם
-              </p>
-            </div>
+          <CardContent className="space-y-3 text-start">
+            {(t('guide_tips', { returnObjects: true }) || []).map((tip, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <span className="text-lg">{tip.icon}</span>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <strong>{tip.title}</strong> - {tip.desc}
+                </p>
+              </div>
+            ))}
           </CardContent>
         </Card>
       </div>
-    </div>);
-
+    </div>
+  );
 }
