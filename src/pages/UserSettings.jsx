@@ -5,17 +5,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, Trash2, Mail, Home, UserPlus, User, LogOut, Edit, BarChart3, Calendar, UserX, Smartphone, Copy, RefreshCw, MessageCircle, Send } from "lucide-react";
+import { Users, Trash2, Mail, Home, UserPlus, User, LogOut, Edit, BarChart3, Calendar, UserX, Smartphone, Copy, RefreshCw, MessageCircle, Send, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import AnnouncementManager from '@/components/announcements/AnnouncementManager';
 import { HouseholdContext } from '../Layout';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '@/hooks/useLocale';
 
 export default function UserSettings() {
   const { t } = useTranslation();
+  const { direction } = useLocale();
   const [newHouseholdName, setNewHouseholdName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -143,7 +146,7 @@ export default function UserSettings() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 md:p-8">
+    <div dir={direction} className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
@@ -167,16 +170,22 @@ export default function UserSettings() {
               {!isEditingName ? (
                 <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <span className="text-lg font-semibold text-gray-900 dark:text-white">{user?.full_name}</span>
-                  <Button variant="ghost" size="sm" onClick={() => { setIsEditingName(true); setNewFullName(user?.full_name || ''); }} className="text-blue-600 hover:text-blue-700">
-                    <Edit className="w-4 h-4 me-1" />{t('us_edit')}
-                  </Button>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button variant="ghost" size="sm" onClick={() => { setIsEditingName(true); setNewFullName(user?.full_name || ''); }} className="text-blue-600 hover:text-blue-700">
+                      <Edit className="w-4 h-4 me-1" />{t('us_edit')}
+                    </Button>
+                  </motion.div>
                 </div>
               ) : (
                 <form onSubmit={handleUpdateName} className="space-y-3">
                   <Input placeholder={t('us_enter_name')} value={newFullName} onChange={(e) => setNewFullName(e.target.value)} />
                   <div className="flex gap-2">
-                    <Button type="submit" className="bg-blue-600 hover:bg-blue-700">{t('us_save')}</Button>
-                    <Button type="button" variant="outline" onClick={() => { setIsEditingName(false); setNewFullName(''); }}>{t('cancel')}</Button>
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Button type="submit" className="bg-blue-600 hover:bg-blue-700">{t('us_save')}</Button>
+                    </motion.div>
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Button type="button" variant="outline" onClick={() => { setIsEditingName(false); setNewFullName(''); }}>{t('cancel')}</Button>
+                    </motion.div>
                   </div>
                 </form>
               )}
@@ -191,12 +200,16 @@ export default function UserSettings() {
             </div>
 
             <div className="pt-4 border-t space-y-2">
-              <Button onClick={handleLogout} variant="outline" className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 border-red-200">
-                <LogOut className="w-4 h-4 me-2" />{t('us_logout')}
-              </Button>
-              <Button onClick={() => setShowDeleteDialog(true)} variant="outline" className="w-full text-red-700 hover:text-red-800 hover:bg-red-100 dark:hover:bg-red-950 border-red-300">
-                <UserX className="w-4 h-4 me-2" />{t('us_delete_account')}
-              </Button>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button onClick={handleLogout} variant="outline" className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 border-red-200">
+                  <LogOut className="w-4 h-4 me-2" />{t('us_logout')}
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button onClick={() => setShowDeleteDialog(true)} variant="outline" className="w-full text-red-700 hover:text-red-800 hover:bg-red-100 dark:hover:bg-red-950 border-red-300">
+                  <UserX className="w-4 h-4 me-2" />{t('us_delete_account')}
+                </Button>
+              </motion.div>
             </div>
           </CardContent>
         </Card>
@@ -307,9 +320,11 @@ export default function UserSettings() {
                       {household.name}
                     </CardTitle>
                     {isOwner && (
-                      <Button variant="ghost" size="sm" onClick={() => { setHouseholdToDelete(household); setShowDeleteHouseholdDialog(true); }} className="text-red-600 hover:text-red-700">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <Button variant="ghost" size="sm" onClick={() => { setHouseholdToDelete(household); setShowDeleteHouseholdDialog(true); }} className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </motion.div>
                     )}
                   </div>
                 </CardHeader>
@@ -320,21 +335,27 @@ export default function UserSettings() {
                         <MessageCircle className="w-5 h-5 text-blue-600" />{t('us_bot_connect_title')}
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                        <Button onClick={() => handleWhatsAppConnect(household)} className="w-full bg-green-600 hover:bg-green-700 text-white">
-                          <Smartphone className="w-4 h-4 me-2" />{t('us_open_whatsapp')}
-                        </Button>
-                        <Button onClick={() => handleTelegramConnect(household)} className="w-full bg-blue-500 hover:bg-blue-600 text-white">
-                          <Send className="w-4 h-4 me-2" />{t('us_open_telegram')}
-                        </Button>
+                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full">
+                          <Button onClick={() => handleWhatsAppConnect(household)} className="w-full bg-green-600 hover:bg-green-700 text-white">
+                            <Smartphone className="w-4 h-4 me-2" />{t('us_open_whatsapp')}
+                          </Button>
+                        </motion.div>
+                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full">
+                          <Button onClick={() => handleTelegramConnect(household)} className="w-full bg-blue-500 hover:bg-blue-600 text-white">
+                            <Send className="w-4 h-4 me-2" />{t('us_open_telegram')}
+                          </Button>
+                        </motion.div>
                       </div>
                       <div className="space-y-4">
                         {(!household.activation_code || new Date(household.activation_code_expires) < new Date()) && (
                           <div className="mt-2">
-                            <Button onClick={() => handleGenerateActivationCode(household.id)} disabled={generatingCode[household.id]}
-                              className="w-full bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-700 dark:hover:bg-slate-600">
-                              <RefreshCw className={`w-4 h-4 me-2 ${generatingCode[household.id] ? 'animate-spin' : ''}`} />
-                              {t('us_generate_code')}
-                            </Button>
+                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                              <Button onClick={() => handleGenerateActivationCode(household.id)} disabled={generatingCode[household.id]}
+                                className="w-full bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-700 dark:hover:bg-slate-600">
+                                <RefreshCw className={`w-4 h-4 me-2 ${generatingCode[household.id] ? 'animate-spin' : ''}`} />
+                                {t('us_generate_code')}
+                              </Button>
+                            </motion.div>
                           </div>
                         )}
                         {household.activation_code && new Date(household.activation_code_expires) > new Date() && (
@@ -344,9 +365,11 @@ export default function UserSettings() {
                                 <span className="text-sm text-gray-500 dark:text-gray-400">{t('us_code_label')}:</span>
                                 <span className="text-2xl font-bold tracking-widest text-blue-600 dark:text-blue-400">{household.activation_code}</span>
                               </div>
-                              <Button variant="ghost" size="sm" onClick={() => copyToClipboard(household.activation_code)} className="hover:bg-blue-50 dark:hover:bg-gray-700">
-                                <Copy className="w-4 h-4" />
-                              </Button>
+                              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                <Button variant="ghost" size="sm" onClick={() => copyToClipboard(household.activation_code)} className="hover:bg-blue-50 dark:hover:bg-gray-700">
+                                  <Copy className="w-4 h-4" />
+                                </Button>
+                              </motion.div>
                             </div>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
                               ⏰ {t('us_code_valid')}: {new Date(household.activation_code_expires).toLocaleString()}
@@ -364,9 +387,11 @@ export default function UserSettings() {
                       </h3>
                       <div className="flex gap-2">
                         <Input type="email" placeholder={t('us_invite_placeholder')} value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
-                        <Button onClick={() => handleInvite(household.id)} disabled={!inviteEmail.trim() || !inviteEmail.includes('@')}>
-                          {t('us_invite_btn')}
-                        </Button>
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <Button onClick={() => handleInvite(household.id)} disabled={!inviteEmail.trim() || !inviteEmail.includes('@')}>
+                            {t('us_invite_btn')}
+                          </Button>
+                        </motion.div>
                       </div>
                     </div>
                   )}
@@ -377,21 +402,39 @@ export default function UserSettings() {
         </div>
       </div>
 
-      {/* Delete Account Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('us_delete_dialog_title')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('us_delete_dialog_desc')}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteAccount} className="bg-red-600 hover:bg-red-700">{t('us_delete_dialog_confirm')}</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Beautiful Custom Delete Account Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader className="space-y-3">
+            <div className="mx-auto w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-2">
+              <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+            </div>
+            <DialogTitle className="text-center text-xl text-red-600 dark:text-red-400">
+              {t('us_delete_warning_title')}
+            </DialogTitle>
+            <DialogDescription className="text-center text-base pt-2 dark:text-gray-300">
+              {t('us_delete_warning_desc_1')}
+              <br/><br/>
+              <span className="font-bold text-gray-800 dark:text-gray-200">
+                {t('us_delete_warning_desc_bold')}
+              </span>
+              <br/>
+              {t('us_delete_warning_desc_2')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col sm:flex-row sm:justify-center gap-3 mt-6 sm:mt-8">
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)} className="w-full sm:w-auto">
+              {t('cancel')}
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteAccount} className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white gap-2">
+              <Trash2 className="w-4 h-4" />
+              {t('us_delete_confirm_btn')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {/* Delete Household Dialog */}
+      {/* Basic Delete Household Dialog */}
       <AlertDialog open={showDeleteHouseholdDialog} onOpenChange={setShowDeleteHouseholdDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
