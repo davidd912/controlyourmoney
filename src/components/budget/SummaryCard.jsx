@@ -3,11 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { ArrowUpRight, ArrowDownRight, Activity } from "lucide-react";
 import { useLocale } from '@/hooks/useLocale';
+import { useTranslation } from 'react-i18next'; // <-- הוספנו את זה
 
 export default function SummaryCard({ title, amount, icon: Icon, type = 'default', index = 0 }) {
   const { direction } = useLocale();
+  const { t } = useTranslation(); // <-- הוספנו את זה
   
-  // הגדרת עיצוב דינמי לפי סוג הכרטיס
   const styles = {
     income: {
       bg: "bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-emerald-950/50 dark:to-teal-900/30",
@@ -53,7 +54,6 @@ export default function SummaryCard({ title, amount, icon: Icon, type = 'default
       dir={direction}
     >
       <Card className={`h-full border-0 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden relative ${currentStyle.bg}`}>
-        {/* אפקט הילה ברקע שנותן תחושת פרימיום */}
         <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/30 dark:bg-black/10 blur-2xl pointer-events-none" />
         
         <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 relative z-10">
@@ -65,15 +65,13 @@ export default function SummaryCard({ title, amount, icon: Icon, type = 'default
           </div>
         </CardHeader>
         <CardContent className="relative z-10">
-          {/* הכתב גדל אוטומטית במסכי מחשב (md:text-4xl) ונשאר קומפקטי בנייד (text-2xl) */}
           <div className="text-2xl md:text-3xl lg:text-4xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">
             {amount}
           </div>
           
-          {/* מחוון מגמה עדין */}
           <div className={`flex items-center text-xs md:text-sm font-medium opacity-80 ${currentStyle.text}`}>
             <TrendIcon className="w-3 h-3 md:w-4 md:h-4 me-1" />
-            <span>פעילות חודשית</span>
+            <span>{t('monthly_activity')}</span> {/* <-- עכשיו זה נשאב מהתרגום! */}
           </div>
         </CardContent>
       </Card>
