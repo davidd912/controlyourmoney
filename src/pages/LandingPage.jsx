@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { 
-  Wallet, Sparkles, Users, CreditCard, PiggyBank, 
-  Target, MessageCircle, Download, LineChart, ShieldCheck, 
-  Globe, ArrowLeft, ArrowRight 
-} from "lucide-react";
+import {
+  Wallet, Sparkles, Users, CreditCard, PiggyBank,
+  Target, MessageCircle, Download, LineChart, ShieldCheck,
+  Globe, ArrowLeft, ArrowRight } from
+"lucide-react";
 import LanguageToggle from '@/components/LanguageToggle';
 import { useLocale } from '@/hooks/useLocale';
 
@@ -18,14 +18,14 @@ export default function LandingPage() {
   // לוגיקת זיהוי שפה אוטומטית
   useEffect(() => {
     const savedLanguage = localStorage.getItem('appLang');
-    
+
     // אם המשתמש מעולם לא בחר שפה ידנית
     if (!savedLanguage) {
       const browserLang = navigator.language || navigator.userLanguage;
-      
+
       // אם הדפדפן בעברית - הגדר עברית, אחרת - אנגלית (עבור חו"ל)
       const detectedLang = browserLang.startsWith('he') ? 'he' : 'en';
-      
+
       if (i18n.language !== detectedLang) {
         i18n.changeLanguage(detectedLang);
       }
@@ -43,7 +43,7 @@ export default function LandingPage() {
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
               <Wallet className="w-5 h-5 text-white" />
             </div>
-            <span className="font-black text-xl tracking-tight italic text-indigo-600 dark:text-indigo-400">FamWiz</span>
+            <span className="font-black text-xl tracking-tight italic text-indigo-600 dark:text-indigo-400">Control your money</span>
           </div>
           
           <div className="flex items-center gap-4">
@@ -61,8 +61,8 @@ export default function LandingPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+            transition={{ duration: 0.5 }}>
+
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 leading-[1.1]">
               {t('landing_hero_title')} <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
@@ -78,8 +78,8 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
-          >
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+
             <Link to="/dashboard">
               <Button size="lg" className="h-14 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg shadow-xl shadow-indigo-200 dark:shadow-none transition-all hover:scale-105">
                 {t('landing_hero_cta')}
@@ -91,15 +91,15 @@ export default function LandingPage() {
           {/* Stats/Badges */}
           <div className="flex flex-wrap justify-center gap-6 pt-12">
             {[
-              { icon: ShieldCheck, text: t('landing_stat_secure') },
-              { icon: Sparkles, text: t('landing_stat_ai') },
-              { icon: Globe, text: t('landing_stat_free') }
-            ].map((stat, i) => (
-              <div key={i} className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-900 rounded-full text-sm font-bold text-slate-600 dark:text-slate-400">
+            { icon: ShieldCheck, text: t('landing_stat_secure') },
+            { icon: Sparkles, text: t('landing_stat_ai') },
+            { icon: Globe, text: t('landing_stat_free') }].
+            map((stat, i) =>
+            <div key={i} className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-900 rounded-full text-sm font-bold text-slate-600 dark:text-slate-400">
                 <stat.icon className="w-4 h-4 text-indigo-500" />
                 {stat.text}
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -122,8 +122,8 @@ export default function LandingPage() {
                 <motion.div
                   key={index}
                   whileHover={{ y: -5 }}
-                  className="p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all"
-                >
+                  className="p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all">
+
                   <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl flex items-center justify-center mb-6">
                     <IconComponent className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                   </div>
@@ -131,8 +131,8 @@ export default function LandingPage() {
                   <p className="text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
                     {feature.description}
                   </p>
-                </motion.div>
-              );
+                </motion.div>);
+
             })}
           </div>
         </div>
@@ -168,7 +168,7 @@ export default function LandingPage() {
             <div className="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center">
               <Wallet className="w-4 h-4 text-white" />
             </div>
-            <span className="font-black text-lg italic text-indigo-600">FamWiz</span>
+            <span className="font-black text-lg italic text-indigo-600">Control your money</span>
           </div>
           <p className="text-slate-500 font-medium mb-8">
             {t('landing_footer_copyright', { year: new Date().getFullYear() })}
@@ -180,6 +180,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>);
+
 }
