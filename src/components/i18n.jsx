@@ -431,6 +431,92 @@ const en = {
   landing_cta_btn: 'Start Now - Completely Free',
   landing_cta_security: '🔒 Your data is secured with SSL/TLS encryption',
   landing_footer_copyright: '© {{year}} Controlyourmoney. All rights reserved.',
+  benefits_title: 'Benefits & Rights',
+  benefits_subtitle: 'Discover the rights and benefits available to you - housing, employment and more',
+  benefits_search_placeholder: 'Search for a benefit...',
+  benefits_search_aria: 'Search benefits',
+  benefits_no_results: 'No results found',
+  benefits_count: '{{count}} benefits',
+
+  benefits_data: [
+    {
+      id: 'housing',
+      category: 'Housing',
+      icon: 'Home',
+      color: 'blue',
+      items: [
+        {
+          title: 'First Home Purchase Grant',
+          benefits: [
+            'Grant up to 100,000 ILS for first-time buyers',
+            'Reduced purchase tax',
+            'Government assistance for Ministry of Construction eligible',
+            'Low-interest loans through banks',
+          ]
+        },
+        {
+          title: 'Rent Assistance',
+          benefits: [
+            'Rent assistance from National Insurance for eligible',
+            'Grant for opportunity apartment renters',
+            '"Dira LeHashkir" program at reduced prices',
+          ]
+        },
+        {
+          title: 'Home Renovation Assistance',
+          benefits: [
+            'Renovation grant for elderly',
+            'Low-interest renovation loan',
+            'Help for disabled to adapt their home',
+          ]
+        },
+      ]
+    },
+    {
+      id: 'employment',
+      category: 'Employment & Pension',
+      icon: 'Banknote',
+      color: 'green',
+      items: [
+        {
+          title: 'Unemployment Benefits',
+          benefits: [
+            'Eligibility for up to 175 days of unemployment benefits',
+            'Benefit rate: 50%-80% of salary',
+            'Can be filed through the National Insurance website',
+          ]
+        },
+        {
+          title: 'Mandatory Pension',
+          benefits: [
+            'Employer is required to contribute to pension',
+            'Minimum contribution rate: 18.5% of salary',
+            'You can choose an independent pension fund',
+            'Eligibility for tax exemption on part of contributions',
+          ]
+        },
+        {
+          title: 'Study Fund (Keren Hishtalmut)',
+          benefits: [
+            'Tax-free savings after 6 years',
+            'Can be withdrawn for any purpose after 6 years',
+            'Employees are entitled to employer contribution',
+            'Self-employed can contribute and get tax benefit',
+          ]
+        },
+        {
+          title: 'National Insurance Allowances',
+          benefits: [
+            'Child allowance for every child up to age 18',
+            'Disability allowance for those with limitations',
+            'Old-age pension from age 70 for men / 65 for women',
+            'Survivors allowance for family members of the deceased',
+          ]
+        },
+      ]
+    },
+  ],
+
   landing_features: [
     { icon: 'Wallet', title: 'Comprehensive Financial Tracking', description: 'Track income, expenses, debts and savings in one place.' },
     { icon: 'Sparkles', title: 'Smart Budget & AI Insights', description: 'Set budgets, get alerts and AI savings recommendations.' },
