@@ -1,31 +1,35 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import {
-  Wallet, Sparkles, Users, CreditCard, PiggyBank,
-  Target, MessageCircle, Download, LineChart, ShieldCheck,
-  Globe, ArrowLeft, ArrowRight } from
-"lucide-react";
+import { 
+  Wallet, Sparkles, Users, CreditCard, PiggyBank, 
+  Target, MessageCircle, Download, LineChart, ShieldCheck, 
+  Globe, ArrowLeft, ArrowRight 
+} from "lucide-react";
 import LanguageToggle from '@/components/LanguageToggle';
 import { useLocale } from '@/hooks/useLocale';
+import { AuthContext } from '@/lib/AuthContext'; // משיכת הקונטקסט של האימות
 
 export default function LandingPage() {
   const { t, i18n } = useTranslation();
   const { direction } = useLocale();
+  const navigate = useNavigate();
+
+  // משיכת נתוני המשתמש ופונקציית ההתחברות מהקונטקסט
+  const auth = useContext(AuthContext);
+  const user = auth?.user;
+  const login = auth?.login || auth?.signIn; // תומך בשני השמות הנפוצים לפונקציה
 
   // לוגיקת זיהוי שפה אוטומטית
   useEffect(() => {
     const savedLanguage = localStorage.getItem('appLang');
-
-    // אם המשתמש מעולם לא בחר שפה ידנית
+    
     if (!savedLanguage) {
       const browserLang = navigator.language || navigator.userLanguage;
-
-      // אם הדפדפן בעברית - הגדר עברית, אחרת - אנגלית (עבור חו"ל)
       const detectedLang = browserLang.startsWith('he') ? 'he' : 'en';
-
+      
       if (i18n.language !== detectedLang) {
         i18n.changeLanguage(detectedLang);
       }
@@ -33,6 +37,20 @@ export default function LandingPage() {
   }, [i18n]);
 
   const features = t('landing_features', { returnObjects: true }) || [];
+
+  // פונקציה חכמה לטיפול בלחיצה על התחברות
+  const handleAuthClick = async () => {
+    if (user) {
+      // אם כבר מחובר -> סע לדשבורד
+      navigate('/dashboard');
+    } else if (login) {
+      // אם לא מחובר ויש פונקציית התחברות -> תפעיל אותה
+      await login();
+    } else {
+      // Fallback אם הפונקציה לא קיימת בקונטקסט
+      navigate('/dashboard');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300" dir={direction}>
@@ -43,14 +61,15 @@ export default function LandingPage() {
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
               <Wallet className="w-5 h-5 text-white" />
             </div>
-            <span className="font-black text-xl tracking-tight italic text-indigo-600 dark:text-indigo-400">Control your money</span>
+            <span className="font-black text-xl tracking-tight italic text-indigo-600 dark:text-indigo-400">FamWiz</span>
           </div>
           
           <div className="flex items-center gap-4">
             <LanguageToggle />
-            <Link to="/dashboard">
-              <Button variant="ghost" className="font-bold">{t('landing_login')}</Button>
-            </Link>
+            {/* כפתור התחברות בתפריט העליון */}
+            <Button variant="ghost" className="font-bold" onClick={handleAuthClick}>
+              {user ? t('nav.Dashboard') : t('landing_login')}
+            </Button>
           </div>
         </div>
       </nav>
@@ -61,8 +80,8 @@ export default function LandingPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}>
-
+            transition={{ duration: 0.5 }}
+          >
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 leading-[1.1]">
               {t('landing_hero_title')} <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
@@ -78,28 +97,31 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-
-            <Link to="/dashboard">
-              <Button size="lg" className="h-14 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg shadow-xl shadow-indigo-200 dark:shadow-none transition-all hover:scale-105">
-                {t('landing_hero_cta')}
-                {direction === 'rtl' ? <ArrowLeft className="ms-2 w-5 h-5" /> : <ArrowRight className="ms-2 w-5 h-5" />}
-              </Button>
-            </Link>
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
+          >
+            {/* כפתור קריאה לפעולה ראשי */}
+            <Button 
+              size="lg" 
+              className="h-14 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg shadow-xl shadow-indigo-200 dark:shadow-none transition-all hover:scale-105"
+              onClick={handleAuthClick}
+            >
+              {user ? t('nav.Dashboard') : t('landing_hero_cta')}
+              {direction === 'rtl' ? <ArrowLeft className="ms-2 w-5 h-5" /> : <ArrowRight className="ms-2 w-5 h-5" />}
+            </Button>
           </motion.div>
 
           {/* Stats/Badges */}
           <div className="flex flex-wrap justify-center gap-6 pt-12">
             {[
-            { icon: ShieldCheck, text: t('landing_stat_secure') },
-            { icon: Sparkles, text: t('landing_stat_ai') },
-            { icon: Globe, text: t('landing_stat_free') }].
-            map((stat, i) =>
-            <div key={i} className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-900 rounded-full text-sm font-bold text-slate-600 dark:text-slate-400">
+              { icon: ShieldCheck, text: t('landing_stat_secure') },
+              { icon: Sparkles, text: t('landing_stat_ai') },
+              { icon: Globe, text: t('landing_stat_free') }
+            ].map((stat, i) => (
+              <div key={i} className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-900 rounded-full text-sm font-bold text-slate-600 dark:text-slate-400">
                 <stat.icon className="w-4 h-4 text-indigo-500" />
                 {stat.text}
               </div>
-            )}
+            ))}
           </div>
         </div>
       </section>
@@ -122,8 +144,8 @@ export default function LandingPage() {
                 <motion.div
                   key={index}
                   whileHover={{ y: -5 }}
-                  className="p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all">
-
+                  className="p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all"
+                >
                   <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl flex items-center justify-center mb-6">
                     <IconComponent className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                   </div>
@@ -131,8 +153,8 @@ export default function LandingPage() {
                   <p className="text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
                     {feature.description}
                   </p>
-                </motion.div>);
-
+                </motion.div>
+              );
             })}
           </div>
         </div>
@@ -149,11 +171,16 @@ export default function LandingPage() {
             <p className="text-indigo-100 text-lg md:text-xl font-medium max-w-2xl mx-auto">
               {t('landing_cta_desc')}
             </p>
-            <Link to="/dashboard" className="inline-block pt-4">
-              <Button size="lg" className="bg-white text-indigo-600 hover:bg-indigo-50 h-14 px-10 rounded-2xl font-black text-lg shadow-lg transition-transform hover:scale-105">
-                {t('landing_cta_btn')}
+            <div className="inline-block pt-4">
+              {/* כפתור קריאה לפעולה תחתון */}
+              <Button 
+                size="lg" 
+                className="bg-white text-indigo-600 hover:bg-indigo-50 h-14 px-10 rounded-2xl font-black text-lg shadow-lg transition-transform hover:scale-105"
+                onClick={handleAuthClick}
+              >
+                {user ? t('nav.Dashboard') : t('landing_cta_btn')}
               </Button>
-            </Link>
+            </div>
             <p className="text-indigo-200 text-sm font-medium pt-4 opacity-80">
               {t('landing_cta_security')}
             </p>
@@ -168,18 +195,18 @@ export default function LandingPage() {
             <div className="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center">
               <Wallet className="w-4 h-4 text-white" />
             </div>
-            <span className="font-black text-lg italic text-indigo-600">Control your money</span>
+            <span className="font-black text-lg italic text-indigo-600">FamWiz</span>
           </div>
           <p className="text-slate-500 font-medium mb-8">
             {t('landing_footer_copyright', { year: new Date().getFullYear() })}
           </p>
           <div className="flex justify-center gap-6">
-            <Link to="/privacy" className="text-slate-400 hover:text-indigo-600 text-sm font-bold">{t('privacy')}</Link>
-            <Link to="/terms" className="text-slate-400 hover:text-indigo-600 text-sm font-bold">{t('terms')}</Link>
-            <Link to="/guide" className="text-slate-400 hover:text-indigo-600 text-sm font-bold">{t('nav.Guide')}</Link>
+            <Button variant="link" onClick={() => navigate('/privacy')} className="text-slate-400 hover:text-indigo-600 text-sm font-bold">{t('privacy')}</Button>
+            <Button variant="link" onClick={() => navigate('/terms')} className="text-slate-400 hover:text-indigo-600 text-sm font-bold">{t('terms')}</Button>
+            <Button variant="link" onClick={() => navigate('/guide')} className="text-slate-400 hover:text-indigo-600 text-sm font-bold">{t('nav.Guide')}</Button>
           </div>
         </div>
       </footer>
-    </div>);
-
+    </div>
+  );
 }
