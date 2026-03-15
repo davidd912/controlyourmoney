@@ -11,15 +11,12 @@ import {
 import LanguageToggle from '@/components/LanguageToggle';
 import { useLocale } from '@/hooks/useLocale';
 import { createPageUrl } from '@/utils';
-import { useAuth } from '@/lib/AuthContext';
+import { base44 } from '@/api/base44Client';
 
 export default function LandingPage() {
   const { t, i18n } = useTranslation();
   const { direction } = useLocale();
   const navigate = useNavigate();
-
-  // משיכת מצב ההתחברות מהמערכת שלך
-  const { isAuthenticated } = useAuth();
 
   // לוגיקת זיהוי שפה אוטומטית
   useEffect(() => {
