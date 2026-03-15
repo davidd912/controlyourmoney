@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function Guide() {
   const { t } = useTranslation();
+  const ta = (key) => { const v = t(key, { returnObjects: true }); return Array.isArray(v) ? v : []; };
 
   return (
     <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 md:p-6 pb-8">
