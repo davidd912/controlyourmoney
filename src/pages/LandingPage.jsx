@@ -36,7 +36,7 @@ export default function LandingPage() {
   const features = t('landing_features', { returnObjects: true }) || [];
 
   const handleAuthClick = () => {
-    base44.auth.redirectToLogin(window.location.origin);
+    base44.auth.redirectToLogin(`${window.location.origin}/Dashboard`);
   };
 
   return (
