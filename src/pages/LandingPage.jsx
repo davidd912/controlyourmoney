@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -10,17 +10,15 @@ import {
 } from "lucide-react";
 import LanguageToggle from '@/components/LanguageToggle';
 import { useLocale } from '@/hooks/useLocale';
-import AuthContext from '@/lib/AuthContext';
+import { useAuth } from '@/lib/AuthContext'; // שימוש ב-Hook הנכון!
 
 export default function LandingPage() {
   const { t, i18n } = useTranslation();
   const { direction } = useLocale();
   const navigate = useNavigate();
 
-  // משיכת נתוני המשתמש ופונקציית ההתחברות מהקונטקסט
-  const auth = useContext(AuthContext);
-  const user = auth?.user;
-  const login = auth?.login || auth?.signIn; // תומך בשני השמות הנפוצים לפונקציה
+  // שימוש ב-Hook שלך כדי למשוך את המשתמש ופונקציית ההתחברות
+  const { user, navigateToLogin } = useAuth();
 
   // לוגיקת זיהוי שפה אוטומטית
   useEffect(() => {
@@ -39,16 +37,13 @@ export default function LandingPage() {
   const features = t('landing_features', { returnObjects: true }) || [];
 
   // פונקציה חכמה לטיפול בלחיצה על התחברות
-  const handleAuthClick = async () => {
+  const handleAuthClick = () => {
     if (user) {
       // אם כבר מחובר -> סע לדשבורד
       navigate('/dashboard');
-    } else if (login) {
-      // אם לא מחובר ויש פונקציית התחברות -> תפעיל אותה
-      await login();
     } else {
-      // Fallback אם הפונקציה לא קיימת בקונטקסט
-      navigate('/dashboard');
+      // אם לא מחובר -> תפעיל את פונקציית ההתחברות של Base44
+      navigateToLogin();
     }
   };
 
