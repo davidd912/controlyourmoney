@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import LanguageToggle from '@/components/LanguageToggle';
 import { useLocale } from '@/hooks/useLocale';
-import { AuthContext } from '@/lib/AuthContext'; // משיכת הקונטקסט של האימות
+import AuthContext from '@/lib/AuthContext';
 
 export default function LandingPage() {
   const { t, i18n } = useTranslation();
