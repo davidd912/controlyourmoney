@@ -161,7 +161,7 @@ export default function LandingPage() {
                 className="bg-white text-indigo-600 hover:bg-indigo-50 h-14 px-10 rounded-2xl font-black text-lg shadow-lg transition-transform hover:scale-105"
                 onClick={handleAuthClick}
               >
-                {isAuthenticated ? t('nav.Dashboard') : t('landing_cta_btn')}
+                {t('landing_cta_btn')}
               </Button>
             </div>
             <p className="text-indigo-200 text-sm font-medium pt-4 opacity-80">
