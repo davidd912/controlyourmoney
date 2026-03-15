@@ -11,14 +11,15 @@ import {
 import LanguageToggle from '@/components/LanguageToggle';
 import { useLocale } from '@/hooks/useLocale';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function LandingPage() {
   const { t, i18n } = useTranslation();
   const { direction } = useLocale();
   const navigate = useNavigate();
 
-  const user = null; // LandingPage מוצג רק כשהמשתמש לא מחובר
+  // משיכת מצב ההתחברות מהמערכת שלך
+  const { isAuthenticated } = useAuth();
 
   // לוגיקת זיהוי שפה אוטומטית
   useEffect(() => {
@@ -37,7 +38,9 @@ export default function LandingPage() {
   const features = t('landing_features', { returnObjects: true }) || [];
 
   const handleAuthClick = () => {
-    base44.auth.redirectToLogin(`${window.location.origin}${createPageUrl('Dashboard')}`);
+    // הפתרון המנצח: פשוט מנווטים לדשבורד. 
+    // אם המשתמש לא מחובר, מערכת האבטחה תעצור אותו ותעביר אותו להתחברות בצורה תקינה!
+    navigate(createPageUrl('Dashboard'));
   };
 
   return (
@@ -49,14 +52,13 @@ export default function LandingPage() {
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
               <Wallet className="w-5 h-5 text-white" />
             </div>
-            <span className="font-black text-xl tracking-tight italic text-indigo-600 dark:text-indigo-400">FamWiz</span>
+            <span className="font-black text-xl tracking-tight italic text-indigo-600 dark:text-indigo-400">Controlyourmoney</span>
           </div>
           
           <div className="flex items-center gap-4">
             <LanguageToggle />
-            {/* כפתור התחברות בתפריט העליון */}
             <Button variant="ghost" className="font-bold" onClick={handleAuthClick}>
-              {user ? t('nav.Dashboard') : t('landing_login')}
+              {isAuthenticated ? t('nav.Dashboard') : t('landing_login')}
             </Button>
           </div>
         </div>
@@ -87,13 +89,12 @@ export default function LandingPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
           >
-            {/* כפתור קריאה לפעולה ראשי */}
             <Button 
               size="lg" 
               className="h-14 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg shadow-xl shadow-indigo-200 dark:shadow-none transition-all hover:scale-105"
               onClick={handleAuthClick}
             >
-              {user ? t('nav.Dashboard') : t('landing_hero_cta')}
+              {isAuthenticated ? t('nav.Dashboard') : t('landing_hero_cta')}
               {direction === 'rtl' ? <ArrowLeft className="ms-2 w-5 h-5" /> : <ArrowRight className="ms-2 w-5 h-5" />}
             </Button>
           </motion.div>
@@ -160,13 +161,12 @@ export default function LandingPage() {
               {t('landing_cta_desc')}
             </p>
             <div className="inline-block pt-4">
-              {/* כפתור קריאה לפעולה תחתון */}
               <Button 
                 size="lg" 
                 className="bg-white text-indigo-600 hover:bg-indigo-50 h-14 px-10 rounded-2xl font-black text-lg shadow-lg transition-transform hover:scale-105"
                 onClick={handleAuthClick}
               >
-                {user ? t('nav.Dashboard') : t('landing_cta_btn')}
+                {isAuthenticated ? t('nav.Dashboard') : t('landing_cta_btn')}
               </Button>
             </div>
             <p className="text-indigo-200 text-sm font-medium pt-4 opacity-80">
@@ -183,7 +183,7 @@ export default function LandingPage() {
             <div className="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center">
               <Wallet className="w-4 h-4 text-white" />
             </div>
-            <span className="font-black text-lg italic text-indigo-600">FamWiz</span>
+            <span className="font-black text-lg italic text-indigo-600">Controlyourmoney</span>
           </div>
           <p className="text-slate-500 font-medium mb-8">
             {t('landing_footer_copyright', { year: new Date().getFullYear() })}
