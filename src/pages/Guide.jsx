@@ -262,7 +262,7 @@ export default function Guide() {
               <div>
                 <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_alert_types_title')}</h4>
                 <div className="space-y-2">
-                  {(t('guide_alert_type_list', { returnObjects: true }) || []).map((item, i) => (
+                  {ta('guide_alert_type_list').map((item, i) => (
                     <div key={i} className="flex items-start gap-2 p-3 border dark:border-gray-700 rounded-lg">
                       <span className="text-lg">{item.icon}</span>
                       <div>
