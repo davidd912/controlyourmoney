@@ -11,18 +11,13 @@ import {
 import LanguageToggle from '@/components/LanguageToggle';
 import { useLocale } from '@/hooks/useLocale';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
 
 export default function LandingPage() {
   const { t, i18n } = useTranslation();
   const { direction } = useLocale();
   const navigate = useNavigate();
 
-  const { data: user } = useQuery({
-    queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
-    retry: false,
-  });
+  const user = null; // LandingPage מוצג רק כשהמשתמש לא מחובר
 
   // לוגיקת זיהוי שפה אוטומטית
   useEffect(() => {
