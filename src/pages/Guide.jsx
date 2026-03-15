@@ -237,7 +237,7 @@ export default function Guide() {
               <div>
                 <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_how_use_scenarios')}</h4>
                 <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 ps-4">
-                  {(t('guide_how_use_scenarios_steps', { returnObjects: true }) || []).map((s, i) => <li key={i}>{s}</li>)}
+                  {ta('guide_how_use_scenarios_steps').map((s, i) => <li key={i}>{s}</li>)}
                 </ol>
               </div>
               <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg">
