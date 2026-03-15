@@ -89,7 +89,7 @@ export default function LandingPage() {
               className="h-14 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg shadow-xl shadow-indigo-200 dark:shadow-none transition-all hover:scale-105"
               onClick={handleAuthClick}
             >
-              {isAuthenticated ? t('nav.Dashboard') : t('landing_hero_cta')}
+              {t('landing_hero_cta')}
               {direction === 'rtl' ? <ArrowLeft className="ms-2 w-5 h-5" /> : <ArrowRight className="ms-2 w-5 h-5" />}
             </Button>
           </motion.div>
