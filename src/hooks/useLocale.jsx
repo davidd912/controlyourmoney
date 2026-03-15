@@ -1,5 +1,5 @@
 import { useEffect, useState, createContext, useContext } from 'react';
-import i18n from '../i18n'; // ודא שיש לך קובץ i18n.js ב-src
+import i18n from '@/components/i18n'; // התיקון כאן: הפנייה לתיקיית components
 import { base44 } from '@/api/base44Client';
 
 export const LocaleContext = createContext(null);
@@ -23,7 +23,11 @@ export const LocaleProvider = ({ children }) => {
 
   useEffect(() => {
     const savedLang = localStorage.getItem('appLang') || 'he';
+    // עדכון כיוון הדף (RTL/LTR) בדפדפן בכל טעינה
     document.documentElement.dir = savedLang === 'he' ? 'rtl' : 'ltr';
+    if (i18n.language !== savedLang) {
+      i18n.changeLanguage(savedLang);
+    }
   }, []);
 
   return (
@@ -36,7 +40,7 @@ export const LocaleProvider = ({ children }) => {
 export const useLocale = () => {
   const context = useContext(LocaleContext);
   if (!context) {
-    // Fallback במידה ואין Provider
+    // Fallback במידה ואין Provider עוטף (מונע קריסה של האתר)
     return { 
       lang: 'he', 
       currency: 'ILS', 
