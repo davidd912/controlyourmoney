@@ -36,11 +36,7 @@ export default function LandingPage() {
   const features = t('landing_features', { returnObjects: true }) || [];
 
   const handleAuthClick = () => {
-    if (user) {
-      navigate('/Dashboard');
-    } else {
-      base44.auth.redirectToLogin(window.location.origin);
-    }
+    base44.auth.redirectToLogin(window.location.origin);
   };
 
   return (
