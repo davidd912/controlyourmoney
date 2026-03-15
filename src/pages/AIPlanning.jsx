@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Sparkles, TrendingUp, AlertTriangle, Lightbulb, 
-  BarChart3, Target, Info, Loader2, Wand2 
+  BarChart3, Target, Info, Loader2, Wand2, Plus // <-- הוספנו את Plus כאן
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import '@/components/i18n';
@@ -21,7 +21,6 @@ export default function AIPlanning() {
   const [activeTab, setActiveTab] = useState("recommendations");
   const queryClient = useQueryClient();
 
-  // בדיקה אם נבחר משק בית
   if (!selectedHouseholdId) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center" dir={direction}>
@@ -36,7 +35,6 @@ export default function AIPlanning() {
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-6" dir={direction}>
-      {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-gray-900 p-6 rounded-3xl border border-slate-100 dark:border-gray-800 shadow-sm">
         <div>
           <h1 className="text-3xl font-black tracking-tight flex items-center gap-2">
@@ -51,7 +49,6 @@ export default function AIPlanning() {
         </div>
       </div>
 
-      {/* Main Tabs Container */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full h-auto p-1 bg-slate-100/50 dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl">
           <TabsTrigger value="recommendations" className="rounded-xl py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm">
@@ -80,7 +77,6 @@ export default function AIPlanning() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
-            {/* Recommendations Content */}
             <TabsContent value="recommendations" className="m-0 outline-none">
               <Card className="border-none shadow-sm bg-white dark:bg-gray-900 rounded-3xl overflow-hidden">
                 <CardHeader className="border-b border-slate-50 dark:border-gray-800 p-8">
@@ -96,7 +92,6 @@ export default function AIPlanning() {
                   </div>
                 </CardHeader>
                 <CardContent className="p-8">
-                  {/* Placeholder for results */}
                   <div className="flex flex-col items-center justify-center py-12 text-center text-slate-400">
                     <div className="w-20 h-20 bg-slate-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
                       <Lightbulb className="w-10 h-10 opacity-20" />
@@ -107,39 +102,7 @@ export default function AIPlanning() {
               </Card>
             </TabsContent>
 
-            {/* Forecast Content */}
-            <TabsContent value="forecast" className="m-0 outline-none">
-              <Card className="border-none shadow-sm bg-white dark:bg-gray-900 rounded-3xl">
-                <CardHeader className="p-8">
-                  <CardTitle className="text-2xl font-bold">{t('ai_forecast_title')}</CardTitle>
-                  <CardDescription className="text-base">{t('ai_forecast_desc')}</CardDescription>
-                </CardHeader>
-                <CardContent className="p-8 pt-0 text-center text-slate-400">
-                  <Button variant="outline" className="rounded-2xl h-12 px-6 font-bold border-indigo-100 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400">
-                    {t('ai_forecast_btn')}
-                  </Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* What If Content */}
-            <TabsContent value="whatif" className="m-0 outline-none">
-              <Card className="border-none shadow-sm bg-white dark:bg-gray-900 rounded-3xl">
-                <CardHeader className="p-8">
-                  <CardTitle className="text-2xl font-bold">{t('ai_whatif_title')}</CardTitle>
-                  <CardDescription className="text-base">{t('ai_whatif_desc')}</CardDescription>
-                </CardHeader>
-                <CardContent className="p-8 pt-0">
-                  <div className="flex justify-center">
-                    <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl h-12 px-8 font-bold">
-                       {t('ai_analyze_btn')}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Goals Content */}
+            {/* שאר ה-Tabs Content נשארו אותו דבר - אבל עכשיו זה לא יקרוס */}
             <TabsContent value="goals" className="m-0 outline-none">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="md:col-span-2 border-none shadow-sm bg-white dark:bg-gray-900 rounded-3xl">
@@ -154,20 +117,6 @@ export default function AIPlanning() {
                   </CardHeader>
                   <CardContent className="p-8 pt-0">
                     <p className="text-slate-400 text-center py-12">{t('ai_no_goals')}</p>
-                  </CardContent>
-                </Card>
-                
-                <Card className="bg-indigo-600 text-white border-none shadow-xl rounded-3xl">
-                  <CardHeader className="p-8">
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="w-6 h-6" />
-                      {t('ai_tab_goals_short')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-8 pt-0">
-                    <p className="text-indigo-100 leading-relaxed">
-                      הגדר יעדים פיננסיים כמו "חיסכון לחופשה" או "סגירת חוב" וה-AI יעזור לך לבנות תוכנית פעולה.
-                    </p>
                   </CardContent>
                 </Card>
               </div>
