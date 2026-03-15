@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Home, Banknote, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from 'react-i18next';
-import { useLocale } from '@/components/LocaleContext';
+import { useLocale } from '@/hooks/useLocale';
 
 const iconMap = { Home, Banknote };
 
