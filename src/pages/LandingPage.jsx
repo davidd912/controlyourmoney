@@ -10,15 +10,19 @@ import {
 } from "lucide-react";
 import LanguageToggle from '@/components/LanguageToggle';
 import { useLocale } from '@/hooks/useLocale';
-import { useAuth } from '@/lib/AuthContext'; // שימוש ב-Hook הנכון!
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 
 export default function LandingPage() {
   const { t, i18n } = useTranslation();
   const { direction } = useLocale();
   const navigate = useNavigate();
 
-  // שימוש ב-Hook שלך כדי למשוך את המשתמש ופונקציית ההתחברות
-  const { user, navigateToLogin } = useAuth();
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => base44.auth.me(),
+    retry: false,
+  });
 
   // לוגיקת זיהוי שפה אוטומטית
   useEffect(() => {
@@ -36,14 +40,11 @@ export default function LandingPage() {
 
   const features = t('landing_features', { returnObjects: true }) || [];
 
-  // פונקציה חכמה לטיפול בלחיצה על התחברות
   const handleAuthClick = () => {
     if (user) {
-      // אם כבר מחובר -> סע לדשבורד
-      navigate('/dashboard');
+      navigate('/Dashboard');
     } else {
-      // אם לא מחובר -> תפעיל את פונקציית ההתחברות של Base44
-      navigateToLogin();
+      base44.auth.redirectToLogin(window.location.origin);
     }
   };
 
