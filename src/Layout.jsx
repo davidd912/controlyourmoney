@@ -128,7 +128,8 @@ function LayoutContent({ children, currentPageName }) {
 
   const { data: user, isLoading: loadingUser, isError: userError } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    retry: false,
   });
 
   const { data: households = [], isLoading: loadingHouseholds } = useQuery({
