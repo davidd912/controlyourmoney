@@ -298,7 +298,7 @@ export default function Guide() {
               <div>
                 <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_export_options_title')}</h4>
                 <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 ps-4">
-                  {(t('guide_export_options', { returnObjects: true }) || []).map((item, i) => (
+                  {ta('guide_export_options').map((item, i) => (
                     <li key={i}><strong>{item.title}</strong> - {item.desc}</li>
                   ))}
                 </ul>
