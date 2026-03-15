@@ -88,7 +88,7 @@ function LayoutContent({ children, currentPageName }) {
     const metaTags = [
       { name: 'apple-mobile-web-app-capable', content: 'yes' },
       { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
-      { name: 'apple-mobile-web-app-title', content: 'FamWiz' },
+      { name: 'apple-mobile-web-app-title', content: 'Controlyourmoney' },
       { name: 'theme-color', content: '#2563eb' }
     ];
 
@@ -201,7 +201,7 @@ function LayoutContent({ children, currentPageName }) {
               <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
                 <Wallet className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">FamWiz</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">Controlyourmoney</span>
             </Link>
             
             <nav className="hidden md:flex items-center gap-1">
@@ -265,7 +265,7 @@ function LayoutContent({ children, currentPageName }) {
             <div className="flex flex-col md:flex-row justify-between items-center gap-6">
               <div className="flex items-center gap-2">
                 <Wallet className="w-5 h-5 text-blue-600" />
-                <span className="font-black italic text-gray-900 dark:text-white">FamWiz</span>
+                <span className="font-black italic text-gray-900 dark:text-white">Controlyourmoney</span>
               </div>
               
               <div className="flex flex-wrap justify-center items-center gap-6 text-sm font-bold text-gray-500">

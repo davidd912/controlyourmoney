@@ -309,7 +309,7 @@ const he = {
 
 const en = {
   nav: { Dashboard: 'Dashboard', AIPlanning: 'AI Planning', Benefits: 'Benefits', UserSettings: 'Users', Guide: 'Guide' },
-  app_title: 'Family Budget',
+  app_title: 'Controlyourmoney',
   household: 'Household', income: 'Income', expenses: 'Expenses', balance: 'Balance', assets: 'Assets',
   overview: 'Overview', budget: 'Budget', debts: 'Debts',
   income_details: 'Income Details', expense_details: 'Expense Details', debt_details: 'Debt Details',
