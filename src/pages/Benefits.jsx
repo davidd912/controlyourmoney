@@ -17,7 +17,8 @@ export default function Benefits() {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedItems, setExpandedItems] = useState({});
 
-  const benefitsData = t('benefits_data', { returnObjects: true });
+  const benefitsDataRaw = t('benefits_data', { returnObjects: true });
+  const benefitsData = Array.isArray(benefitsDataRaw) ? benefitsDataRaw : [];
 
   const toggleExpand = (categoryId, itemIndex) => {
     const key = `${categoryId}-${itemIndex}`;
