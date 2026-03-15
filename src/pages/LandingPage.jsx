@@ -35,9 +35,7 @@ export default function LandingPage() {
   const features = t('landing_features', { returnObjects: true }) || [];
 
   const handleAuthClick = () => {
-    // הפתרון המנצח: פשוט מנווטים לדשבורד. 
-    // אם המשתמש לא מחובר, מערכת האבטחה תעצור אותו ותעביר אותו להתחברות בצורה תקינה!
-    navigate(createPageUrl('Dashboard'));
+    base44.auth.redirectToLogin(`${window.location.origin}${createPageUrl('Dashboard')}`);
   };
 
   return (
