@@ -131,7 +131,11 @@ const he = {
   select_month: 'בחר חודש',
   select_year: 'בחר שנה',
   current_month: 'חודש נוכחי',
-  months: ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'],
+  months: {
+    jan: "ינואר", feb: "פברואר", mar: "מרץ", apr: "אפריל",
+    may: "מאי", jun: "יוני", jul: "יולי", aug: "אוגוסט",
+    sep: "ספטמבר", oct: "אוקטובר", nov: "נובמבר", dec: "דצמבר"
+  },
   alert_types: {
     budget_exceeded: 'חריגה מתקציב',
     high_expense: 'הוצאה גבוהה',
@@ -328,7 +332,7 @@ const he = {
   privacy_s3_warning: 'למרות מאמצינו, אף שיטת אבטחה אינה בטוחה ב-100%. השתמשו בסיסמה חזקה.',
   privacy_s4_title: '4. שיתוף מידע עם צדדים שלישיים',
   privacy_s4_text: 'אנו לא נמכור את המידע האישי שלך. המידע עשוי להישתף רק:',
-  privacy_s4_items: ['עם הסכמתך המפורשת','לעמידה בחוק','עם ספקים שחתמו הסכמי סודיות','בין מיזוג עסקי'],
+  privacy_s4_items: ['העם הסכמתך המפורשת','לעמידה בחוק','עם ספקים שחתמו הסכמי סודיות','בין מיזוג עסקי'],
   privacy_s5_title: '5. הזכויות שלך',
   privacy_s5_intro: 'יש לך הזכויות הבאות:',
   privacy_s5_items: ['<strong>זכות עיון:</strong> לבקש עותק מהמידע','<strong>זכות תיקון:</strong> לתקן מידע לא מדויק','<strong>זכות מחיקה:</strong> למחוק מידע','<strong>זכות להתנגד:</strong> להתנגד לשימושים','<strong>זכות להעברה:</strong> להעביר נתונים'],
@@ -468,6 +472,11 @@ const he = {
   wa_no_app: 'עדיין לא הורדת את האפליקציה?',
   wa_download: 'להורדה',
   wa_copied_toast: 'הקוד הועתק!',
+  us_delete_warning_title: 'אזהרה: מחיקת חשבון',
+  us_delete_warning_desc_1: 'האם אתה בטוח שברצונך למחוק את החשבון?',
+  us_delete_warning_desc_bold: 'פעולה זו היא בלתי הפיכה!',
+  us_delete_warning_desc_2: 'כל הנתונים שלך, משקי הבית, ההוצאות וההכנסות יימחקו לצמיתות מהמערכת.',
+  us_delete_confirm_btn: 'כן, מחק הכל'
 };
 
 const en = {
@@ -555,7 +564,11 @@ const en = {
   recommendation: 'Recommendation:', members_count: '({{count}} members)', members_label: 'members',
   owner_suffix: 'Owner', select_household: 'Select household', select_month: 'Select month',
   select_year: 'Select year', current_month: 'Current month',
-  months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+  months: {
+    jan: "January", feb: "February", mar: "March", apr: "April",
+    may: "May", jun: "June", jul: "July", aug: "August",
+    sep: "September", oct: "October", nov: "November", dec: "December"
+  },
   alert_types: {
     budget_exceeded: 'Budget Exceeded', high_expense: 'High Expense', debt_reminder: 'Debt Reminder',
     savings_opportunity: 'Savings Opportunity', unusual_pattern: 'Unusual Pattern',
@@ -864,6 +877,11 @@ const en = {
   wa_activation_code_label: 'Activation Code', wa_open_app_btn: 'Open App', wa_loading: 'Loading...',
   wa_web_link: 'Continue on WhatsApp Web', wa_no_app: "Haven't downloaded the app yet?",
   wa_download: 'Download', wa_copied_toast: 'Code copied!',
+  us_delete_warning_title: 'Warning: Delete Account',
+  us_delete_warning_desc_1: 'Are you sure you want to delete your account?',
+  us_delete_warning_desc_bold: 'This action is irreversible!',
+  us_delete_warning_desc_2: 'All your data, households, expenses, and incomes will be permanently deleted from the system.',
+  us_delete_confirm_btn: 'Yes, Delete Everything'
 };
 
 i18n.use(initReactI18next).init({
