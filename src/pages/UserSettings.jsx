@@ -93,7 +93,10 @@ export default function UserSettings() {
     if (newFullName.trim()) updateUserName.mutate(newFullName);
   };
 
-  const handleLogout = () => base44.auth.logout(window.location.origin);
+  const handleLogout = () => {
+    queryClient.clear();
+    base44.auth.logout(window.location.origin);
+  };
 
   const handleDeleteAccount = async () => {
     const userHouseholds = households.filter(h => h.owner_email === user.email);
