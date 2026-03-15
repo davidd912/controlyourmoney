@@ -113,7 +113,7 @@ export default function Guide() {
               <div>
                 <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_expense_cats_title')}</h4>
                 <ul className="grid grid-cols-2 gap-2 text-sm text-gray-700 dark:text-gray-300 ps-4">
-                  {(t('guide_expense_cat_list', { returnObjects: true }) || []).map((item, i) => <li key={i}>{item}</li>)}
+                  {ta('guide_expense_cat_list').map((item, i) => <li key={i}>{item}</li>)}
                 </ul>
               </div>
               <div>
