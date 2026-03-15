@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import LanguageToggle from '@/components/LanguageToggle';
 import { useLocale } from '@/hooks/useLocale';
+import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 
 export default function LandingPage() {
