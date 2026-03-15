@@ -53,7 +53,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-4">
             <LanguageToggle />
             <Button variant="ghost" className="font-bold" onClick={handleAuthClick}>
-              {isAuthenticated ? t('nav.Dashboard') : t('landing_login')}
+              {t('landing_login')}
             </Button>
           </div>
         </div>
