@@ -306,7 +306,7 @@ export default function Guide() {
               <div>
                 <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">{t('guide_why_export_title')}</h4>
                 <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 ps-4">
-                  {(t('guide_why_export_items', { returnObjects: true }) || []).map((item, i) => <li key={i}>{item}</li>)}
+                  {ta('guide_why_export_items').map((item, i) => <li key={i}>{item}</li>)}
                 </ul>
               </div>
               <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
