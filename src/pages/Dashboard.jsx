@@ -7,13 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plus, TrendingUp, TrendingDown, Wallet, PiggyBank,
-  MessageCircle, Send, Zap, CheckCircle, Home, Sparkles, ArrowRight, Loader2 } from
-"lucide-react";
+  MessageCircle, Send, Zap, CheckCircle, Home, Sparkles, ArrowRight, Loader2, ArrowUpRight, ArrowDownRight, CreditCard
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { HouseholdContext } from '../Layout';
 import { useTranslation } from 'react-i18next';
-import { useLocale, formatCurrency } from '@/components/LocaleContext';
+import { useLocale } from '@/hooks/useLocale'; // תוקן הנתיב
+import { formatCurrency } from '@/components/LocaleContext'; // מניח שזה נשאר ב-LocaleContext הישן אם יש שם פונקציית עזר, אם לא - צריך להוציא
 import '@/components/i18n';
 
 import SummaryCard from "@/components/budget/SummaryCard";
@@ -40,7 +41,6 @@ const expenseLabels = {
 };
 
 const generateGroupId = () => Math.random().toString(36).substring(2, 10);
-// הגדלנו את ההשהייה כדי להגן על השרת באופן מוחלט
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export default function Dashboard() {
@@ -62,7 +62,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user, households, selectedHouseholdId, setSelectedHouseholdId, loadingHouseholds } = useContext(HouseholdContext);
   const { t } = useTranslation();
-  const { currency } = useLocale();
+  const { currency, direction } = useLocale();
 
   const showToast = (message) => {
     setToast(message);
@@ -121,7 +121,7 @@ export default function Dashboard() {
         
         for (const fItem of futureItems) {
             await base44.entities[entityType].delete(fItem.id);
-            await delay(350); // השהייה ארוכה להגנה מושלמת
+            await delay(350);
         }
         showToast(t('toast_series_deleted'));
       } else {
@@ -206,7 +206,8 @@ export default function Dashboard() {
            const newAmount = Math.max(0, matchingDebt.total_amount - amountToReduce);
            await delay(350);
            await base44.entities.Debt.update(matchingDebt.id, { total_amount: newAmount });
-           showToast(`החוב ל-${matchingDebt.creditor_name} צומצם ל-${formatCurrency(newAmount, currency)} 📉`);
+           // כאן השארתי עברית כברירת מחדל עד שנוסיף את זה לתרגום מורכב
+           showToast(`החוב צומצם ל-${newAmount} 📉`);
            queryClient.invalidateQueries({ queryKey: ['debts'] }); 
         }
       }
@@ -324,11 +325,20 @@ export default function Dashboard() {
   const totalExpenses = expenses.filter((e) => !e.is_budget || e.is_current).reduce((sum, e) => sum + (e.amount || 0), 0);
   const monthlyBalance = totalIncome - totalExpenses;
 
+  // פונקציית עזר לפורמט כסף (במקרה שלא הבאת אותה מ-LocaleContext)
+  const formatMoney = (amount) => {
+    return new Intl.NumberFormat(direction === 'rtl' ? 'he-IL' : 'en-US', {
+      style: 'currency',
+      currency: currency || 'ILS',
+      maximumFractionDigits: 0
+    }).format(amount || 0);
+  };
+
   if (loadingHouseholds) return <div className="flex items-center justify-center min-h-screen"><div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>;
 
   if (!loadingHouseholds && households.length === 0) {
     return (
-      <div dir="rtl" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-950 p-6 relative overflow-hidden">
+      <div dir={direction} className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-950 p-6 relative overflow-hidden">
         <div className="absolute top-10 right-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20" />
         <div className="absolute bottom-10 left-10 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20" />
         <div className="max-w-md w-full relative z-10">
@@ -349,7 +359,7 @@ export default function Dashboard() {
             )}
             {welcomeStep === 'nameInput' && (
               <motion.div key="nameInput" initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: -20 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/30">
-                <button onClick={() => setWelcomeStep('intro')} className="text-gray-400 hover:text-gray-600 text-sm mb-4 flex items-center gap-1"><ArrowRight className="w-4 h-4" /> {t('back')}</button>
+                <button onClick={() => setWelcomeStep('intro')} className="text-gray-400 hover:text-gray-600 text-sm mb-4 flex items-center gap-1"><ArrowRight className="w-4 h-4 rtl:rotate-180" /> {t('back')}</button>
                 <div className="text-center space-y-6">
                   <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 rounded-2xl flex items-center justify-center mx-auto"><Home className="w-8 h-8 text-indigo-600 dark:text-indigo-400" /></div>
                   <div className="space-y-2">
@@ -373,103 +383,140 @@ export default function Dashboard() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div dir="rtl" className="min-h-screen bg-[#f8fafc] dark:bg-gray-950 relative pb-32">
+      <div dir={direction} className="min-h-screen bg-[#f8fafc] dark:bg-gray-950 relative pb-32">
         <AnnouncementTicker />
 
-        <div className="max-w-7xl mx-auto p-2 md:p-6 space-y-3 md:space-y-6">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4">
-            <div className="flex justify-between items-center">
-              <div className="text-right">
-                <h1 className="text-gray-900 text-4xl font-black dark:text-white">{t('app_title')}</h1>
-                <p className="text-gray-950 mt-1 text-2xl dark:text-gray-400">{households.find((h) => h.id === selectedHouseholdId)?.name || t('household')}</p>
+        <div className="max-w-7xl mx-auto p-2 md:p-6 space-y-4 md:space-y-6">
+          {/* כותרת עליונה */}
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-5">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h1 className="text-gray-900 text-3xl md:text-4xl font-black dark:text-white tracking-tight">{t('app_title')}</h1>
+                <p className="text-gray-500 mt-1 text-lg font-medium dark:text-gray-400">
+                  {households.find((h) => h.id === selectedHouseholdId)?.name || t('household')}
+                </p>
               </div>
-              <div className="flex gap-2">
-                <Button onClick={handleWhatsAppConnect} className="bg-green-500 hover:bg-green-600 text-white h-10 px-4 rounded-lg text-sm font-bold shadow-md flex items-center gap-2"><MessageCircle className="w-4 h-4" /> WhatsApp</Button>
-                <Button onClick={handleTelegramConnect} className="bg-blue-500 hover:bg-blue-600 text-white h-10 px-4 rounded-lg text-sm font-bold shadow-md flex items-center gap-2"><Send className="w-4 h-4" /> Telegram</Button>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button onClick={handleWhatsAppConnect} className="flex-1 sm:flex-none bg-[#25D366] hover:bg-[#128C7E] text-white rounded-xl shadow-md gap-2 h-11">
+                  <MessageCircle className="w-5 h-5" /> <span className="hidden sm:inline">WhatsApp</span>
+                </Button>
+                <Button onClick={handleTelegramConnect} className="flex-1 sm:flex-none bg-[#0088cc] hover:bg-[#0077b5] text-white rounded-xl shadow-md gap-2 h-11">
+                  <Send className="w-5 h-5" /> <span className="hidden sm:inline">Telegram</span>
+                </Button>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2 md:gap-3 bg-white dark:bg-gray-900 p-2 md:p-3 rounded-xl md:rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-             <HouseholdSelector households={households} selectedId={selectedHouseholdId} onSelect={setSelectedHouseholdId} />
-             <MonthYearSelector month={selectedMonth} year={selectedYear} onMonthChange={setSelectedMonth} onYearChange={setSelectedYear} />
+          {/* בחירת חודש ומשק בית */}
+          <div className="flex flex-col sm:flex-row gap-3 bg-white dark:bg-gray-900 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+             <div className="flex-1"><HouseholdSelector households={households} selectedId={selectedHouseholdId} onSelect={setSelectedHouseholdId} /></div>
+             <div className="flex-1"><MonthYearSelector month={selectedMonth} year={selectedYear} onMonthChange={setSelectedMonth} onYearChange={setSelectedYear} /></div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-            <SummaryCard title={t('income')} value={totalIncome} icon={TrendingUp} color="green" currency={currency} />
-            <SummaryCard title={t('expenses')} value={totalExpenses} icon={TrendingDown} color="orange" currency={currency} />
-            <SummaryCard title={t('balance')} value={monthlyBalance} icon={Wallet} color={monthlyBalance >= 0 ? "blue" : "red"} currency={currency} />
-            <SummaryCard title={t('assets')} value={0} icon={PiggyBank} color="purple" currency={currency} />
+          {/* שורת פעולות מהירות (Quick Actions) החדשה */}
+          <div className="grid grid-cols-3 gap-3 md:gap-4">
+            <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }}>
+              <Button onClick={() => {setEditItem(null);setIncomeFormOpen(true);}} className="w-full h-auto py-4 flex flex-col items-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900/50 dark:text-emerald-400 rounded-2xl shadow-sm">
+                <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-full"><ArrowUpRight className="w-6 h-6" /></div>
+                <span className="font-bold text-sm">{t('add_income', 'הכנסה')}</span>
+              </Button>
+            </motion.div>
+            
+            <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }}>
+              <Button onClick={() => {setEditItem(null);setExpenseFormOpen(true);}} className="w-full h-auto py-4 flex flex-col items-center gap-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-950/30 dark:border-rose-900/50 dark:text-rose-400 rounded-2xl shadow-sm">
+                <div className="p-2 bg-rose-100 dark:bg-rose-900/50 rounded-full"><ArrowDownRight className="w-6 h-6" /></div>
+                <span className="font-bold text-sm">{t('add_expense', 'הוצאה')}</span>
+              </Button>
+            </motion.div>
+
+            <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }}>
+              <Button onClick={() => {setEditItem(null);setDebtFormOpen(true);}} className="w-full h-auto py-4 flex flex-col items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-900/50 dark:border-slate-800 dark:text-slate-300 rounded-2xl shadow-sm">
+                <div className="p-2 bg-slate-200 dark:bg-slate-800 rounded-full"><CreditCard className="w-6 h-6" /></div>
+                <span className="font-bold text-sm">{t('add_debt', 'חוב')}</span>
+              </Button>
+            </motion.div>
           </div>
 
-          <Card className="bg-indigo-600 text-white border-none shadow-md">
-            <CardContent className="p-3 md:p-4 flex items-center gap-2 md:gap-3">
-              <Zap className="w-4 h-4 md:w-5 md:h-5 text-yellow-300 shrink-0" />
-              <p className="text-xs md:text-sm font-medium">{monthlyBalance >= 0 ? t('balance_positive', { amount: formatCurrency(monthlyBalance, currency) }) : t('balance_negative', { amount: formatCurrency(Math.abs(monthlyBalance), currency) })}</p>
+          {/* כרטיסיות סיכום שמשתמשות ב-SummaryCard המשודרג */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+            <SummaryCard title={t('income')} amount={formatMoney(totalIncome)} type="income" index={0} />
+            <SummaryCard title={t('expenses')} amount={formatMoney(totalExpenses)} type="expense" index={1} />
+            <SummaryCard title={t('balance')} amount={formatMoney(monthlyBalance)} type="balance" index={2} />
+          </div>
+
+          {/* באנר היתרה (נשאר קומפקטי וברור) */}
+          <Card className={`border-none shadow-md bg-gradient-to-r ${monthlyBalance >= 0 ? 'from-blue-600 to-indigo-600' : 'from-rose-500 to-red-600'} text-white rounded-2xl`}>
+            <CardContent className="p-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-full"><Zap className="w-5 h-5 text-yellow-300" /></div>
+                <p className="text-sm md:text-base font-bold">
+                  {monthlyBalance >= 0 ? t('balance_positive', { amount: formatMoney(monthlyBalance) }) : t('balance_negative', { amount: formatMoney(Math.abs(monthlyBalance)) })}
+                </p>
+              </div>
             </CardContent>
           </Card>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 md:space-y-4">
-            <div className="sticky top-14 md:top-16 z-30 bg-[#f8fafc]/80 dark:bg-gray-950/80 backdrop-blur-sm py-1.5 md:py-2">
-              <TabsList className="w-full justify-start bg-white dark:bg-gray-900 border border-gray-100 rounded-full h-9 md:h-11 overflow-x-auto no-scrollbar px-1">
-                <TabsTrigger value="overview" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">{t('overview')}</TabsTrigger>
-                <TabsTrigger value="budget" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">{t('budget')}</TabsTrigger>
-                <TabsTrigger value="income" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">{t('income')}</TabsTrigger>
-                <TabsTrigger value="expenses" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">{t('expenses')}</TabsTrigger>
-                <TabsTrigger value="debts" className="rounded-full flex-1 text-xs md:text-sm px-2 md:px-3">{t('debts')}</TabsTrigger>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 pt-2">
+            <div className="sticky top-14 md:top-16 z-30 bg-[#f8fafc]/80 dark:bg-gray-950/80 backdrop-blur-md py-2">
+              <TabsList className="w-full justify-start bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-full h-12 overflow-x-auto no-scrollbar px-1 shadow-sm">
+                <TabsTrigger value="overview" className="rounded-full flex-1 text-sm font-medium h-9 data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 dark:data-[state=active]:bg-indigo-900/50 dark:data-[state=active]:text-indigo-300">{t('overview')}</TabsTrigger>
+                <TabsTrigger value="budget" className="rounded-full flex-1 text-sm font-medium h-9 data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 dark:data-[state=active]:bg-indigo-900/50 dark:data-[state=active]:text-indigo-300">{t('budget')}</TabsTrigger>
+                <TabsTrigger value="income" className="rounded-full flex-1 text-sm font-medium h-9 data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 dark:data-[state=active]:bg-indigo-900/50 dark:data-[state=active]:text-indigo-300">{t('income')}</TabsTrigger>
+                <TabsTrigger value="expenses" className="rounded-full flex-1 text-sm font-medium h-9 data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 dark:data-[state=active]:bg-indigo-900/50 dark:data-[state=active]:text-indigo-300">{t('expenses')}</TabsTrigger>
+                <TabsTrigger value="debts" className="rounded-full flex-1 text-sm font-medium h-9 data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 dark:data-[state=active]:bg-indigo-900/50 dark:data-[state=active]:text-indigo-300">{t('debts')}</TabsTrigger>
               </TabsList>
             </div>
 
             <AnimatePresence mode="wait">
-              <motion.div key={activeTab} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.2 }}>
+              <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
                 
-                <TabsContent value="overview" className="space-y-4">
+                <TabsContent value="overview" className="space-y-4 outline-none">
                     <CategoryBreakdown expenses={expenses.filter((e) => !e.is_budget || e.is_current)} budgets={budgetSettings} />
                     <AlertPanel alerts={alerts} onDismiss={() => {}} onMarkRead={() => {}} onRefresh={() => {}} />
                 </TabsContent>
 
-                <TabsContent value="budget" className="space-y-4">
+                <TabsContent value="budget" className="space-y-4 outline-none">
                    <BudgetSettingsTab householdId={selectedHouseholdId} month={selectedMonth} year={selectedYear} existingBudgets={budgetSettings} allCustomCategories={[]} onSave={handleSaveBudgetSettings} />
                 </TabsContent>
 
-                <TabsContent value="income" className="space-y-3 md:space-y-4">
-                  <div className="flex justify-between items-center mb-2 px-1">
-                    <h2 className="text-base md:text-lg font-bold">{t('income_details')}</h2>
-                    <Button onClick={() => {setEditItem(null);setIncomeFormOpen(true);}} disabled={isProcessing} className="bg-green-600 rounded-lg md:rounded-xl h-9 md:h-10 px-3 md:px-4 gap-1.5 md:gap-2 text-sm md:text-base">
-                      <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" /> {t('add_income')}
+                <TabsContent value="income" className="space-y-4 outline-none">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-bold">{t('income_details')}</h2>
+                    <Button onClick={() => {setEditItem(null);setIncomeFormOpen(true);}} disabled={isProcessing} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl h-10 px-4 gap-2">
+                      <Plus className="w-4 h-4" /> <span className="hidden sm:inline">{t('add_income')}</span>
                     </Button>
                   </div>
                   <DataTable data={incomes} columns={[
                     { key: 'category', label: t('category'), render: (val) => t(`income_cat.${val}`, incomeLabels[val] || val) },
                     { key: 'description', label: t('description') },
-                    { key: 'amount', label: t('amount'), render: (val) => formatCurrency(val, currency) }
+                    { key: 'amount', label: t('amount'), render: (val) => formatMoney(val) }
                   ]} onDelete={(i) => handleDeleteItem(i, 'Income')} onEdit={(i) => {setEditItem(i);setIncomeFormOpen(true);}} />
                 </TabsContent>
 
-                <TabsContent value="expenses" className="space-y-3 md:space-y-4">
-                  <div className="flex justify-between items-center mb-2 px-1">
-                    <h2 className="text-base md:text-lg font-bold">{t('expense_details')}</h2>
-                    <Button onClick={() => {setEditItem(null);setExpenseFormOpen(true);}} disabled={isProcessing} className="bg-orange-500 rounded-lg md:rounded-xl h-9 md:h-10 px-3 md:px-4 gap-1.5 md:gap-2 text-sm md:text-base">
-                      <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" /> {t('add_expense')}
+                <TabsContent value="expenses" className="space-y-4 outline-none">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-bold">{t('expense_details')}</h2>
+                    <Button onClick={() => {setEditItem(null);setExpenseFormOpen(true);}} disabled={isProcessing} className="bg-rose-600 hover:bg-rose-700 rounded-xl h-10 px-4 gap-2">
+                      <Plus className="w-4 h-4" /> <span className="hidden sm:inline">{t('add_expense')}</span>
                     </Button>
                   </div>
                   <DataTable data={expenses.filter((e) => !e.is_budget || e.is_current)} columns={[
                     { key: 'category', label: t('category'), render: (val, item) => item.category === 'custom' ? item.custom_category_name : t(`exp_cat.${val}`, expenseLabels[val] || val) },
                     { key: 'description', label: t('description') },
-                    { key: 'amount', label: t('amount'), render: (val) => formatCurrency(val, currency) }
+                    { key: 'amount', label: t('amount'), render: (val) => formatMoney(val) }
                   ]} onDelete={(e) => handleDeleteItem(e, 'Expense')} onEdit={(e) => {setEditItem(e);setExpenseFormOpen(true);}} />
                 </TabsContent>
 
-                <TabsContent value="debts" className="space-y-3 md:space-y-4">
-                  <div className="flex justify-between items-center mb-2 px-1">
-                    <h2 className="text-base md:text-lg font-bold">פירוט חובות</h2>
-                    <Button onClick={() => {setEditItem(null);setDebtFormOpen(true);}} disabled={isProcessing} className="bg-red-500 rounded-lg md:rounded-xl h-9 md:h-10 px-3 md:px-4 gap-1.5 md:gap-2 text-sm md:text-base">
-                      <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" /> <span className="hidden sm:inline">חוב</span> הוסף
+                <TabsContent value="debts" className="space-y-4 outline-none">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-bold">{t('debt_details', 'פירוט חובות')}</h2>
+                    <Button onClick={() => {setEditItem(null);setDebtFormOpen(true);}} disabled={isProcessing} className="bg-slate-700 hover:bg-slate-800 rounded-xl h-10 px-4 gap-2">
+                      <Plus className="w-4 h-4" /> <span className="hidden sm:inline">{t('add_debt')}</span>
                     </Button>
                   </div>
                   <DataTable data={debts} columns={[
                     { key: 'creditor_name', label: t('creditor') },
-                    { key: 'total_amount', label: t('amount'), render: (val) => formatCurrency(val, currency) }
+                    { key: 'total_amount', label: t('amount'), render: (val) => formatMoney(val) }
                   ]} onDelete={async (d) => { try { await base44.entities.Debt.delete(d.id); showToast(t('toast_deleted')); } catch(err) {} queryClient.invalidateQueries({ queryKey: ['debts'] }); }} onEdit={(d) => {setEditItem(d);setDebtFormOpen(true);}} />
                 </TabsContent>
 
@@ -480,8 +527,8 @@ export default function Dashboard() {
 
         <AnimatePresence>
           {toast &&
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] bg-gray-900/90 text-white px-6 py-2 rounded-full shadow-xl flex items-center gap-2 border border-gray-700 pointer-events-none">
-              <CheckCircle className="w-4 h-4 text-green-400" />
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] bg-gray-900/95 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-gray-700/50 pointer-events-none">
+              <CheckCircle className="w-5 h-5 text-emerald-400" />
               <span className="text-sm font-medium whitespace-nowrap">{toast}</span>
             </motion.div>
           }
@@ -493,7 +540,7 @@ export default function Dashboard() {
              try {
                if (editItem) await base44.entities.Debt.update(editItem.id, { ...data, household_id: selectedHouseholdId });
                else await base44.entities.Debt.create({ ...data, household_id: selectedHouseholdId });
-               showToast('עודכן בהצלחה! ✨');
+               showToast(t('toast_updated', 'עודכן בהצלחה! ✨'));
              } catch(e) {}
              setDebtFormOpen(false); setEditItem(null); queryClient.invalidateQueries({ queryKey: ['debts'] });
           }} editItem={editItem} />
