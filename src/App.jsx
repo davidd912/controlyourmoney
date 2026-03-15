@@ -17,7 +17,6 @@ function App() {
   return (
     <QueryClientProvider client={queryClientInstance}>
       <Router>
-        <NavigationTracker />
         <Routes>
           <Route path="/" element={
             <LayoutWrapper currentPageName={mainPageKey}>
