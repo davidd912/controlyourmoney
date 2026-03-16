@@ -30,15 +30,7 @@ import BudgetSettingsTab from "@/components/budget/BudgetSettingsTab";
 import AnnouncementTicker from "@/components/announcements/AnnouncementTicker";
 import PullToRefresh from "@/components/PullToRefresh";
 
-const incomeLabels = { salary: "שכר", allowance: "קצבאות", other: "הכנסות שונות" };
-const expenseLabels = {
-  food: "מזון ופארמה", leisure: "פנאי ובילוי", clothing: "ביגוד והנעלה",
-  household_items: "תכולת בית", home_maintenance: "אחזקת בית", grooming: "טיפוח",
-  education: "חינוך", events: "אירועים ותרומות", health: "בריאות",
-  transportation: "תחבורה", family: "משפחה", communication: "תקשורת",
-  housing: "דיור", obligations: "התחייבויות", assets: "נכסים", finance: "פיננסים",
-  custom: "קטגוריה מותאמת אישית", other: "אחר"
-};
+
 
 const generateGroupId = () => Math.random().toString(36).substring(2, 10);
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
