@@ -102,7 +102,56 @@ export default function AIPlanning() {
               </Card>
             </TabsContent>
 
-            {/* שאר ה-Tabs Content נשארו אותו דבר - אבל עכשיו זה לא יקרוס */}
+            <TabsContent value="forecast" className="m-0 outline-none">
+              <Card className="border-none shadow-sm bg-white dark:bg-gray-900 rounded-3xl overflow-hidden">
+                <CardHeader className="border-b border-slate-50 dark:border-gray-800 p-8">
+                  <div className="flex flex-col md:flex-row justify-between gap-6">
+                    <div className="space-y-1">
+                      <CardTitle className="text-2xl font-bold">{t('ai_forecast_title')}</CardTitle>
+                      <CardDescription className="text-base">{t('ai_forecast_desc')}</CardDescription>
+                    </div>
+                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-12 px-6 font-bold shadow-lg shadow-indigo-200 dark:shadow-none transition-all hover:scale-105">
+                      <Sparkles className="w-4 h-4 me-2" />
+                      {t('ai_forecast_btn')}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <div className="flex flex-col items-center justify-center py-12 text-center text-slate-400">
+                    <div className="w-20 h-20 bg-slate-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                      <BarChart3 className="w-10 h-10 opacity-20" />
+                    </div>
+                    <p className="max-w-xs">{t('no_data')}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="whatif" className="m-0 outline-none">
+              <Card className="border-none shadow-sm bg-white dark:bg-gray-900 rounded-3xl overflow-hidden">
+                <CardHeader className="border-b border-slate-50 dark:border-gray-800 p-8">
+                  <div className="flex flex-col md:flex-row justify-between gap-6">
+                    <div className="space-y-1">
+                      <CardTitle className="text-2xl font-bold">{t('ai_whatif_title')}</CardTitle>
+                      <CardDescription className="text-base">{t('ai_whatif_desc')}</CardDescription>
+                    </div>
+                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-12 px-6 font-bold shadow-lg shadow-indigo-200 dark:shadow-none transition-all hover:scale-105">
+                      <Sparkles className="w-4 h-4 me-2" />
+                      {t('ai_analyze_btn')}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <div className="flex flex-col items-center justify-center py-12 text-center text-slate-400">
+                    <div className="w-20 h-20 bg-slate-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                      <Wand2 className="w-10 h-10 opacity-20" />
+                    </div>
+                    <p className="max-w-xs">{t('no_data')}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             <TabsContent value="goals" className="m-0 outline-none">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="md:col-span-2 border-none shadow-sm bg-white dark:bg-gray-900 rounded-3xl">
