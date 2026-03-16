@@ -23,21 +23,44 @@ import {
   Moon,
   Sun,
   MessageCircle,
-  LogOut,
-  Info
+  LogOut
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { useTranslation, I18nextProvider } from 'react-i18next';
 import { LocaleProvider, useLocale } from '@/components/LocaleContext';
 import '@/components/i18n';
 import LanguageToggle from '@/components/LanguageToggle';
 
+// Global QueryClient עם סנכרון אקטיבי בין מכשירים
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { staleTime: 30000, gcTime: 600000, refetchOnWindowFocus: false, retry: 1 },
+    queries: {
+      staleTime: 30000, 
+      gcTime: 600000,
+      refetchOnWindowFocus: false, 
+      refetchOnMount: true,
+      refetchOnReconnect: true,
+      retry: 1, 
+    },
+    mutations: {
+      retry: (failureCount, error) => {
+        if (error?.response?.status === 429) {
+          if (failureCount === 0) return true;
+          return false;
+        }
+        return failureCount < 3;
+      },
+      retryDelay: (failureCount, error) => {
+        if (error?.response?.status === 429 && failureCount === 0) {
+          return 2000;
+        }
+        return Math.min(1000 * Math.pow(2, failureCount), 30000);
+      }
+    }
   }
 });
 
+// שיניתי את המפתחות שיתאימו בדיוק לקובץ i18n
 const navigation = [
   { page: 'Dashboard', icon: LayoutDashboard },
   { page: 'AIPlanning', icon: Sparkles },
@@ -50,10 +73,17 @@ export const HouseholdContext = createContext(null);
 
 function LayoutContent({ children, currentPageName }) {
   const { t } = useTranslation();
-  const { lang } = useLocale();
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true' || false);
-  const [selectedHouseholdId, setSelectedHouseholdId] = useState(localStorage.getItem('selectedHouseholdId') || null);
-  const navigate = useNavigate();
+  const { lang, changeLanguage } = useLocale();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [fabMenuOpen, setFabMenuOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('darkMode') === 'true' || false;
+    }
+    return false;
+  });
+  const [showWhatsappButton, setShowWhatsappButton] = useState(true);
+  const [selectedHouseholdId, setSelectedHouseholdId] = useState(null);
 
   // === התחלת התוספת של טלגרם ===
   const isTelegram = typeof window !== 'undefined' && window.Telegram?.WebApp?.initData;
@@ -61,14 +91,55 @@ function LayoutContent({ children, currentPageName }) {
   useEffect(() => {
     if (isTelegram) {
       const tg = window.Telegram.WebApp;
-      tg.ready(); // מודיע לטלגרם שהאפליקציה מוכנה
-      tg.expand(); // פותח את האפליקציה על מסך מלא
-      
-      // התאמת צבע הרקע של האתר לצבע הנושא של טלגרם
+      tg.ready();
+      tg.expand();
       document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color);
     }
   }, [isTelegram]);
   // === סוף התוספת של טלגרם ===
+
+  // הזרקת תגיות PWA ל-iOS בזמן אמת
+  useEffect(() => {
+    const metaTags = [
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
+      { name: 'apple-mobile-web-app-title', content: 'ControlYourMoney' },
+      { name: 'theme-color', content: '#2563eb' }
+    ];
+
+    metaTags.forEach(({ name, content }) => {
+      if (!document.querySelector(`meta[name="${name}"]`)) {
+        const meta = document.createElement('meta');
+        meta.name = name;
+        meta.content = content;
+        document.head.appendChild(meta);
+      }
+    });
+
+    if (!document.querySelector('link[rel="apple-touch-icon"]')) {
+      const link = document.createElement('link');
+      link.rel = 'apple-touch-icon';
+      link.href = '/favicon.ico';
+      document.head.appendChild(link);
+    }
+  }, []);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+  const prefersReducedMotion = useReducedMotion();
+  const invalidateTimeoutRef = useRef({});
+
+  const debouncedInvalidate = useRef((queryKeyPrefix) => {
+    const key = queryKeyPrefix[0];
+    if (invalidateTimeoutRef.current[key]) {
+      clearTimeout(invalidateTimeoutRef.current[key]);
+    }
+    invalidateTimeoutRef.current[key] = setTimeout(async () => {
+      await queryClient.cancelQueries({ queryKey: queryKeyPrefix });
+      queryClient.invalidateQueries({ queryKey: queryKeyPrefix });
+      delete invalidateTimeoutRef.current[key];
+    }, 5000);
+  }).current;
 
   const { data: user, isLoading: loadingUser, isError: userError } = useQuery({
     queryKey: ['user'],
@@ -81,50 +152,135 @@ function LayoutContent({ children, currentPageName }) {
     queryFn: async () => {
       if (!user) return [];
       const all = await base44.entities.Household.list();
-      return all.filter((h) => !h.is_deleted && (h.owner_email === user.email || (h.members && h.members.includes(user.email))));
+      return all.filter((h) =>
+      !h.is_deleted && (
+      h.owner_email === user.email ||
+      h.members && h.members.includes(user.email))
+      );
     },
     enabled: !!user
   });
 
+  // WebSocket Subscriptions עם סנכרון משתמש (הוחזר למניעת היעלמות נתונים)
   useEffect(() => {
-    if (darkMode) document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
-    localStorage.setItem('darkMode', darkMode);
+    if (!selectedHouseholdId) return;
+
+    const unsubscribers = [];
+
+    const unsubIncome = base44.entities.Income.subscribe((event) => {
+      if (event.data?.household_id === selectedHouseholdId) {
+        debouncedInvalidate(['incomes', selectedHouseholdId]);
+      }
+    });
+    unsubscribers.push(unsubIncome);
+
+    const unsubExpense = base44.entities.Expense.subscribe((event) => {
+      if (event.data?.household_id === selectedHouseholdId) {
+        debouncedInvalidate(['expenses', selectedHouseholdId]);
+        debouncedInvalidate(['budgetSettings', selectedHouseholdId]);
+      }
+    });
+    unsubscribers.push(unsubExpense);
+
+    const unsubHousehold = base44.entities.Household.subscribe((event) => {
+      if (event.id === selectedHouseholdId || event.data?.owner_email === user?.email) {
+        debouncedInvalidate(['households']);
+      }
+    });
+    unsubscribers.push(unsubHousehold);
+
+    return () => {
+      unsubscribers.forEach((unsub) => unsub());
+      Object.values(invalidateTimeoutRef.current).forEach((timeout) => clearTimeout(timeout));
+      invalidateTimeoutRef.current = {};
+    };
+  }, [selectedHouseholdId, user?.email]);
+
+  // סנכרון משק הבית הנבחר מול השרת (Cross-Device Sync)
+  useEffect(() => {
+    if (user && households.length > 0) {
+      const serverId = user.last_selected_household_id;
+
+      // אם בשרת מוגדר בית אחר ממה שיש לנו כרגע - יישר קו
+      if (serverId && serverId !== selectedHouseholdId) {
+        const exists = households.find((h) => h.id === serverId);
+        if (exists) {
+          setSelectedHouseholdId(serverId);
+          return;
+        }
+      }
+
+      // ברירת מחדל אם אין בחירה בכלל
+      if (!selectedHouseholdId) {
+        setSelectedHouseholdId(households[0].id);
+      }
+    }
+  }, [user?.last_selected_household_id, households.length]);
+
+  // עדכון השרת בבחירה חדשה
+  useEffect(() => {
+    if (selectedHouseholdId && user && selectedHouseholdId !== user.last_selected_household_id) {
+      base44.auth.updateMe({ last_selected_household_id: selectedHouseholdId });
+    }
+  }, [selectedHouseholdId, user]);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('darkMode', 'false');
+    }
   }, [darkMode]);
 
-  useEffect(() => {
-    if (selectedHouseholdId) localStorage.setItem('selectedHouseholdId', selectedHouseholdId);
-  }, [selectedHouseholdId]);
+  const isAuthenticated = !!user;
 
-  if (loadingUser || loadingHouseholds) {
-    return <div className="flex items-center justify-center min-h-screen"><div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" /></div>;
+  useEffect(() => {
+    if (!loadingUser) {
+      if (isAuthenticated && currentPageName === 'LandingPage') {
+        navigate(createPageUrl('Dashboard'), { replace: true });
+      } else if (!isAuthenticated && currentPageName !== 'LandingPage') {
+        navigate(createPageUrl('LandingPage'), { replace: true });
+      }
+    }
+  }, [isAuthenticated, currentPageName, navigate, loadingUser]);
+
+  if (loadingUser || loadingHouseholds || userError) {
+    if (!loadingUser && userError) {
+      if (currentPageName !== 'LandingPage') navigate(createPageUrl('LandingPage'), { replace: true });
+      return <LandingPage />;
+    }
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>);
   }
 
-  if (!user && currentPageName !== 'LandingPage') return <LandingPage />;
+  if (!isAuthenticated) return <LandingPage />;
 
+  // ה-Context חזר למצבו המלא כולל loadingHouseholds
   return (
-    <HouseholdContext.Provider value={{ user, households, selectedHouseholdId, setSelectedHouseholdId }}>
-      <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100" lang={lang}>
+    <HouseholdContext.Provider value={{ user, households, selectedHouseholdId, setSelectedHouseholdId, loadingHouseholds }}>
+      <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900" lang={lang}>
         
-        {/* Header - מוסתר אם אנחנו בתוך טלגרם כדי לחסוך מקום וכותרת כפולה */}
+        {/* Header - מוסתר בטלגרם כדי לתת מראה של מיני-אפליקציה */}
         {!isTelegram && (
-          <header className="bg-white dark:bg-slate-900 shadow-sm sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800">
+          <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
-              <Link to={createPageUrl('Dashboard')} className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                  <Wallet className="w-5 h-5 text-white" />
+              <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                  <Wallet className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-xl font-black tracking-tighter text-indigo-600 dark:text-indigo-400">ControlYourMoney</span>
+                <span className="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">ControlYourMoney</span>
               </Link>
               
               <nav className="hidden md:flex items-center gap-1">
-                {navigation.map((item) => (
-                  <Link key={item.page} to={createPageUrl(item.page)}>
-                    <Button variant={currentPageName === item.page ? "secondary" : "ghost"} className="font-bold">
-                      {t(`nav.${item.page}`)}
-                    </Button>
+                {navigation.map((item) =>
+                <Link key={item.page} to={createPageUrl(item.page)} className={`px-4 py-2 rounded-lg text-sm font-medium ${currentPageName === item.page ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>
+                    {t(`nav.${item.page}`)}
                   </Link>
-                ))}
+                )}
                 <LanguageToggle />
                 <Button variant="ghost" size="icon" onClick={() => setDarkMode(!darkMode)}>
                   {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -136,12 +292,15 @@ function LayoutContent({ children, currentPageName }) {
                 <Button variant="ghost" size="icon" onClick={() => setDarkMode(!darkMode)}>
                   {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                 </Button>
+                <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                  {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </Button>
               </div>
             </div>
           </header>
         )}
 
-        <main className="flex-1 pb-20 md:pb-0">
+        <main className="flex-1 pb-[132px] md:pb-0">
           <AnimatePresence mode="wait">
             <motion.div key={currentPageName} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               {children}
@@ -150,22 +309,47 @@ function LayoutContent({ children, currentPageName }) {
         </main>
 
         {/* Mobile Bottom Nav */}
-        <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 h-16 shadow-lg">
-          <div className="flex justify-around items-center h-full">
+        <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-gray-800 border-t shadow-lg">
+          <div className="flex justify-around items-center h-16 px-2">
             {navigation.map((item) => {
               const isActive = currentPageName === item.page;
               return (
-                <Link key={item.page} to={createPageUrl(item.page)} className={`flex flex-col items-center gap-1 flex-1 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`}>
-                  <item.icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : ''}`} />
-                  <span className="text-[10px] font-black">{t(`nav.${item.page}`)}</span>
-                </Link>
-              );
+                <Link
+                  key={item.page}
+                  to={createPageUrl(item.page)}
+                  className={`flex flex-col items-center justify-center gap-1 flex-1 py-2 transition-colors ${
+                  isActive ? 'text-blue-600' : 'text-gray-600 dark:text-gray-400'}`
+                  }>
+                  <item.icon className={`w-6 h-6 ${isActive ? 'stroke-[2.5]' : ''}`} />
+                  <span className="text-[10px] font-medium">{t(`nav.${item.page}`)}</span>
+                </Link>);
             })}
           </div>
         </nav>
+
+        {/* Footer */}
+        <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-6 mt-8">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex flex-col md:flex-row justify-center items-center gap-4 text-sm text-muted-foreground">
+              <Link to={createPageUrl('TermsOfService')} className="hover:text-primary transition-colors">
+                {t('terms')}
+              </Link>
+              <span className="hidden md:inline">•</span>
+              <Link to={createPageUrl('PrivacyPolicy')} className="hover:text-primary transition-colors">
+                {t('privacy')}
+              </Link>
+              <span className="hidden md:inline">•</span>
+              <Link to={createPageUrl('AccessibilityStatement')} className="hover:text-primary transition-colors">
+                {t('accessibility')}
+              </Link>
+            </div>
+            <div className="text-center mt-4 text-xs text-muted-foreground">
+              {t('landing_footer_copyright', { year: new Date().getFullYear() })}
+            </div>
+          </div>
+        </footer>
       </div>
-    </HouseholdContext.Provider>
-  );
+    </HouseholdContext.Provider>);
 }
 
 export default function Layout({ children, currentPageName }) {
@@ -174,6 +358,5 @@ export default function Layout({ children, currentPageName }) {
       <LocaleProvider>
         <LayoutContent children={children} currentPageName={currentPageName} />
       </LocaleProvider>
-    </QueryClientProvider>
-  );
+    </QueryClientProvider>);
 }
