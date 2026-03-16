@@ -199,7 +199,7 @@ export default function Dashboard() {
            await delay(350);
            await base44.entities.Debt.update(matchingDebt.id, { total_amount: newAmount });
            // כאן השארתי עברית כברירת מחדל עד שנוסיף את זה לתרגום מורכב
-           showToast(`החוב צומצם ל-${newAmount} 📉`);
+           showToast(t('debt_reduced_to', { amount: formatMoney(newAmount) }));
            queryClient.invalidateQueries({ queryKey: ['debts'] }); 
         }
       }
@@ -479,7 +479,7 @@ export default function Dashboard() {
                     </Button>
                   </div>
                   <DataTable data={incomes} columns={[
-                    { key: 'category', label: t('category'), render: (val) => t(`income_cat.${val}`, incomeLabels[val] || val) },
+                    { key: 'category', label: t('category'), render: (val) => t(`income_cat.${val}`) },
                     { key: 'description', label: t('description') },
                     { key: 'amount', label: t('amount'), render: (val) => formatMoney(val) }
                   ]} onDelete={(i) => handleDeleteItem(i, 'Income')} onEdit={(i) => {setEditItem(i);setIncomeFormOpen(true);}} />
@@ -493,7 +493,7 @@ export default function Dashboard() {
                     </Button>
                   </div>
                   <DataTable data={expenses.filter((e) => !e.is_budget || e.is_current)} columns={[
-                    { key: 'category', label: t('category'), render: (val, item) => item.category === 'custom' ? item.custom_category_name : t(`exp_cat.${val}`, expenseLabels[val] || val) },
+                    { key: 'category', label: t('category'), render: (val, item) => item.category === 'custom' ? item.custom_category_name : t(`exp_cat.${val}`) },
                     { key: 'description', label: t('description') },
                     { key: 'amount', label: t('amount'), render: (val) => formatMoney(val) }
                   ]} onDelete={(e) => handleDeleteItem(e, 'Expense')} onEdit={(e) => {setEditItem(e);setExpenseFormOpen(true);}} />
