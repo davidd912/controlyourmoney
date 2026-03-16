@@ -383,6 +383,40 @@ export default function UserSettings() {
                     </div>
                   )}
 
+                  {/* Members List */}
+                  {household.members && household.members.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                        <Users className="w-4 h-4" />{t('members_label')} ({household.members.length})
+                      </h3>
+                      <div className="space-y-2">
+                        {household.members.map((memberEmail) => (
+                          <div key={memberEmail} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              <Mail className="w-4 h-4 text-gray-400" />
+                              <span className="text-sm text-gray-800 dark:text-gray-200">{memberEmail}</span>
+                              {memberEmail === household.owner_email && (
+                                <Badge variant="secondary" className="text-xs">{t('owner_suffix')}</Badge>
+                              )}
+                            </div>
+                            {isOwner && memberEmail !== user?.email && (
+                              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeMember.mutate({ householdId: household.id, email: memberEmail })}
+                                  className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </motion.div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {isOwner && (
                     <div>
                       <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
