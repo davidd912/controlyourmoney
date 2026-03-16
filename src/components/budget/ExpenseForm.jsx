@@ -101,7 +101,7 @@ const expenseCategories = {
 
 export default function ExpenseForm({ open, onClose, onSave, editItem, remainingBudgetByCategory = {}, customCategories = [] }) {
   const { t } = useTranslation();
-  const { currency } = useLocale();
+  const { currency, direction } = useLocale();
   const [formData, setFormData] = useState({
     category: '',
     custom_category_name: '',
@@ -141,7 +141,7 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto dark:bg-gray-800 dark:border-gray-700" dir="rtl">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto dark:bg-gray-800 dark:border-gray-700" dir={direction}>
         <DialogHeader>
           <DialogTitle className="text-right">
             {editItem ? t('edit_expense') : t('add_expense_title')}
@@ -170,13 +170,13 @@ export default function ExpenseForm({ open, onClose, onSave, editItem, remaining
                 <SelectValue placeholder={t('select_category')} />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(expenseCategories).map(([key, { label, icon }]) => (
-                  <SelectItem key={key} value={key}>
-                    <span className="flex items-center gap-2">
-                      <span>{icon}</span>
-                      <span>{label}</span>
-                    </span>
-                  </SelectItem>
+                {Object.entries(expenseCategories).map(([key, { icon }]) => (
+                 <SelectItem key={key} value={key}>
+                   <span className="flex items-center gap-2">
+                     <span>{icon}</span>
+                     <span>{t(`exp_cat.${key}`)}</span>
+                   </span>
+                 </SelectItem>
                 ))}
                 {customCategories.length > 0 && (
                   <>
