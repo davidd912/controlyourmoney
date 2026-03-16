@@ -53,7 +53,7 @@ export default function PrivacyPolicy() {
               </div>
               <p className="text-gray-700 leading-relaxed mb-2">{t('privacy_s3_intro')}</p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ps-4">
-                {(t('privacy_s3_items', { returnObjects: true }) || []).map((item, i) => <li key={i}>{item}</li>)}
+                {(Array.isArray(t('privacy_s3_items', { returnObjects: true })) ? t('privacy_s3_items', { returnObjects: true }) : []).map((item, i) => <li key={i}>{item}</li>)}
               </ul>
               <div className="bg-yellow-50 border-s-4 border-yellow-400 p-4 mt-3 rounded">
                 <div className="flex items-start gap-2">
