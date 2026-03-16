@@ -26,6 +26,7 @@ const incomeCategories = {
 
 export default function IncomeForm({ open, onClose, onSave, editItem }) {
   const { t } = useTranslation();
+  const { direction } = useLocale();
   const [formData, setFormData] = useState(editItem || {
     category: '',
     subcategory: '',
@@ -60,7 +61,7 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md dark:bg-gray-800 dark:border-gray-700" dir="rtl">
+      <DialogContent className="sm:max-w-md dark:bg-gray-800 dark:border-gray-700" dir={direction}>
         <DialogHeader>
           <DialogTitle className="text-right">
             {editItem ? t('edit_income') : t('add_income_title')}
@@ -75,9 +76,9 @@ export default function IncomeForm({ open, onClose, onSave, editItem }) {
               onValueChange={(value) => setFormData({ ...formData, category: value, subcategory: '' })}
               placeholder={t('select_category')}
               label={t('select_category')}
-              options={Object.entries(incomeCategories).map(([key, { label }]) => ({
+              options={Object.entries(incomeCategories).map(([key]) => ({
                 value: key,
-                label: label
+                label: t(`income_cat.${key}`)
               }))}
             />
           </div>
