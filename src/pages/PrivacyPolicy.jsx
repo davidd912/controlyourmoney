@@ -70,7 +70,7 @@ export default function PrivacyPolicy() {
               </div>
               <p className="text-gray-700 leading-relaxed">{t('privacy_s4_text')}</p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ps-4 mt-2">
-                {(t('privacy_s4_items', { returnObjects: true }) || []).map((item, i) => <li key={i}>{item}</li>)}
+                {(Array.isArray(t('privacy_s4_items', { returnObjects: true })) ? t('privacy_s4_items', { returnObjects: true }) : []).map((item, i) => <li key={i}>{item}</li>)}
               </ul>
             </section>
 
