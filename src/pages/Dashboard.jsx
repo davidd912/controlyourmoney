@@ -394,7 +394,7 @@ export default function Dashboard() {
 בקרוב </span>
                 </Button>
                 <Button onClick={handleTelegramConnect} className="flex-1 sm:flex-none bg-[#0088cc] hover:bg-[#0077b5] text-white rounded-xl shadow-md gap-2 h-11">
-                  <Send className="w-5 h-5" /> <span className="hidden sm:inline">Telegram</span>
+                  <Send className="w-5 h-5" /> <span className="hidden sm:inline">Telegram Bot</span>
                 </Button>
               </div>
             </div>
@@ -480,9 +480,9 @@ export default function Dashboard() {
                     </Button>
                   </div>
                   <DataTable data={incomes} columns={[{ key: 'category', label: t('category'), render: (val) => t(`income_cat.${val}`) },
-                    { key: 'description', label: t('description') },
-                    { key: 'amount', label: t('amount'), render: (val) => formatMoney(val) }]
-                    } onDelete={(i) => handleDeleteItem(i, 'Income')} onEdit={(i) => {setEditItem(i);setIncomeFormOpen(true);}} />
+                  { key: 'description', label: t('description') },
+                  { key: 'amount', label: t('amount'), render: (val) => formatMoney(val) }]
+                  } onDelete={(i) => handleDeleteItem(i, 'Income')} onEdit={(i) => {setEditItem(i);setIncomeFormOpen(true);}} />
                 </TabsContent>
 
                 <TabsContent value="expenses" className="space-y-4 outline-none">
