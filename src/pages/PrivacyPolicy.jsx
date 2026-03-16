@@ -29,7 +29,7 @@ export default function PrivacyPolicy() {
               </div>
               <p className="text-gray-700 leading-relaxed mb-2">{t('privacy_s1_intro')}</p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ps-4">
-                {(t('privacy_s1_items', { returnObjects: true }) || []).map((item, i) => (
+                {(Array.isArray(t('privacy_s1_items', { returnObjects: true })) ? t('privacy_s1_items', { returnObjects: true }) : []).map((item, i) => (
                   <li key={i} dangerouslySetInnerHTML={{ __html: item }} />
                 ))}
               </ul>
