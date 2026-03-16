@@ -410,21 +410,21 @@ export default function Dashboard() {
             <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }}>
               <Button onClick={() => {setEditItem(null);setIncomeFormOpen(true);}} className="w-full h-auto py-4 flex flex-col items-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900/50 dark:text-emerald-400 rounded-2xl shadow-sm">
                 <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-full"><ArrowUpRight className="w-6 h-6" /></div>
-                <span className="font-bold text-sm">{t('add_income', 'הכנסה')}</span>
+                <span className="font-bold text-sm">{t('add_income')}</span>
               </Button>
             </motion.div>
             
             <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }}>
               <Button onClick={() => {setEditItem(null);setExpenseFormOpen(true);}} className="w-full h-auto py-4 flex flex-col items-center gap-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-950/30 dark:border-rose-900/50 dark:text-rose-400 rounded-2xl shadow-sm">
                 <div className="p-2 bg-rose-100 dark:bg-rose-900/50 rounded-full"><ArrowDownRight className="w-6 h-6" /></div>
-                <span className="font-bold text-sm">{t('add_expense', 'הוצאה')}</span>
+                <span className="font-bold text-sm">{t('add_expense')}</span>
               </Button>
             </motion.div>
 
             <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }}>
               <Button onClick={() => {setEditItem(null);setDebtFormOpen(true);}} className="w-full h-auto py-4 flex flex-col items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-900/50 dark:border-slate-800 dark:text-slate-300 rounded-2xl shadow-sm">
                 <div className="p-2 bg-slate-200 dark:bg-slate-800 rounded-full"><CreditCard className="w-6 h-6" /></div>
-                <span className="font-bold text-sm">{t('add_debt', 'חוב')}</span>
+                <span className="font-bold text-sm">{t('add_debt')}</span>
               </Button>
             </motion.div>
           </div>
