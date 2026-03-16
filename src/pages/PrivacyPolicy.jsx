@@ -78,7 +78,7 @@ export default function PrivacyPolicy() {
               <h2 className="text-xl font-bold text-gray-900 mb-3">{t('privacy_s5_title')}</h2>
               <p className="text-gray-700 leading-relaxed mb-2">{t('privacy_s5_intro')}</p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ps-4">
-                {(t('privacy_s5_items', { returnObjects: true }) || []).map((item, i) => (
+                {(Array.isArray(t('privacy_s5_items', { returnObjects: true })) ? t('privacy_s5_items', { returnObjects: true }) : []).map((item, i) => (
                   <li key={i} dangerouslySetInnerHTML={{ __html: item }} />
                 ))}
               </ul>
