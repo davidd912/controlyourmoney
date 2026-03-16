@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 export default function TermsOfService() {
   const { t } = useTranslation();
 
-  const sections = t('tos_sections', { returnObjects: true }) || [];
+  const sectionsRaw = t('tos_sections', { returnObjects: true });
+  const sections = Array.isArray(sectionsRaw) ? sectionsRaw : [];
 
   return (
     <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
