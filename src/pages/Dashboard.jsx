@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plus, TrendingUp, TrendingDown, Wallet, PiggyBank,
-  MessageCircle, Send, Zap, CheckCircle, Home, Sparkles, ArrowRight, Loader2, ArrowUpRight, ArrowDownRight, CreditCard
-} from "lucide-react";
+  MessageCircle, Send, Zap, CheckCircle, Home, Sparkles, ArrowRight, Loader2, ArrowUpRight, ArrowDownRight, CreditCard } from
+"lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { HouseholdContext } from '../Layout';
@@ -33,7 +33,7 @@ import PullToRefresh from "@/components/PullToRefresh";
 
 
 const generateGroupId = () => Math.random().toString(36).substring(2, 10);
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function Dashboard() {
   const currentDate = new Date();
@@ -94,63 +94,63 @@ export default function Dashboard() {
   const handleDeleteItem = async (item, entityType) => {
     if (isProcessing) return;
     setIsProcessing(true);
-    
+
     try {
       const isRecurring = item.is_recurring || item.recurring_group_id;
-      
+
       if (isRecurring) {
         showToast(t('toast_deleting_series'));
         const allItems = await base44.entities[entityType].filter({ household_id: selectedHouseholdId });
-        const futureItems = allItems.filter(e => {
+        const futureItems = allItems.filter((e) => {
           const sameGroup = item.recurring_group_id && e.recurring_group_id === item.recurring_group_id;
           const sameDesc = e.description === item.description && e.category === item.category;
           const eYear = Number(e.year);
           const eMonth = Number(e.month);
           const iYear = Number(item.year);
           const iMonth = Number(item.month);
-          return (sameGroup || sameDesc) && (eYear > iYear || (eYear === iYear && eMonth >= iMonth));
+          return (sameGroup || sameDesc) && (eYear > iYear || eYear === iYear && eMonth >= iMonth);
         });
-        
+
         for (const fItem of futureItems) {
-            await base44.entities[entityType].delete(fItem.id);
-            await delay(350);
+          await base44.entities[entityType].delete(fItem.id);
+          await delay(350);
         }
         showToast(t('toast_series_deleted'));
       } else {
         await base44.entities[entityType].delete(item.id);
         showToast(t('toast_deleted'));
       }
-    } catch (err) { showToast(t('toast_delete_error')); }
-    
-    if (entityType === 'Expense') queryClient.invalidateQueries({ queryKey: ['expenses'] });
-    else if (entityType === 'Income') queryClient.invalidateQueries({ queryKey: ['incomes'] });
-    else if (entityType === 'Debt') queryClient.invalidateQueries({ queryKey: ['debts'] });
-    
+    } catch (err) {showToast(t('toast_delete_error'));}
+
+    if (entityType === 'Expense') queryClient.invalidateQueries({ queryKey: ['expenses'] });else
+    if (entityType === 'Income') queryClient.invalidateQueries({ queryKey: ['incomes'] });else
+    if (entityType === 'Debt') queryClient.invalidateQueries({ queryKey: ['debts'] });
+
     setIsProcessing(false);
   };
 
   const handleSaveExpense = async (data) => {
     if (isProcessing) return;
     setIsProcessing(true);
-    
+
     const isNowRecurring = data.is_recurring;
     const wasRecurring = editItem && editItem.is_recurring;
-    const groupId = (editItem && editItem.recurring_group_id) ? editItem.recurring_group_id : generateGroupId();
+    const groupId = editItem && editItem.recurring_group_id ? editItem.recurring_group_id : generateGroupId();
 
     try {
       if (editItem) {
-        await base44.entities.Expense.update(editItem.id, { 
-          ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, recurring_group_id: isNowRecurring ? groupId : null 
+        await base44.entities.Expense.update(editItem.id, {
+          ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, recurring_group_id: isNowRecurring ? groupId : null
         });
-        
+
         const allExpenses = await base44.entities.Expense.filter({ household_id: selectedHouseholdId });
-        const futureItems = allExpenses.filter(e => e.recurring_group_id === groupId && (Number(e.year) > selectedYear || (Number(e.year) === selectedYear && Number(e.month) > selectedMonth)));
+        const futureItems = allExpenses.filter((e) => e.recurring_group_id === groupId && (Number(e.year) > selectedYear || Number(e.year) === selectedYear && Number(e.month) > selectedMonth));
 
         if (isNowRecurring && wasRecurring) {
           showToast(t('toast_updating_future'));
           for (const fItem of futureItems) {
-              await base44.entities.Expense.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
-              await delay(350);
+            await base44.entities.Expense.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
+            await delay(350);
           }
           showToast(t('toast_updated_all_future'));
         } else if (isNowRecurring && !wasRecurring) {
@@ -164,8 +164,8 @@ export default function Dashboard() {
         } else if (!isNowRecurring && wasRecurring) {
           showToast(t('toast_deleting_recurring'));
           for (const fItem of futureItems) {
-              await base44.entities.Expense.delete(fItem.id);
-              await delay(350);
+            await base44.entities.Expense.delete(fItem.id);
+            await delay(350);
           }
           showToast(t('toast_recurring_removed'));
         } else {
@@ -188,49 +188,49 @@ export default function Dashboard() {
       }
 
       if (data.category === 'obligations') {
-        const matchingDebt = debts.find(d => d.creditor_name === data.description || data.description.includes(d.creditor_name));
+        const matchingDebt = debts.find((d) => d.creditor_name === data.description || data.description.includes(d.creditor_name));
         if (matchingDebt) {
-           let amountToReduce = Number(data.amount) || 0;
-           if (!editItem && data.is_recurring) {
-               const monthsLeftThisYear = 12 - selectedMonth + 1;
-               amountToReduce = amountToReduce * monthsLeftThisYear;
-           }
-           const newAmount = Math.max(0, matchingDebt.total_amount - amountToReduce);
-           await delay(350);
-           await base44.entities.Debt.update(matchingDebt.id, { total_amount: newAmount });
-           // כאן השארתי עברית כברירת מחדל עד שנוסיף את זה לתרגום מורכב
-           showToast(t('debt_reduced_to', { amount: formatMoney(newAmount) }));
-           queryClient.invalidateQueries({ queryKey: ['debts'] }); 
+          let amountToReduce = Number(data.amount) || 0;
+          if (!editItem && data.is_recurring) {
+            const monthsLeftThisYear = 12 - selectedMonth + 1;
+            amountToReduce = amountToReduce * monthsLeftThisYear;
+          }
+          const newAmount = Math.max(0, matchingDebt.total_amount - amountToReduce);
+          await delay(350);
+          await base44.entities.Debt.update(matchingDebt.id, { total_amount: newAmount });
+          // כאן השארתי עברית כברירת מחדל עד שנוסיף את זה לתרגום מורכב
+          showToast(t('debt_reduced_to', { amount: formatMoney(newAmount) }));
+          queryClient.invalidateQueries({ queryKey: ['debts'] });
         }
       }
-    } catch (e) { showToast(t('toast_save_error')); }
+    } catch (e) {showToast(t('toast_save_error'));}
 
-    setExpenseFormOpen(false); setEditItem(null); setIsProcessing(false);
-    queryClient.invalidateQueries({ queryKey: ['expenses'] }); 
+    setExpenseFormOpen(false);setEditItem(null);setIsProcessing(false);
+    queryClient.invalidateQueries({ queryKey: ['expenses'] });
   };
 
   const handleSaveIncome = async (data) => {
     if (isProcessing) return;
     setIsProcessing(true);
-    
+
     const isNowRecurring = data.is_recurring;
     const wasRecurring = editItem && editItem.is_recurring;
-    const groupId = (editItem && editItem.recurring_group_id) ? editItem.recurring_group_id : generateGroupId();
+    const groupId = editItem && editItem.recurring_group_id ? editItem.recurring_group_id : generateGroupId();
 
     try {
       if (editItem) {
-        await base44.entities.Income.update(editItem.id, { 
-          ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, recurring_group_id: isNowRecurring ? groupId : null 
+        await base44.entities.Income.update(editItem.id, {
+          ...data, household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, recurring_group_id: isNowRecurring ? groupId : null
         });
 
         const allIncomes = await base44.entities.Income.filter({ household_id: selectedHouseholdId });
-        const futureItems = allIncomes.filter(i => i.recurring_group_id === groupId && (Number(i.year) > selectedYear || (Number(i.year) === selectedYear && Number(i.month) > selectedMonth)));
+        const futureItems = allIncomes.filter((i) => i.recurring_group_id === groupId && (Number(i.year) > selectedYear || Number(i.year) === selectedYear && Number(i.month) > selectedMonth));
 
         if (isNowRecurring && wasRecurring) {
           showToast(t('toast_updating_future'));
           for (const fItem of futureItems) {
-              await base44.entities.Income.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
-              await delay(350);
+            await base44.entities.Income.update(fItem.id, { amount: data.amount, description: data.description, category: data.category });
+            await delay(350);
           }
           showToast(t('income_recurring_updated'));
         } else if (isNowRecurring && !wasRecurring) {
@@ -244,8 +244,8 @@ export default function Dashboard() {
         } else if (!isNowRecurring && wasRecurring) {
           showToast(t('toast_deleting_recurring'));
           for (const fItem of futureItems) {
-              await base44.entities.Income.delete(fItem.id);
-              await delay(350);
+            await base44.entities.Income.delete(fItem.id);
+            await delay(350);
           }
           showToast(t('toast_recurring_removed'));
         } else {
@@ -257,8 +257,8 @@ export default function Dashboard() {
           showToast(t('toast_saving_year'));
           const monthsLeftThisYear = 12 - selectedMonth + 1;
           for (let i = 0; i < monthsLeftThisYear; i++) {
-             await base44.entities.Income.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
-             await delay(350);
+            await base44.entities.Income.create({ ...data, household_id: selectedHouseholdId, month: selectedMonth + i, year: selectedYear, recurring_group_id: groupId });
+            await delay(350);
           }
           showToast(t('toast_added_recurring_income'));
         } else {
@@ -266,10 +266,10 @@ export default function Dashboard() {
           showToast(t('toast_added'));
         }
       }
-    } catch (e) { showToast(t('toast_save_error')); }
+    } catch (e) {showToast(t('toast_save_error'));}
 
-    setIncomeFormOpen(false); setEditItem(null); setIsProcessing(false);
-    queryClient.invalidateQueries({ queryKey: ['incomes'] }); 
+    setIncomeFormOpen(false);setEditItem(null);setIsProcessing(false);
+    queryClient.invalidateQueries({ queryKey: ['incomes'] });
   };
 
   const handleSaveBudgetSettings = async (payload) => {
@@ -277,24 +277,24 @@ export default function Dashboard() {
       const { budgets } = payload;
       const existing = await base44.entities.Expense.filter({ household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear, is_budget: true, is_current: false });
       for (const b of existing) {
-          await base44.entities.Expense.delete(b.id);
-          await delay(250); 
+        await base44.entities.Expense.delete(b.id);
+        await delay(250);
       }
-      
+
       const toCreate = Object.entries(budgets).filter(([_, v]) => parseFloat(v) > 0).map(([key, val]) => ({
         household_id: selectedHouseholdId, month: selectedMonth, year: selectedYear,
         category: key.startsWith('custom_') ? 'custom' : key, custom_category_name: key.startsWith('custom_') ? key.replace('custom_', '') : null,
         amount: parseFloat(val), is_budget: true, is_current: false, description: 'תקציב חודשי'
       }));
-      
+
       for (const b of toCreate) {
         await base44.entities.Expense.create(b);
         await delay(250);
       }
-      
+
       queryClient.invalidateQueries({ queryKey: ['budgetSettings'] });
       showToast(t('toast_budget_updated'));
-    } catch (e) { showToast(t('toast_budget_error')); }
+    } catch (e) {showToast(t('toast_budget_error'));}
   };
 
   const handleWhatsAppConnect = async () => {
@@ -335,8 +335,8 @@ export default function Dashboard() {
         <div className="absolute bottom-10 left-10 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20" />
         <div className="max-w-md w-full relative z-10">
           <AnimatePresence mode="wait">
-            {welcomeStep === 'intro' && (
-              <motion.div key="intro" initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: -20 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="text-center space-y-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/30">
+            {welcomeStep === 'intro' &&
+            <motion.div key="intro" initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: -20 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="text-center space-y-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/30">
                 <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-blue-500/30">
                   <Sparkles className="w-10 h-10 text-white" />
                 </div>
@@ -348,9 +348,9 @@ export default function Dashboard() {
                   {t('lets_start')} <ArrowRight className="w-5 h-5" />
                 </Button>
               </motion.div>
-            )}
-            {welcomeStep === 'nameInput' && (
-              <motion.div key="nameInput" initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: -20 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/30">
+            }
+            {welcomeStep === 'nameInput' &&
+            <motion.div key="nameInput" initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: -20 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/30">
                 <button onClick={() => setWelcomeStep('intro')} className="text-gray-400 hover:text-gray-600 text-sm mb-4 flex items-center gap-1"><ArrowRight className="w-4 h-4 rtl:rotate-180" /> {t('back')}</button>
                 <div className="text-center space-y-6">
                   <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 rounded-2xl flex items-center justify-center mx-auto"><Home className="w-8 h-8 text-indigo-600 dark:text-indigo-400" /></div>
@@ -359,18 +359,18 @@ export default function Dashboard() {
                     <p className="text-gray-500 dark:text-gray-400 text-sm">{t('name_example')}</p>
                   </div>
                   <div className="space-y-4">
-                    <Input autoFocus placeholder={t('name_placeholder')} className="h-14 text-center text-lg font-medium rounded-2xl border-2 border-indigo-100 focus:border-indigo-500 bg-white/70" value={newHouseholdName} onChange={(e) => setNewHouseholdName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && newHouseholdName.trim()) createHousehold.mutate(newHouseholdName.trim()); }} />
+                    <Input autoFocus placeholder={t('name_placeholder')} className="h-14 text-center text-lg font-medium rounded-2xl border-2 border-indigo-100 focus:border-indigo-500 bg-white/70" value={newHouseholdName} onChange={(e) => setNewHouseholdName(e.target.value)} onKeyDown={(e) => {if (e.key === 'Enter' && newHouseholdName.trim()) createHousehold.mutate(newHouseholdName.trim());}} />
                     <Button onClick={() => createHousehold.mutate(newHouseholdName.trim())} disabled={!newHouseholdName.trim() || createHousehold.isPending} className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-lg font-bold gap-2 shadow-lg">
                       {createHousehold.isPending ? <><Loader2 className="w-5 h-5 animate-spin" /> {t('creating')}</> : <><Plus className="w-5 h-5" /> {t('create_finish')}</>}
                     </Button>
                   </div>
                 </div>
               </motion.div>
-            )}
+            }
           </AnimatePresence>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -390,7 +390,8 @@ export default function Dashboard() {
               </div>
               <div className="flex gap-2 w-full sm:w-auto">
                 <Button onClick={handleWhatsAppConnect} className="flex-1 sm:flex-none bg-[#25D366] hover:bg-[#128C7E] text-white rounded-xl shadow-md gap-2 h-11">
-                  <MessageCircle className="w-5 h-5" /> <span className="hidden sm:inline">WhatsApp</span>
+                  <MessageCircle className="w-5 h-5" /> <span className="hidden sm:inline">WhatsApp
+בקרוב </span>
                 </Button>
                 <Button onClick={handleTelegramConnect} className="flex-1 sm:flex-none bg-[#0088cc] hover:bg-[#0077b5] text-white rounded-xl shadow-md gap-2 h-11">
                   <Send className="w-5 h-5" /> <span className="hidden sm:inline">Telegram</span>
@@ -478,11 +479,10 @@ export default function Dashboard() {
                       <Plus className="w-4 h-4" /> <span className="hidden sm:inline">{t('add_income')}</span>
                     </Button>
                   </div>
-                  <DataTable data={incomes} columns={[
-                    { key: 'category', label: t('category'), render: (val) => t(`income_cat.${val}`) },
+                  <DataTable data={incomes} columns={[{ key: 'category', label: t('category'), render: (val) => t(`income_cat.${val}`) },
                     { key: 'description', label: t('description') },
-                    { key: 'amount', label: t('amount'), render: (val) => formatMoney(val) }
-                  ]} onDelete={(i) => handleDeleteItem(i, 'Income')} onEdit={(i) => {setEditItem(i);setIncomeFormOpen(true);}} />
+                    { key: 'amount', label: t('amount'), render: (val) => formatMoney(val) }]
+                    } onDelete={(i) => handleDeleteItem(i, 'Income')} onEdit={(i) => {setEditItem(i);setIncomeFormOpen(true);}} />
                 </TabsContent>
 
                 <TabsContent value="expenses" className="space-y-4 outline-none">
@@ -493,10 +493,10 @@ export default function Dashboard() {
                     </Button>
                   </div>
                   <DataTable data={expenses.filter((e) => !e.is_budget || e.is_current)} columns={[
-                    { key: 'category', label: t('category'), render: (val, item) => item.category === 'custom' ? item.custom_category_name : t(`exp_cat.${val}`) },
-                    { key: 'description', label: t('description') },
-                    { key: 'amount', label: t('amount'), render: (val) => formatMoney(val) }
-                  ]} onDelete={(e) => handleDeleteItem(e, 'Expense')} onEdit={(e) => {setEditItem(e);setExpenseFormOpen(true);}} />
+                  { key: 'category', label: t('category'), render: (val, item) => item.category === 'custom' ? item.custom_category_name : t(`exp_cat.${val}`) },
+                  { key: 'description', label: t('description') },
+                  { key: 'amount', label: t('amount'), render: (val) => formatMoney(val) }]
+                  } onDelete={(e) => handleDeleteItem(e, 'Expense')} onEdit={(e) => {setEditItem(e);setExpenseFormOpen(true);}} />
                 </TabsContent>
 
                 <TabsContent value="debts" className="space-y-4 outline-none">
@@ -507,9 +507,9 @@ export default function Dashboard() {
                     </Button>
                   </div>
                   <DataTable data={debts} columns={[
-                    { key: 'creditor_name', label: t('creditor') },
-                    { key: 'total_amount', label: t('amount'), render: (val) => formatMoney(val) }
-                  ]} onDelete={async (d) => { try { await base44.entities.Debt.delete(d.id); showToast(t('toast_deleted')); } catch(err) {} queryClient.invalidateQueries({ queryKey: ['debts'] }); }} onEdit={(d) => {setEditItem(d);setDebtFormOpen(true);}} />
+                  { key: 'creditor_name', label: t('creditor') },
+                  { key: 'total_amount', label: t('amount'), render: (val) => formatMoney(val) }]
+                  } onDelete={async (d) => {try {await base44.entities.Debt.delete(d.id);showToast(t('toast_deleted'));} catch (err) {}queryClient.invalidateQueries({ queryKey: ['debts'] });}} onEdit={(d) => {setEditItem(d);setDebtFormOpen(true);}} />
                 </TabsContent>
 
               </motion.div>
@@ -526,17 +526,17 @@ export default function Dashboard() {
           }
         </AnimatePresence>
 
-        <IncomeForm open={incomeFormOpen} onClose={() => { setIncomeFormOpen(false); setEditItem(null); }} onSave={handleSaveIncome} editItem={editItem} />
-        <ExpenseForm open={expenseFormOpen} onClose={() => { setExpenseFormOpen(false); setEditItem(null); }} onSave={handleSaveExpense} editItem={editItem} remainingBudgetByCategory={{}} customCategories={[]} />
-        <DebtForm open={debtFormOpen} onClose={() => { setDebtFormOpen(false); setEditItem(null); }} onSave={async (data) => {
-             try {
-               if (editItem) await base44.entities.Debt.update(editItem.id, { ...data, household_id: selectedHouseholdId });
-               else await base44.entities.Debt.create({ ...data, household_id: selectedHouseholdId });
-               showToast(t('toast_updated', 'עודכן בהצלחה! ✨'));
-             } catch(e) {}
-             setDebtFormOpen(false); setEditItem(null); queryClient.invalidateQueries({ queryKey: ['debts'] });
-          }} editItem={editItem} />
+        <IncomeForm open={incomeFormOpen} onClose={() => {setIncomeFormOpen(false);setEditItem(null);}} onSave={handleSaveIncome} editItem={editItem} />
+        <ExpenseForm open={expenseFormOpen} onClose={() => {setExpenseFormOpen(false);setEditItem(null);}} onSave={handleSaveExpense} editItem={editItem} remainingBudgetByCategory={{}} customCategories={[]} />
+        <DebtForm open={debtFormOpen} onClose={() => {setDebtFormOpen(false);setEditItem(null);}} onSave={async (data) => {
+          try {
+            if (editItem) await base44.entities.Debt.update(editItem.id, { ...data, household_id: selectedHouseholdId });else
+            await base44.entities.Debt.create({ ...data, household_id: selectedHouseholdId });
+            showToast(t('toast_updated', 'עודכן בהצלחה! ✨'));
+          } catch (e) {}
+          setDebtFormOpen(false);setEditItem(null);queryClient.invalidateQueries({ queryKey: ['debts'] });
+        }} editItem={editItem} />
       </div>
-    </PullToRefresh>
-  );
+    </PullToRefresh>);
+
 }
