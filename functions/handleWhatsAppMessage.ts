@@ -97,7 +97,55 @@ Deno.serve(async (req) => {
           return new Response("OK");
         }
       }
-      await replyToUser("👋 שלום! אני לא מזהה את החשבון.\nאנא שלח קוד אקטיבציה בן 6 ספרות מהאפליקציה שלנו כדי להתחבר.");
+
+      // === קבלת פנים חכמה למשתמשים חדשים לפי פלטפורמה ===
+      const WEBSITE_URL = "https://controlyourmoney.info/LandingPage";
+      const SETTINGS_URL = "https://controlyourmoney.info/UserSettings";
+      
+      if (platform === 'telegram') {
+        const telegramWelcomeMsg = `שלום! 👋 ברוכים הבאים ל-*ControlYourMoney*.
+כדי להתחיל לנהל את התקציב ישירות מכאן, נדרש חיבור קצר לחשבון שלכם.
+
+*איך מתחילים?*
+1️⃣ לחצו על הקישור למטה והירשמו לאפליקציה.
+2️⃣ לאחר ההתחברות, כנסו ל-*הגדרות משתמש*.
+3️⃣ העתיקו משם את קוד ההפעלה ושלחו לי אותו לכאן.
+
+👨‍👩‍👧‍👦 *ניהול משותף:*
+רוצים לנהל תקציב יחד עם בן/בת הזוג?
+היכנסו ל[הגדרות המשתמש](${SETTINGS_URL}), תחת "משק בית שלי" לחצו על *"הזמן חבר למשק הבית"* ושלחו להם הזמנה למייל!
+
+💡 *טיפ:* לאחר החיבור, תוכלו לגשת לדשבורד המלא ישירות מתוך טלגרם דרך הכפתור למטה!`;
+
+        const welcomeButtons = {
+          inline_keyboard: [
+            [{ text: "🌐 להרשמה וכניסה לאתר", url: WEBSITE_URL }]
+          ]
+        };
+        await replyToUser(telegramWelcomeMsg, welcomeButtons);
+
+      } else if (platform === 'whatsapp') {
+        const whatsappWelcomeMsg = `שלום! 👋 ברוכים הבאים ל-*ControlYourMoney*.
+כדי להתחיל לנהל את התקציב ישירות מכאן, נדרש חיבור קצר לחשבון שלכם.
+
+*איך מתחילים?*
+1️⃣ היכנסו לאתר שלנו בקישור הבא והירשמו:
+${WEBSITE_URL}
+
+2️⃣ לאחר ההתחברות, פתחו את תפריט הצד וכנסו ל-*הגדרות משתמש*.
+3️⃣ העתיקו משם את קוד ההפעלה שלכם ושלחו לי אותו לכאן בהודעה חוזרת.
+
+👨‍👩‍👧‍👦 *ניהול משותף:*
+רוצים לנהל תקציב יחד עם בן/בת הזוג?
+היכנסו להגדרות המשתמש בקישור הבא:
+${SETTINGS_URL}
+תחת "משק בית שלי" לחצו על *"הזמן חבר למשק הבית"* ושלחו להם הזמנה למייל!
+
+אני מחכה לקוד שלכם כדי שנוכל להתחיל! 🚀`;
+
+        await replyToUser(whatsappWelcomeMsg);
+      }
+
       return new Response("OK");
     }
 
@@ -116,9 +164,9 @@ Deno.serve(async (req) => {
         
         let upgradeButtons = null;
         if (platform === 'telegram') {
-          upgradeButtons = { inline_keyboard: [[{ text: "⭐ שדרג עכשיו לפרימיום", url: "https://controlyourmoney.info" }]] };
+          upgradeButtons = { inline_keyboard: [[{ text: "⭐ שדרג עכשיו לפרימיום", url: "https://controlyourmoney.info/LandingPage" }]] };
         } else {
-          await replyToUser(upgradeMsg + `\n\nלשדרוג לחץ כאן: https://controlyourmoney.info`);
+          await replyToUser(upgradeMsg + `\n\nלשדרוג לחץ כאן: https://controlyourmoney.info/LandingPage`);
           return new Response("OK");
         }
 
