@@ -18,8 +18,17 @@ Deno.serve(async (req) => {
       if (senderNumber === botNumber) return new Response("OK");
 
       sender = payload.senderData?.chatId;
-      messageBody = payload.messageData?.textMessageData?.textMessage || "";
+      
+      // תיקון: תמיכה גם בהודעות רגילות וגם בהודעות ארוכות/תגובות (Reply)
+      messageBody = payload.messageData?.textMessageData?.textMessage || 
+                    payload.messageData?.extendedTextMessageData?.text || "";
+                    
       cleanFrom = sender.replace('@c.us', '').replace('+', '');
+      
+      // אם זו הודעה קולית או תמונה ואין טקסט - נסיים כדי לא להקריס את ה-AI
+      if (!messageBody.trim()) {
+        return new Response("OK");
+      }
     } 
     else if (payload.message && payload.message.chat) {
       platform = 'telegram';
@@ -103,19 +112,7 @@ Deno.serve(async (req) => {
       const SETTINGS_URL = "https://controlyourmoney.info/UserSettings";
       
       if (platform === 'telegram') {
-        const telegramWelcomeMsg = `שלום! 👋 ברוכים הבאים ל-*ControlYourMoney*.
-כדי להתחיל לנהל את התקציב ישירות מכאן, נדרש חיבור קצר לחשבון שלכם.
-
-*איך מתחילים?*
-1️⃣ לחצו על הקישור למטה והירשמו לאפליקציה.
-2️⃣ לאחר ההתחברות, כנסו ל-*הגדרות משתמש*.
-3️⃣ העתיקו משם את קוד ההפעלה ושלחו לי אותו לכאן.
-
-👨‍👩‍👧‍👦 *ניהול משותף:*
-רוצים לנהל תקציב יחד עם בן/בת הזוג?
-היכנסו ל[הגדרות המשתמש](${SETTINGS_URL}), תחת "משק בית שלי" לחצו על *"הזמן חבר למשק הבית"* ושלחו להם הזמנה למייל!
-
-💡 *טיפ:* לאחר החיבור, תוכלו לגשת לדשבורד המלא ישירות מתוך טלגרם דרך הכפתור למטה!`;
+        const telegramWelcomeMsg = `שלום! 👋 ברוכים הבאים ל-*ControlYourMoney*.\nכדי להתחיל לנהל את התקציב ישירות מכאן, נדרש חיבור קצר לחשבון שלכם.\n\n*איך מתחילים?*\n1️⃣ לחצו על הקישור למטה והירשמו לאפליקציה.\n2️⃣ לאחר ההתחברות, כנסו ל-*הגדרות משתמש*.\n3️⃣ העתיקו משם את קוד ההפעלה ושלחו לי אותו לכאן.\n\n👨‍👩‍👧‍👦 *ניהול משותף:*\nרוצים לנהל תקציב יחד עם בן/בת הזוג?\nהיכנסו ל[הגדרות המשתמש](${SETTINGS_URL}), תחת "משק בית שלי" לחצו על *"הזמן חבר למשק הבית"* ושלחו להם הזמנה למייל!\n\n💡 *טיפ:* לאחר החיבור, תוכלו לגשת לדשבורד המלא ישירות מתוך טלגרם דרך הכפתור למטה!`;
 
         const welcomeButtons = {
           inline_keyboard: [
@@ -125,23 +122,7 @@ Deno.serve(async (req) => {
         await replyToUser(telegramWelcomeMsg, welcomeButtons);
 
       } else if (platform === 'whatsapp') {
-        const whatsappWelcomeMsg = `שלום! 👋 ברוכים הבאים ל-*ControlYourMoney*.
-כדי להתחיל לנהל את התקציב ישירות מכאן, נדרש חיבור קצר לחשבון שלכם.
-
-*איך מתחילים?*
-1️⃣ היכנסו לאתר שלנו בקישור הבא והירשמו:
-${WEBSITE_URL}
-
-2️⃣ לאחר ההתחברות, פתחו את תפריט הצד וכנסו ל-*הגדרות משתמש*.
-3️⃣ העתיקו משם את קוד ההפעלה שלכם ושלחו לי אותו לכאן בהודעה חוזרת.
-
-👨‍👩‍👧‍👦 *ניהול משותף:*
-רוצים לנהל תקציב יחד עם בן/בת הזוג?
-היכנסו להגדרות המשתמש בקישור הבא:
-${SETTINGS_URL}
-תחת "משק בית שלי" לחצו על *"הזמן חבר למשק הבית"* ושלחו להם הזמנה למייל!
-
-אני מחכה לקוד שלכם כדי שנוכל להתחיל! 🚀`;
+        const whatsappWelcomeMsg = `שלום! 👋 ברוכים הבאים ל-*ControlYourMoney*.\nכדי להתחיל לנהל את התקציב ישירות מכאן, נדרש חיבור קצר לחשבון שלכם.\n\n*איך מתחילים?*\n1️⃣ היכנסו לאתר שלנו בקישור הבא והירשמו:\n${WEBSITE_URL}\n\n2️⃣ לאחר ההתחברות, פתחו את תפריט הצד וכנסו ל-*הגדרות משתמש*.\n3️⃣ העתיקו משם את קוד ההפעלה שלכם ושלחו לי אותו לכאן בהודעה חוזרת.\n\n👨‍👩‍👧‍👦 *ניהול משותף:*\nרוצים לנהל תקציב יחד עם בן/בת הזוג?\nהיכנסו להגדרות המשתמש בקישור הבא:\n${SETTINGS_URL}\nתחת "משק בית שלי" לחצו על *"הזמן חבר למשק הבית"* ושלחו להם הזמנה למייל!\n\nאני מחכה לקוד שלכם כדי שנוכל להתחיל! 🚀`;
 
         await replyToUser(whatsappWelcomeMsg);
       }
@@ -371,20 +352,53 @@ ${SETTINGS_URL}
 });
 
 async function sendWhatsApp(chatId, text, id, token) {
-  await fetch(`https://7103.api.greenapi.com/waInstance${id}/sendMessage/${token}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chatId, message: text })
-  });
+  // תיקון: בדיקה שמשתני הסביבה באמת קיימים
+  if (!id || !token) {
+    console.error("Missing GreenAPI credentials (idInstance or apiTokenInstance) in Environment Variables!");
+    return;
+  }
+  
+  // תיקון: שימוש בכתובת הגלובלית הרשמית של GreenAPI שמנתבת לשרת הנכון
+  const url = `https://api.green-api.com/waInstance${id}/sendMessage/${token}`;
+  
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chatId, message: text })
+    });
+    
+    // תיקון: אם יש שגיאה בשליחה, נדפיס אותה בצורה ברורה ללוגים
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error(`GreenAPI sending failed (${res.status}):`, errText);
+    }
+  } catch (err) {
+    console.error("Fetch error to GreenAPI:", err);
+  }
 }
 
 async function sendTelegram(chatId, text, token, replyMarkup = null) {
+  if (!token) {
+    console.error("Missing TELEGRAM_BOT_TOKEN in Environment Variables!");
+    return;
+  }
+  
   const body = { chat_id: chatId, text: text, parse_mode: "Markdown" };
   if (replyMarkup) body.reply_markup = replyMarkup; 
   
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error(`Telegram sending failed (${res.status}):`, errText);
+    }
+  } catch (err) {
+    console.error("Fetch error to Telegram:", err);
+  }
 }
