@@ -37,6 +37,10 @@ function App() {
               }
             />
           ))}
+          {/* Public routes - accessible without login */}
+          <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
+          <Route path="/TermsOfService" element={<TermsOfService />} />
+          <Route path="/AccessibilityStatement" element={<AccessibilityStatement />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </Router>
