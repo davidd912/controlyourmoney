@@ -236,27 +236,15 @@ function LayoutContent({ children, currentPageName }) {
 
   const isAuthenticated = !!user;
 
-  const publicPaths = ['/', '/PrivacyPolicy', '/TermsOfService', '/AccessibilityStatement'];
-  const isPublicPage = publicPaths.includes(location.pathname);
-
   useEffect(() => {
     if (!loadingUser) {
-      if (isAuthenticated && location.pathname === '/') {
+      if (isAuthenticated && currentPageName === 'LandingPage') {
         navigate(createPageUrl('Dashboard'), { replace: true });
-      } else if (!isAuthenticated && !isPublicPage) {
+      } else if (!isAuthenticated && currentPageName !== 'LandingPage') {
         navigate(createPageUrl('LandingPage'), { replace: true });
       }
     }
-  }, [isAuthenticated, location.pathname, navigate, loadingUser]);
-
-  // For public pages - never block, render immediately
-  if (isPublicPage) {
-    return (
-      <HouseholdContext.Provider value={{ user: null, households: [], selectedHouseholdId: null, setSelectedHouseholdId: () => {}, loadingHouseholds: false }}>
-        {children}
-      </HouseholdContext.Provider>
-    );
-  }
+  }, [isAuthenticated, currentPageName, navigate, loadingUser]);
 
   if (loadingUser || loadingHouseholds || userError) {
     if (!loadingUser && userError) {

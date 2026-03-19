@@ -4,9 +4,6 @@ import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfService from './pages/TermsOfService';
-import AccessibilityStatement from './pages/AccessibilityStatement';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -37,10 +34,6 @@ function App() {
               }
             />
           ))}
-          {/* Public routes - accessible without login */}
-          <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
-          <Route path="/TermsOfService" element={<TermsOfService />} />
-          <Route path="/AccessibilityStatement" element={<AccessibilityStatement />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </Router>
