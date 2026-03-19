@@ -236,17 +236,27 @@ function LayoutContent({ children, currentPageName }) {
 
   const isAuthenticated = !!user;
 
-  const publicPages = ['LandingPage', 'PrivacyPolicy', 'TermsOfService', 'AccessibilityStatement'];
+  const publicPaths = ['/', '/PrivacyPolicy', '/TermsOfService', '/AccessibilityStatement'];
+  const isPublicPage = publicPaths.includes(location.pathname);
 
   useEffect(() => {
     if (!loadingUser) {
-      if (isAuthenticated && currentPageName === 'LandingPage') {
+      if (isAuthenticated && location.pathname === '/') {
         navigate(createPageUrl('Dashboard'), { replace: true });
-      } else if (!isAuthenticated && !publicPages.includes(currentPageName)) {
+      } else if (!isAuthenticated && !isPublicPage) {
         navigate(createPageUrl('LandingPage'), { replace: true });
       }
     }
-  }, [isAuthenticated, currentPageName, navigate, loadingUser]);
+  }, [isAuthenticated, location.pathname, navigate, loadingUser]);
+
+  // For public pages - never block, render immediately
+  if (isPublicPage) {
+    return (
+      <HouseholdContext.Provider value={{ user: null, households: [], selectedHouseholdId: null, setSelectedHouseholdId: () => {}, loadingHouseholds: false }}>
+        {children}
+      </HouseholdContext.Provider>
+    );
+  }
 
   if (loadingUser || loadingHouseholds || userError) {
     if (!loadingUser && userError) {
