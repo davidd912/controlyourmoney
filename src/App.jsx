@@ -4,6 +4,9 @@ import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import AccessibilityStatement from './pages/AccessibilityStatement';
+import TermsOfService from './pages/TermsOfService';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];

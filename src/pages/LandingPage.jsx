@@ -184,9 +184,9 @@ export default function LandingPage() {
             {t('landing_footer_copyright', { year: new Date().getFullYear() })}
           </p>
           <div className="flex justify-center gap-6">
-            <Button variant="link" onClick={() => navigate('/privacy')} className="text-slate-400 hover:text-indigo-600 text-sm font-bold">{t('privacy')}</Button>
-            <Button variant="link" onClick={() => navigate('/terms')} className="text-slate-400 hover:text-indigo-600 text-sm font-bold">{t('terms')}</Button>
-            <Button variant="link" onClick={() => navigate('/guide')} className="text-slate-400 hover:text-indigo-600 text-sm font-bold">{t('nav.Guide')}</Button>
+            <Button variant="link" onClick={() => navigate('/PrivacyPolicy')} className="text-slate-400 hover:text-indigo-600 text-sm font-bold">{t('privacy')}</Button>
+            <Button variant="link" onClick={() => navigate('/TermsOfService')} className="text-slate-400 hover:text-indigo-600 text-sm font-bold">{t('terms')}</Button>
+            <Button variant="link" onClick={() => navigate('/AccessibilityStatement')} className="text-slate-400 hover:text-indigo-600 text-sm font-bold">{t('accessibility')}</Button>
           </div>
         </div>
       </footer>
