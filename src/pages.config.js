@@ -48,14 +48,11 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import AIPlanning from './pages/AIPlanning';
-import AccessibilityStatement from './pages/AccessibilityStatement';
 import Benefits from './pages/Benefits';
 import Dashboard from './pages/Dashboard';
 import Guide from './pages/Guide';
 import LandingPage from './pages/LandingPage';
-import PrivacyPolicy from './pages/PrivacyPolicy';
 import QuickChat from './pages/QuickChat';
-import TermsOfService from './pages/TermsOfService';
 import UserSettings from './pages/UserSettings';
 import WhatsAppConnect from './pages/WhatsAppConnect';
 import __Layout from './Layout.jsx';
@@ -63,14 +60,11 @@ import __Layout from './Layout.jsx';
 
 export const PAGES = {
     "AIPlanning": AIPlanning,
-    "AccessibilityStatement": AccessibilityStatement,
     "Benefits": Benefits,
     "Dashboard": Dashboard,
     "Guide": Guide,
     "LandingPage": LandingPage,
-    "PrivacyPolicy": PrivacyPolicy,
     "QuickChat": QuickChat,
-    "TermsOfService": TermsOfService,
     "UserSettings": UserSettings,
     "WhatsAppConnect": WhatsAppConnect,
 }
