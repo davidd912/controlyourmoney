@@ -236,11 +236,13 @@ function LayoutContent({ children, currentPageName }) {
 
   const isAuthenticated = !!user;
 
+  const publicPages = ['LandingPage', 'PrivacyPolicy', 'TermsOfService', 'AccessibilityStatement'];
+
   useEffect(() => {
     if (!loadingUser) {
       if (isAuthenticated && currentPageName === 'LandingPage') {
         navigate(createPageUrl('Dashboard'), { replace: true });
-      } else if (!isAuthenticated && currentPageName !== 'LandingPage') {
+      } else if (!isAuthenticated && !publicPages.includes(currentPageName)) {
         navigate(createPageUrl('LandingPage'), { replace: true });
       }
     }
